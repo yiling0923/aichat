@@ -9,21 +9,7 @@
 </head>
 <body>
 <div class="shell">
-    <aside class="side">
-        <div class="ws">
-            <span class="logo" style="width:32px;height:32px">{{ mb_substr($business->name, 0, 1) }}</span>
-            <div><b>{{ $business->name }}</b><small>Staff inbox</small></div>
-        </div>
-        <div class="sec">Work</div>
-        <a class="on" href="{{ route('inbox') }}">Inbox</a>
-        <a class="soon">Schedule (coming)</a>
-        <a class="soon">Customers (coming)</a>
-        <a class="soon">Settings (coming)</a>
-        <div class="me">
-            {{ auth()->user()->name }}<br><span style="opacity:.7">{{ auth()->user()->role }}</span>
-            <form method="post" action="{{ route('logout') }}">@csrf<button type="submit">Sign out</button></form>
-        </div>
-    </aside>
+    @include('admin._side', ['active' => 'inbox'])
 
     <main class="inbox" id="inbox" data-base="{{ url('/admin/api') }}">
         <section class="list">

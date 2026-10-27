@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'business.slug' => ResolveBusinessFromSlug::class,
             'staff' => EnsureBusinessStaff::class,
+            'owner' => \App\Http\Middleware\EnsureOwner::class,
         ]);
 
         // ngrok (and later a real server) sits in front of the app.

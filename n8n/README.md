@@ -1,7 +1,19 @@
 # n8n beside the app (optional)
 
 n8n runs the automations: alerts, reminders, reports. The app works without it.
-In phase 0 it only receives one event (`conversation.started`) so you can see the link working.
+Events sent so far (each is a JSON body `{event, data, sent_at}`):
+
+| Event | When |
+|---|---|
+| `conversation.started` | A new chat begins |
+| `lead.captured` | The bot saved a customer (name, phone, interest, preferred time, score) |
+| `handover.requested` | A chat was passed to staff (includes `open_now`) |
+| `handover.holding` | 5 min with no staff reply: the customer got a "thanks for waiting" message |
+| `handover.reminder` | 10 min with no staff reply |
+| `handover.reassign` | 20 min with no staff reply |
+| `handover.owner_alert` | 30 min with no staff reply |
+
+The starter workflow just records them. Add your own steps, for example a WhatsApp or email alert to staff on `handover.requested`.
 
 ## Start n8n on Windows
 

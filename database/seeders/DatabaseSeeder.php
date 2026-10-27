@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
                 'default_language' => 'en',
                 'languages' => ['en', 'zh'],
                 'status' => 'active',
+                'settings' => ['hours' => [
+                    'mon' => ['10:00', '19:00'], 'tue' => ['10:00', '19:00'], 'wed' => ['10:00', '19:00'],
+                    'thu' => ['10:00', '19:00'], 'fri' => ['10:00', '19:00'], 'sat' => ['10:00', '17:00'],
+                ]],
             ],
         );
 

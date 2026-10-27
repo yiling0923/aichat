@@ -36,3 +36,18 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/give-back', [InboxController::class, 'giveBack'])->whereNumber('id');
     Route::post('/api/conversations/{id}/resolve', [InboxController::class, 'resolve'])->whereNumber('id');
 });
+
+// Customers (all staff) and menu builder (owner only).
+Route::middleware('staff')->prefix('admin')->group(function () {
+    Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers');
+});
+
+Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
+    Route::get('/menu', [\App\Http\Controllers\MenuController::class, 'index'])->name('menu');
+    Route::get('/api/menu', [\App\Http\Controllers\MenuController::class, 'show']);
+    Route::put('/api/menu', [\App\Http\Controllers\MenuController::class, 'save']);
+    Route::post('/api/menu/publish', [\App\Http\Controllers\MenuController::class, 'publish']);
+    Route::post('/api/menu/reset', [\App\Http\Controllers\MenuController::class, 'reset']);
+    Route::post('/api/menu/preview', [\App\Http\Controllers\MenuController::class, 'preview']);
+    Route::get('/api/menu/stats', [\App\Http\Controllers\MenuController::class, 'stats']);
+});

@@ -19,6 +19,11 @@ class HandoverService
      */
     public function start(Conversation $conversation, string $reason, array $context = []): void
     {
+        // The menu preview never alerts staff or n8n.
+        if ($conversation->channel === 'preview') {
+            return;
+        }
+
         $conversation->handOverToStaff($reason);
 
         $state = $conversation->state ?? [];

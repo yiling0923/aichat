@@ -24,6 +24,7 @@ class InboxController extends Controller
         $status = $request->query('status', 'open');
 
         $items = Conversation::query()
+            ->where('channel', '!=', 'preview')
             ->when(in_array($status, ['open', 'resolved'], true), fn ($q) => $q->where('status', $status))
             ->orderByDesc('last_message_at')
             ->limit(100)

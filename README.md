@@ -3,8 +3,9 @@
 A guided menu bot, staff inbox and booking assistant for WhatsApp, Instagram, Messenger and website chat.
 Built with PHP and Laravel, runs on XAMPP on your own computer. See `docs/` for the plan (PDF) and the page layouts (PDF).
 
-**Where we are: step 0 (test base).** You can open a test chat as a customer, send a message, get a placeholder reply,
-and answer it as staff in the inbox. The menu bot comes in step 1.
+**Where we are: step 1 (guided menu bot).** A customer opens the test chat, picks a language, taps buttons
+(prices, hours, location, promotions, book an appointment, talk to staff) and the bot answers. Booking requests are saved
+as customers. Staff answer handed-over chats in the inbox. The owner edits the menu in the **Menu builder**. No AI is used yet.
 
 ## What you need on Windows
 
@@ -49,13 +50,34 @@ and answer it as staff in the inbox. The menu bot comes in step 1.
    |---|---|
    | Start page | http://localhost/aichat/public |
    | Customer test chat | http://localhost/aichat/public/chat/lumiere |
-   | Staff inbox | http://localhost/aichat/public/login |
+   | Staff login (inbox, customers, menu builder) | http://localhost/aichat/public/login |
 
-   Sample staff login: `owner@example.com` / `password`. The sample business is made up.
+   Sample logins: `owner@example.com` / `password` (can use the Menu builder) and `staff@example.com` / `password`.
+   The sample business is made up.
 
-Try it: open the test chat in one browser window and send a message. Sign in to the inbox in another window,
-open the conversation, and reply. Your reply appears in the test chat within a few seconds and the bot goes quiet.
-Press **Give back to bot** and the bot answers again.
+### Try the menu bot
+
+1. Open the test chat, send "hi", and tap **English** or **中文**. Tap around. You can also type a number, a button name, or a word like "price".
+2. Tap **Book an appointment**, choose a treatment, and give a name and phone number. Sign in and open **Customers**: the lead is there.
+3. Tap **Talk to staff** (or type "human"). Sign in as staff, open the chat in the **Inbox**, and reply. Your reply appears in the test chat
+   within a few seconds and the bot goes quiet. Press **Give back to bot** and the bot answers again.
+4. Sign in as the owner, open **Menu builder**, change a text, press **Publish**, and start a new test chat to see it.
+   The panel on the right lets you try the draft first. Nothing you try there is saved as a lead or handover.
+
+Typed words that always work: `menu` (back to the main menu), `human` or `staff` (talk to a person), `stop` (no promotional messages).
+
+### Staff reminders (Windows Task Scheduler)
+
+When a chat is handed over and nobody replies, the app escalates after 5, 10, 20 and 30 minutes (a "thanks for waiting" message to the
+customer, then events to n8n). This needs one job that runs every minute. In **Task Scheduler** choose **Create Basic Task**, trigger
+**Daily**, then in the task's properties set **Repeat task every 1 minute** for **1 day**. Action: **Start a program**,
+program `C:\xampp\php\php.exe`, arguments `artisan schedule:run`, start in `C:\xampp\htdocs\aichat`.
+To try it without waiting, run `php artisan aichat:check-handovers` by hand.
+
+### Business hours
+
+Opening hours live in the business `settings` (the seeder sets Mon to Fri 10:00 to 19:00, Sat 10:00 to 17:00). Outside those hours
+a handover tells the customer the team is away and will reply when they open. A settings page for this comes in step 3.
 
 ### Without Apache
 
@@ -69,7 +91,8 @@ php artisan test
 ```
 
 The tests use a temporary in-memory database, so they never touch your real data.
-They check the chat, the staff inbox, handover, n8n events, and that one business can never see another business's data.
+They check the menu bot (every button of the sample menu, English and Chinese), lead capture, handover and timeouts, the menu builder,
+the staff inbox, n8n events, and that one business can never see another business's data.
 
 ## n8n (optional)
 
@@ -91,10 +114,11 @@ See `n8n/README.md`. The app works without it.
 
 | Folder | What is inside |
 |---|---|
-| `app/Bot` | The bot engine (placeholder now, menu bot in step 1) |
+| `app/Bot` | The menu bot: engine, sample menu, validator, business hours |
+| `app/Console` | The handover reminder command |
 | `app/Models` | Business, Customer, Conversation, Message. Every business-owned model is limited to the current business |
 | `app/Http` | Controllers (chat, inbox, login) and middleware |
-| `app/Services/N8nNotifier.php` | Sends events to n8n |
+| `app/Services` | n8n events, lead saving, handover |
 | `database/migrations` | The database tables, each with a `business_id` |
 | `resources/views`, `public/css`, `public/js` | The pages (no build step needed) |
 | `tests` | Automated tests |
@@ -103,4 +127,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 1: the guided menu bot (language choice, options, prepared answers, talk to staff), with the menu builder in the admin panel.
+Step 2: booking with Google Calendar (one calendar per practitioner, free slots, confirmations and reminders).

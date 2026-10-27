@@ -20,6 +20,10 @@ class LeadService
      */
     public function capture(Conversation $conversation, array $context, string $score = 'warm', bool $notify = true): Customer
     {
+        if ($conversation->channel === 'preview') {
+            return new Customer;
+        }
+
         $phone = $this->normalizePhone((string) ($context['phone'] ?? ''));
         $name = trim((string) ($context['name'] ?? '')) ?: null;
 
