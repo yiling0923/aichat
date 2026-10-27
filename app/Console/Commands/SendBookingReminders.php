@@ -6,7 +6,9 @@ use App\Bot\BookingStep;
 use App\Bot\Strings;
 use App\Bot\Text;
 use App\Models\Booking;
+use App\Channels\Templates;
 use App\Models\Business;
+use App\Models\MessageTemplate;
 use App\Services\N8nNotifier;
 use App\Support\CurrentBusiness;
 use Illuminate\Console\Command;
@@ -47,10 +49,27 @@ class SendBookingReminders extends Command
 
                             $language = $b->conversation?->language ?? $b->customer?->language ?? 'en';
 
-                            $b->conversation?->addMessage('out', 'bot', Text::fill(Strings::get('booking_reminder', $language), [
-                                'service' => $b->service->label($language),
-                                'when' => $steps->whenLabel($b, $language),
-                            ]));
+                            $chat = $b->conversation;
+                            $when = $steps->whenLabel($b, $language);
+
+                            if ($chat !== null && $chat->windowOpen()) {
+                                $chat->addMessage('out', 'bot', Text::fill(Strings::get('booking_reminder', $language), [
+                                    'service' => $b->service->label($language),
+                                    'when' => $when,
+                                ]));
+                            } elseif ($chat !== null) {
+                                // The 24-hour window is closed: WhatsApp only allows an approved template.
+                                $name = $chat->channelAccount?->settings['reminder_template'] ?? null;
+                                $template = $name ? MessageTemplate::query()->where('channel_id', $chat->channel_id)->where('name', $name)->where('status', 'APPROVED')->first() : null;
+
+                                if ($template !== null) {
+                                    try {
+                                        app(Templates::class)->send($chat, $template, [(string) ($b->customer?->name ?? ''), $b->service->label($language), $when], 'bot');
+                                    } catch (\Throwable $e) {
+                                        report($e);
+                                    }
+                                }
+                            }
 
                             $n8n->send('booking.reminder', [
                                 'business' => $business->slug,
@@ -61,6 +80,7 @@ class SendBookingReminders extends Command
                                 'customer_name' => $b->customer?->name,
                                 'customer_phone' => $b->customer?->phone,
                                 'language' => $language,
+                                'window_open' => $chat?->windowOpen() ?? true,
                             ]);
                             $sent++;
                         });

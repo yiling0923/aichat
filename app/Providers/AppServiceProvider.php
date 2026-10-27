@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
         // polling could otherwise lock staff out of the login page.
         RateLimiter::for('login', fn (Request $r) => Limit::perMinute(10)->by('login|'.$r->ip()));
         RateLimiter::for('chat-send', fn (Request $r) => Limit::perMinute(60)->by('chat-send|'.$r->ip()));
+        RateLimiter::for('meta-webhook', fn (Request $r) => Limit::perMinute(600)->by('meta|'.$r->ip()));
         RateLimiter::for('chat-poll', fn (Request $r) => Limit::perMinute(240)->by('chat-poll|'.$r->ip()));
     }
 }

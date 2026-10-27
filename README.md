@@ -3,7 +3,7 @@
 A guided menu bot, staff inbox and booking assistant for WhatsApp, Instagram, Messenger and website chat.
 Built with PHP and Laravel, runs on XAMPP on your own computer. See `docs/` for the plan (PDF) and the page layouts (PDF).
 
-**Where we are: step 3 (business admin panel).** A customer opens the test chat, picks a language, taps buttons
+**Where we are: step 4 (real channels).** A customer opens the test chat, picks a language, taps buttons
 (prices, hours, location, promotions, book an appointment, talk to staff) and the bot answers. Booking requests are saved
 as customers. Staff answer handed-over chats in the inbox. The owner edits the menu in the **Menu builder**. No AI is used yet.
 Step 2 adds real booking: the customer taps a service, a day and a time, gives a name and phone, and the booking is saved
@@ -68,6 +68,80 @@ Step 2 adds real booking: the customer taps a service, a day and a time, gives a
 
 Typed words that always work: `menu` (back to the main menu), `human` or `staff` (talk to a person), `stop` (no promotional messages).
 
+### Real channels: WhatsApp, Messenger, Instagram (step 4)
+
+Customers can now chat with the same menu bot on WhatsApp, Messenger and Instagram. Staff answer in the same Inbox.
+What the bot sends: text, WhatsApp reply buttons (up to 3 options) or a list (up to 10), and quick replies on Messenger and Instagram.
+What it does not handle yet: pictures, voice notes, locations (they are ignored), and comments on posts.
+Everything is free while you use the Meta test number and development mode.
+
+**How a message travels:** customer to Meta, Meta calls `/webhook/meta` on your computer, the bot answers, the app sends the answer back through Meta.
+For Meta to reach your computer you need a public address, so we use a free tunnel.
+
+#### A. Set up WhatsApp with Meta's free test number (about 30 minutes)
+
+1. Go to https://developers.facebook.com, sign in with Facebook, click **My Apps > Create app**. Choose **Other**, then **Business**, name it `aichat`.
+2. On the app dashboard find **WhatsApp** and click **Set up**. Accept creating a test business account if asked.
+3. Open **WhatsApp > API Setup**. You will see:
+   - a **test phone number** (the "From" number),
+   - **Phone number ID** and **WhatsApp Business Account ID**: copy both,
+   - a **temporary access token** (valid 24 hours): copy it.
+4. Under "To", click **Manage phone number list**, add your own mobile number, and enter the code WhatsApp sends you. The test number can only message numbers on this list.
+5. Open **App settings > Basic**, click **Show** next to **App secret**, and copy it.
+6. Install ngrok (https://ngrok.com, free account). In a new PowerShell window run, once, `ngrok config add-authtoken YOUR_TOKEN`, then keep this running:
+
+   ```
+   ngrok http 80
+   ```
+
+   It shows an address like `https://abc-123.ngrok-free.app`. Keep this window open while testing. A free address changes each time ngrok restarts.
+   (Alternative: `cloudflared tunnel --url http://localhost:80`.)
+7. Open `C:\xampp\htdocs\aichat\.env` in Notepad and set (use your own tunnel address, and keep `/aichat/public`):
+
+   ```
+   APP_URL=https://abc-123.ngrok-free.app/aichat/public
+   META_APP_SECRET=the app secret from step 5
+   META_VERIFY_TOKEN=any-long-random-words-you-choose
+   ```
+
+   Then run `php artisan config:clear`.
+8. Sign in as owner (use the tunnel address from now on, or http://localhost/aichat/public) and open **Channels**. The page shows your **Callback URL** and **Verify token**.
+9. Under **Add an account** choose **WhatsApp**, paste the Phone number ID, WhatsApp Business Account ID and the access token, and click **Add channel**. Then click **Check connection**: it should say "Connected to ...".
+10. Back in Meta: **WhatsApp > Configuration > Webhook > Edit**. Paste the Callback URL and Verify token from the Channels page and click **Verify and save**.
+    Then under **Webhook fields** click **Subscribe** next to **messages**. In the app, also press **Subscribe to messages** on the channel.
+11. Test: on the Channels page type your phone number (country code, no `+`) and press **Send a test message**. You get Meta's "hello_world" message.
+    Reply to it from your phone with `hi`. Within seconds the bot answers with language buttons. Tap through the menu and make a booking. The chat appears in the **Inbox**.
+
+The temporary token stops working after 24 hours (the bot then cannot answer: the channel shows the problem). For a token that does not expire:
+**business.facebook.com > Business settings > Users > System users > Add**, give it your app and WhatsApp account, and **Generate token** with `whatsapp_business_messaging` and `whatsapp_business_management`. Paste it in **Channels** under "New access token".
+
+#### B. The 24-hour window and templates
+
+WhatsApp, Messenger and Instagram only allow free-form replies for 24 hours after the customer's last message. After that:
+- the Inbox shows a yellow bar and blocks normal replies,
+- on WhatsApp you can send an **approved template** (the **Send a template** button), and booking reminders use a template you choose on the **Channels** page.
+
+Manage templates on the **Templates** page (owner or manager): write a message with `{{1}}`, `{{2}}` for parts that change, send it to Meta for review,
+and press **Refresh status** until it says approved (usually minutes). Example: `Hi {{1}}, a reminder of your {{2}} appointment on {{3}}.`
+
+#### C. Messenger and Instagram (development mode)
+
+These work only for people who have a role on your Meta app (you, admins, testers) until Meta approves your app. That is enough for testing.
+
+- **Messenger:** add the **Messenger** product to the same Meta app and connect a Facebook Page you manage. Generate a **Page access token**.
+  In **Channels** add **Messenger** with the Page ID and that token, click **Check connection** and **Subscribe to messages**.
+  In Meta, Messenger settings > Webhooks: use the same Callback URL and Verify token, and subscribe the page to `messages` and `messaging_postbacks`.
+- **Instagram:** use an Instagram professional account linked to that Page, add the Instagram messaging product, and give the app the permissions `instagram_manage_messages` and `pages_messaging`.
+  In **Channels** add **Instagram** with the Instagram account ID, the linked Facebook Page ID and the Page token. Use the same webhook values.
+- Message the Page or the Instagram account from a tester account. The bot answers with quick replies.
+
+These Messenger and Instagram steps follow Meta's documentation but I could only test them against a simulated Meta, so expect small differences in Meta's screens.
+
+#### D. Safety
+
+Every message from Meta must carry a valid signature made with your app secret, otherwise it is rejected. Access tokens are stored encrypted and never shown again.
+The same message delivered twice is only handled once. A number or page can belong to one business only.
+
 ### Admin panel (step 3)
 
 Sign in and you land on **Today**. The left menu:
@@ -82,7 +156,8 @@ Sign in and you land on **Today**. The left menu:
 | **Customers** | One record per phone number. Filter by score, language, tag. Tick people and add or remove a tag. Open one for details, notes, chats, bookings | everyone |
 | **Tags** | Customer tags and chat tags: create, rename, recolour, merge, delete | owner, manager |
 | **Library** | Saved replies in English and 中文 | everyone reads, owner and manager edit |
-| **Menu builder**, **Booking setup**, **Settings** | Bot menu, services and hours, business name, time zone, accent colour, team accounts | owner |
+| **Templates** | WhatsApp message templates: create, send to Meta, check approval | owner, manager |
+| **Channels**, **Menu builder**, **Booking setup**, **Settings** | Bot menu, services and hours, business name, time zone, accent colour, team accounts | owner |
 
 Roles: **owner** does everything, **manager** can also edit tags and the library, **staff** works the inbox, schedule, customers and tasks.
 An owner can add team members in **Settings**, switch an account off, or set a new password. The business always keeps at least one active owner.
@@ -171,6 +246,7 @@ See `n8n/README.md`. The app works without it.
 | Folder | What is inside |
 |---|---|
 | `app/Bot` | The menu bot: engine, sample menu, validator, business hours, booking steps |
+| `app/Channels` | Meta webhook parsing, sending to WhatsApp, Messenger and Instagram, templates |
 | `app/Booking` | Free times, saving and cancelling bookings, Google Calendar |
 | `app/Console` | The handover reminder command |
 | `app/Models` | Business, Customer, Conversation, Message. Every business-owned model is limited to the current business |
@@ -184,4 +260,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 4: real channels. WhatsApp test number first (needs Meta setup and a free tunnel), then Instagram and Messenger.
+Step 5: automations and marketing (reminder and follow-up templates, satisfaction survey, rebooking, opt-in broadcasts, reports).

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\MessageTemplate;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -76,6 +77,9 @@ class InboxController extends Controller
                 'status' => $conversation->status,
                 'handover_reason' => $conversation->handover_reason,
                 'assigned_to' => $conversation->assigned_to,
+                'channel_label' => $conversation->channel_id ? ($conversation->channelAccount?->label() ?? ucfirst($conversation->channel)) : 'Website',
+                'window_open' => $conversation->windowOpen(),
+                'can_template' => $conversation->channel_id && $conversation->channelAccount?->type === 'whatsapp',
                 'customer' => $conversation->customer ? [
                     'id' => $conversation->customer->id,
                     'name' => $conversation->customer->name,
@@ -85,6 +89,9 @@ class InboxController extends Controller
                 ] : null,
                 'tags' => $conversation->tags()->get(['tags.id', 'name', 'color'])->map->only(['id', 'name', 'color'])->all(),
             ],
+            'templates' => $conversation->channel_id && $conversation->channelAccount?->type === 'whatsapp'
+                ? MessageTemplate::query()->where('channel_id', $conversation->channel_id)->where('status', 'APPROVED')->orderBy('name')->get(['id', 'name', 'language', 'body'])
+                : [],
             'all_tags' => Tag::query()->where('type', 'chat')->orderBy('name')->get(['id', 'name', 'color']),
             'team' => User::query()->where('business_id', $conversation->business_id)->where('active', true)->orderBy('name')->get(['id', 'name']),
             'messages' => $messages,
@@ -95,6 +102,12 @@ class InboxController extends Controller
     {
         $data = $request->validate(['text' => ['required', 'string', 'max:2000']]);
         $conversation = Conversation::query()->findOrFail($id);
+
+        if (! $conversation->windowOpen()) {
+            return response()->json(['error' => $conversation->channelAccount?->type === 'whatsapp'
+                ? 'The 24-hour window is closed. Send an approved template instead.'
+                : 'The 24-hour window is closed. The customer has to message you first.'], 422);
+        }
 
         // A staff reply means a person now owns the chat; the bot goes quiet.
         if (! $conversation->isHandledByStaff()) {

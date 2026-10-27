@@ -37,6 +37,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/resolve', [InboxController::class, 'resolve'])->whereNumber('id');
     Route::post('/api/conversations/{id}/tag', [InboxController::class, 'tag'])->whereNumber('id');
     Route::post('/api/conversations/{id}/assign', [InboxController::class, 'assign'])->whereNumber('id');
+    Route::post('/api/conversations/{id}/template', [\App\Http\Controllers\TemplateController::class, 'send'])->whereNumber('id');
     Route::get('/api/quick-replies', [\App\Http\Controllers\LibraryController::class, 'list']);
 });
 
@@ -98,12 +99,31 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::post('/library', [$l, 'store']);
     Route::post('/library/{id}', [$l, 'update'])->whereNumber('id');
     Route::post('/library/{id}/delete', [$l, 'destroy'])->whereNumber('id');
+
+    $tp = \App\Http\Controllers\TemplateController::class;
+    Route::get('/templates', [$tp, 'index'])->name('templates');
+    Route::post('/templates', [$tp, 'store']);
+    Route::post('/templates/sync', [$tp, 'sync']);
+    Route::post('/templates/{id}/delete', [$tp, 'destroy'])->whereNumber('id');
 });
 
 Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
+    $ch = \App\Http\Controllers\ChannelController::class;
+    Route::get('/channels', [$ch, 'index'])->name('channels');
+    Route::post('/channels', [$ch, 'store']);
+    Route::post('/channels/{id}', [$ch, 'update'])->whereNumber('id');
+    Route::post('/channels/{id}/delete', [$ch, 'destroy'])->whereNumber('id');
+    Route::post('/channels/{id}/check', [$ch, 'check'])->whereNumber('id');
+    Route::post('/channels/{id}/subscribe', [$ch, 'subscribe'])->whereNumber('id');
+    Route::post('/channels/{id}/test', [$ch, 'test'])->whereNumber('id');
+
     $c = \App\Http\Controllers\SettingsController::class;
     Route::get('/settings', [$c, 'index'])->name('settings');
     Route::post('/settings/profile', [$c, 'saveProfile']);
     Route::post('/settings/team', [$c, 'storeUser']);
     Route::post('/settings/team/{id}', [$c, 'updateUser'])->whereNumber('id');
 });
+
+// Meta (WhatsApp, Messenger, Instagram) calls this address. It must be reachable from the internet (see README, Step 4).
+Route::get('/webhook/meta', [\App\Http\Controllers\MetaWebhookController::class, 'verify']);
+Route::post('/webhook/meta', [\App\Http\Controllers\MetaWebhookController::class, 'receive'])->middleware('throttle:meta-webhook');

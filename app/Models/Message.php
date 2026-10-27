@@ -12,6 +12,7 @@ class Message extends Model
 
     protected $fillable = [
         'conversation_id',
+        'external_id',
         'direction',
         'sender_type',
         'body',
@@ -46,6 +47,8 @@ class Message extends Model
             'options' => $this->payload['options'] ?? [],
             'private' => $this->is_private,
             'time' => $this->created_at?->toIso8601String(),
+            'delivery' => $this->payload['delivery'] ?? null,
+            'delivery_error' => $this->payload['delivery_error'] ?? null,
         ];
     }
 }

@@ -55,12 +55,41 @@
     var t = document.createElement('small');
     t.textContent = m.from + (m.time ? ' · ' + new Date(m.time).toLocaleTimeString() : '');
     div.appendChild(t);
+    if (m.delivery === 'failed') {
+      var f = document.createElement('small');
+      f.style.color = '#b42318'; f.style.opacity = '1'; f.style.fontWeight = '600';
+      f.textContent = 'Not delivered: ' + (m.delivery_error || 'unknown problem');
+      div.appendChild(f);
+    }
     logEl.appendChild(div);
     logEl.scrollTop = logEl.scrollHeight;
   }
 
+  function renderBanner(data) {
+    var c = data.conversation;
+    var el = document.getElementById('window-bar');
+    if (c.window_open) { el.classList.add('hidden'); return; }
+    el.classList.remove('hidden');
+    var tpl = (data.templates || []);
+    document.getElementById('window-text').textContent = c.can_template
+      ? 'The 24-hour window is closed. You can only send an approved template.'
+      : 'The 24-hour window is closed. You can reply once the customer messages you again.';
+    var btn = document.getElementById('btn-template');
+    btn.style.display = c.can_template && tpl.length ? '' : 'none';
+    btn.onclick = function () {
+      var list = tpl.map(function (t, i) { return (i + 1) + '. ' + t.name + ': ' + t.body; }).join('\n');
+      var pick = parseInt(prompt('Choose a template number:\n\n' + list, '1'), 10);
+      var t = tpl[pick - 1];
+      if (!t) { return; }
+      var count = (t.body.match(/\{\{\d+\}\}/g) || []).length, params = [];
+      for (var i = 1; i <= count; i++) { var v = prompt('Value for {{' + i + '}} in: ' + t.body, ''); if (v === null) { return; } params.push(v); }
+      post('/template', { template_id: t.id, params: params }).then(function (d) { if (d && d.error) { alert(d.error); } refreshThread(); loadList(); });
+    };
+  }
+
   function renderInfo(data) {
     var c = data.conversation;
+    renderBanner(data);
     var cust = document.getElementById('info-customer');
     cust.innerHTML = '';
     if (c.customer) {
@@ -98,7 +127,7 @@
   function showMeta(c) {
     headEl.textContent = c.name;
     var mode = c.mode === 'human' ? 'Staff are handling this chat. The bot is silent.' : 'The bot is answering this chat.';
-    metaEl.textContent = c.channel + ' · ' + c.status + ' · ' + mode + (c.handover_reason ? ' (' + c.handover_reason + ')' : '');
+    metaEl.textContent = (c.channel_label || c.channel) + ' · ' + c.status + ' · ' + mode + (c.handover_reason ? ' (' + c.handover_reason + ')' : '');
     document.getElementById('btn-give-back').style.display = c.mode === 'human' ? '' : 'none';
     document.getElementById('thread').classList.remove('hidden');
     document.getElementById('thread-empty').style.display = 'none';
@@ -115,7 +144,7 @@
     api('/conversations/' + current + '?after=' + lastId).then(function (data) {
       if (!data.conversation) { return; }
       showMeta(data.conversation);
-      var key = JSON.stringify([data.conversation.tags, data.conversation.assigned_to, data.conversation.customer, current]);
+      var key = JSON.stringify([data.conversation.tags, data.conversation.assigned_to, data.conversation.customer, data.conversation.window_open, current]);
       if (force || key !== lastInfoKey) { lastInfoKey = key; renderInfo(data); }
       data.messages.forEach(addLine);
     });
@@ -130,7 +159,10 @@
     var text = textEl.value.trim();
     if (!text) { return; }
     textEl.value = '';
-    post('/reply', { text: text }).then(function () { refreshThread(); loadList(); });
+    post('/reply', { text: text }).then(function (d) {
+      if (d && d.error) { textEl.value = text; alert(d.error); }
+      refreshThread(); loadList();
+    });
   });
   document.getElementById('btn-note').addEventListener('click', function () {
     var text = textEl.value.trim();

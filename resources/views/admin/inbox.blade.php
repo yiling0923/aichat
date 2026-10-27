@@ -37,6 +37,10 @@
                         <button class="btn danger" id="btn-resolve" type="button">Resolve</button>
                     </div>
                 </div>
+                <div class="note warn hidden" id="window-bar">
+                    <span id="window-text"></span>
+                    <button class="btn small" id="btn-template" type="button">Send a template</button>
+                </div>
                 <div class="info-bar" id="info-bar">
                     <span id="info-customer"></span>
                     <span id="info-tags"></span>

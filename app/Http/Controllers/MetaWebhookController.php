@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Channels\InboundHandler;
+use App\Channels\WebhookParser;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+
+/**
+ * The one public address Meta calls for WhatsApp, Messenger and Instagram.
+ * GET answers Meta's check when you save the webhook. POST receives messages.
+ */
+class MetaWebhookController extends Controller
+{
+    public function verify(Request $request): Response
+    {
+        $mode = $request->query('hub_mode', $request->query('hub.mode'));
+        $token = (string) $request->query('hub_verify_token', $request->query('hub.verify_token'));
+        $expected = (string) config('services.meta.verify_token');
+
+        if ($mode === 'subscribe' && $expected !== '' && hash_equals($expected, $token)) {
+            return response((string) $request->query('hub_challenge', $request->query('hub.challenge')), 200)->header('Content-Type', 'text/plain');
+        }
+
+        return response('Forbidden', 403);
+    }
+
+    public function receive(Request $request, WebhookParser $parser, InboundHandler $handler): Response
+    {
+        $secret = (string) config('services.meta.app_secret');
+        $given = (string) $request->header('X-Hub-Signature-256');
+
+        // Only Meta knows the app secret, so a valid signature proves the message is from Meta.
+        if ($secret === '' || ! hash_equals('sha256='.hash_hmac('sha256', $request->getContent(), $secret), $given)) {
+            Log::warning('Meta webhook rejected: missing app secret or bad signature');
+
+            return response('Forbidden', 403);
+        }
+
+        foreach ($parser->parse((array) $request->json()->all()) as $event) {
+            try {
+                $handler->handle($event);
+            } catch (Throwable $e) {
+                // Still answer 200: Meta would otherwise resend the same message again and again.
+                report($e);
+            }
+        }
+
+        return response('OK', 200);
+    }
+}

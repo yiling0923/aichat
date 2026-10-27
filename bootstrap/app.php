@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // The visitor chat API uses a random token, not a login cookie,
         // and may later be embedded on other websites.
-        $middleware->validateCsrfTokens(except: ['api/chat/*']);
+        $middleware->validateCsrfTokens(except: ['api/chat/*', 'webhook/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

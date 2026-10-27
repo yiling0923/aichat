@@ -19,6 +19,9 @@ class Conversation extends Model
 
     protected $fillable = [
         'customer_id',
+        'channel_id',
+        'external_id',
+        'last_inbound_at',
         'channel',
         'token',
         'contact_name',
@@ -39,6 +42,7 @@ class Conversation extends Model
             'handover_at' => 'datetime',
             'opted_out_at' => 'datetime',
             'last_message_at' => 'datetime',
+            'last_inbound_at' => 'datetime',
             'state' => 'array',
         ];
     }
@@ -57,6 +61,24 @@ class Conversation extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function channelAccount(): BelongsTo
+    {
+        return $this->belongsTo(Channel::class, 'channel_id')->withoutGlobalScopes();
+    }
+
+    /**
+     * Customer-service window: on WhatsApp, Messenger and Instagram free-form replies are only allowed
+     * for 24 hours after the customer's last message. Website chat has no window.
+     */
+    public function windowOpen(): bool
+    {
+        if (! $this->channel_id) {
+            return true;
+        }
+
+        return $this->last_inbound_at !== null && $this->last_inbound_at->gt(now()->subHours(24));
     }
 
     public function tags(): BelongsToMany
@@ -84,7 +106,7 @@ class Conversation extends Model
      *
      * @param  array<string, mixed>|null  $payload
      */
-    public function addMessage(string $direction, string $senderType, ?string $body, ?array $payload = null, bool $private = false): Message
+    public function addMessage(string $direction, string $senderType, ?string $body, ?array $payload = null, bool $private = false, bool $deliver = true): Message
     {
         $message = new Message([
             'direction' => $direction,
@@ -100,6 +122,11 @@ class Conversation extends Model
 
         if (! $private) {
             $this->forceFill(['last_message_at' => now()])->save();
+        }
+
+        // Replies on WhatsApp, Messenger and Instagram are sent out as soon as they are saved.
+        if ($deliver && $direction === 'out' && ! $private && $this->channel_id && in_array($senderType, ['bot', 'staff'], true)) {
+            app(\App\Channels\ChannelSender::class)->deliver($this, $message);
         }
 
         return $message;
