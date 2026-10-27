@@ -15,12 +15,6 @@ class DefaultFlow
 
         $option = fn (string $id, array $label, array $extra = []): array => array_merge(['id' => $id, 'label' => $label], $extra);
 
-        $treatment = fn (string $id, string $en, string $zh): array => $option($id, $t($en, $zh), [
-            'goto' => 'book_name',
-            'set' => ['interest' => $en],
-            'keywords' => [mb_strtolower($en)],
-        ]);
-
         return [
             'start' => 'language',
             'languages' => ['en', 'zh'],
@@ -39,6 +33,7 @@ class DefaultFlow
                     'options' => [
                         $option('prices', $t('Prices', '价格'), ['goto' => 'prices', 'keywords' => ['price', 'prices', 'cost', 'how much', 'fee', '价格', '多少钱', '收费']]),
                         $option('book', $t('Book an appointment', '预约'), ['goto' => 'book', 'keywords' => ['book', 'booking', 'appointment', 'reserve', '预约', '订位', '预订']]),
+                        $option('my_booking', $t('My booking', '我的预约'), ['goto' => 'my_booking', 'keywords' => ['my booking', 'my appointment', 'cancel booking', 'cancel appointment', 'cancel', 'reschedule', '我的预约', '取消预约', '取消']]),
                         $option('hours', $t('Opening hours', '营业时间'), ['goto' => 'hours', 'keywords' => ['hours', 'open', 'opening', 'close', 'closing', '营业', '几点']]),
                         $option('location', $t('Location', '地址'), ['goto' => 'location', 'keywords' => ['location', 'address', 'where', 'parking', 'map', '地址', '在哪', '停车']]),
                         $option('promo', $t('Promotions', '优惠'), ['goto' => 'promo', 'keywords' => ['promo', 'promotion', 'promotions', 'discount', 'offer', '优惠', '折扣', '促销']]),
@@ -79,46 +74,11 @@ class DefaultFlow
                     'goto' => 'main',
                 ],
                 'book' => [
-                    'type' => 'options',
-                    'text' => $t('Which treatment would you like?', '您想预约哪个疗程？'),
-                    'options' => [
-                        $treatment('facial', 'Hydrating Facial', '补水护理'),
-                        $treatment('laser', 'Pigmentation Laser', '色斑激光'),
-                        $treatment('hifu', 'HIFU Skin Tightening', 'HIFU 紧致'),
-                        $treatment('acne', 'Acne Treatment', '祛痘护理'),
-                        $treatment('consult', 'Consultation', '咨询'),
-                    ],
+                    'type' => 'booking',
+                    'goto' => 'main',
                 ],
-                'book_name' => [
-                    'type' => 'ask',
-                    'field' => 'name',
-                    'text' => $t('Great choice. What is your name?', '好的。请问您怎么称呼？'),
-                    'goto' => 'book_phone',
-                ],
-                'book_phone' => [
-                    'type' => 'ask',
-                    'field' => 'phone',
-                    'validate' => 'phone',
-                    'text' => $t(
-                        'Thanks, {name}. What is your phone number? By sharing it you agree that we may contact you about your enquiry.',
-                        '谢谢，{name}。请问您的电话号码是多少？提供号码即表示您同意我们就此咨询联系您。',
-                    ),
-                    'goto' => 'book_time',
-                ],
-                'book_time' => [
-                    'type' => 'ask',
-                    'field' => 'preferred_time',
-                    'text' => $t('When would you like to come? For example: Saturday afternoon.', '您希望什么时候来？例如：星期六下午。'),
-                    'goto' => 'book_done',
-                ],
-                'book_done' => [
-                    'type' => 'save_lead',
-                    'score' => 'warm',
-                    'notify' => true,
-                    'text' => $t(
-                        'Thank you, {name}! We have your request for {interest} ({preferred_time}). Our team will contact you on {phone} to confirm the time.',
-                        '谢谢您，{name}！我们已收到您的预约请求：{interest}（{preferred_time}）。我们的团队会通过 {phone} 联系您确认时间。',
-                    ),
+                'my_booking' => [
+                    'type' => 'my_booking',
                     'goto' => 'main',
                 ],
             ],

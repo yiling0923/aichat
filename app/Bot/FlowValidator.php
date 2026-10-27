@@ -8,7 +8,7 @@ namespace App\Bot;
  */
 class FlowValidator
 {
-    public const TYPES = ['options', 'message', 'ask', 'save_lead', 'handover'];
+    public const TYPES = ['options', 'message', 'ask', 'save_lead', 'handover', 'booking', 'my_booking'];
 
     public const FIELDS = ['name', 'phone', 'preferred_time', 'interest', 'note'];
 
@@ -112,7 +112,7 @@ class FlowValidator
             }
 
             $text = $node['text'] ?? [];
-            if (trim((string) ($text[$default] ?? '')) === '' && $type !== 'handover') {
+            if (trim((string) ($text[$default] ?? '')) === '' && ! in_array($type, ['handover', 'booking', 'my_booking'], true)) {
                 $errors[] = $where.': add the message text in '.strtoupper($default).'.';
             }
             foreach ($languages as $code) {

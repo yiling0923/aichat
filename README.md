@@ -3,9 +3,11 @@
 A guided menu bot, staff inbox and booking assistant for WhatsApp, Instagram, Messenger and website chat.
 Built with PHP and Laravel, runs on XAMPP on your own computer. See `docs/` for the plan (PDF) and the page layouts (PDF).
 
-**Where we are: step 1 (guided menu bot).** A customer opens the test chat, picks a language, taps buttons
+**Where we are: step 2 (booking).** A customer opens the test chat, picks a language, taps buttons
 (prices, hours, location, promotions, book an appointment, talk to staff) and the bot answers. Booking requests are saved
 as customers. Staff answer handed-over chats in the inbox. The owner edits the menu in the **Menu builder**. No AI is used yet.
+Step 2 adds real booking: the customer taps a service, a day and a time, gives a name and phone, and the booking is saved
+(and put on the practitioner's Google Calendar if you connect one). Customers can view and cancel their booking in the chat.
 
 ## What you need on Windows
 
@@ -66,6 +68,35 @@ as customers. Staff answer handed-over chats in the inbox. The owner edits the m
 
 Typed words that always work: `menu` (back to the main menu), `human` or `staff` (talk to a person), `stop` (no promotional messages).
 
+### Booking (step 2)
+
+1. Sign in as owner and open **Booking setup**. The sample has 5 services and 2 practitioners. Set opening hours and rules there
+   (gap after each appointment, how early or far ahead people can book, how late they can cancel).
+2. In the test chat tap **Book an appointment**, choose a service, a day, a time, then type a name and phone number.
+3. Open **Schedule**: the booking is there. Book the same time again: it goes to the second practitioner, then that time disappears.
+4. In the chat tap **My booking** to see it or cancel it. Cancelling inside the cancellation window (24 hours by default) is passed to staff.
+5. Reminders: 24 hours and 2 hours before the visit the customer gets a message in the chat and n8n gets a `booking.reminder` event.
+   They are sent by the same Task Scheduler job as below (`php artisan aichat:send-reminders` runs it by hand).
+
+**Already ran step 1?** Your published menu is the old one. In **Menu builder** press **Reset to sample**, then **Publish**,
+to get the new booking steps.
+
+#### Connect Google Calendar (optional, free)
+
+Without this, bookings still work and double bookings are still blocked, using the app's own calendar.
+With it, the app also avoids times already busy in Google Calendar and adds each booking as an event.
+
+1. Go to https://console.cloud.google.com, create a project, and enable **Google Calendar API** (APIs & Services > Library).
+2. APIs & Services > Credentials > **Create credentials > Service account**. Open it, **Keys > Add key > JSON**. Save the file as
+   `C:\xampp\htdocs\aichat\storage\google.json`. Keep it private; it is ignored by Git.
+3. Copy the service account's email (looks like `name@project.iam.gserviceaccount.com`).
+4. In Google Calendar, open the practitioner's calendar > Settings and sharing > **Share with specific people** > add that email with
+   **Make changes to events**. Copy the **Calendar ID** from the same page.
+5. In `.env` set `GOOGLE_SERVICE_ACCOUNT_JSON=C:\xampp\htdocs\aichat\storage\google.json`, run `php artisan config:clear`.
+6. In **Booking setup** paste the Calendar ID next to that practitioner and save. The page now says "connected".
+
+If Google cannot be reached when a customer books, the bot tells them and hands the chat to staff instead of guessing.
+
 ### Staff reminders (Windows Task Scheduler)
 
 When a chat is handed over and nobody replies, the app escalates after 5, 10, 20 and 30 minutes (a "thanks for waiting" message to the
@@ -91,7 +122,7 @@ php artisan test
 ```
 
 The tests use a temporary in-memory database, so they never touch your real data.
-They check the menu bot (every button of the sample menu, English and Chinese), lead capture, handover and timeouts, the menu builder,
+They check the menu bot (every button of the sample menu, English and Chinese), booking (slots, buffers, double booking, Google Calendar with a fake Google, cancel, reminders), lead capture, handover and timeouts, the menu builder,
 the staff inbox, n8n events, and that one business can never see another business's data.
 
 ## n8n (optional)
@@ -114,7 +145,8 @@ See `n8n/README.md`. The app works without it.
 
 | Folder | What is inside |
 |---|---|
-| `app/Bot` | The menu bot: engine, sample menu, validator, business hours |
+| `app/Bot` | The menu bot: engine, sample menu, validator, business hours, booking steps |
+| `app/Booking` | Free times, saving and cancelling bookings, Google Calendar |
 | `app/Console` | The handover reminder command |
 | `app/Models` | Business, Customer, Conversation, Message. Every business-owned model is limited to the current business |
 | `app/Http` | Controllers (chat, inbox, login) and middleware |
@@ -127,4 +159,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 2: booking with Google Calendar (one calendar per practitioner, free slots, confirmations and reminders).
+Step 3: the business admin panel (today view, tags, tasks, replies library, settings, reports).

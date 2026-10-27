@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Business;
+use App\Models\Practitioner;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -38,5 +40,25 @@ class DatabaseSeeder extends Seeder
             ['email' => 'staff@example.com'],
             ['name' => 'Amy Tan', 'password' => 'password', 'business_id' => $business->id, 'role' => 'staff'],
         );
+
+        if (Service::query()->withoutGlobalScopes()->where('business_id', $business->id)->doesntExist()) {
+            app(\App\Support\CurrentBusiness::class)->runAs($business, function () {
+                $practitioners = [
+                    Practitioner::create(['name' => 'Dr. Mei Ling']),
+                    Practitioner::create(['name' => 'Amy (therapist)']),
+                ];
+
+                foreach ([
+                    [['en' => 'Hydrating Facial', 'zh' => '补水护理'], 60, 188],
+                    [['en' => 'Pigmentation Laser', 'zh' => '色斑激光'], 45, 450],
+                    [['en' => 'HIFU Skin Tightening', 'zh' => 'HIFU 紧致'], 90, 980],
+                    [['en' => 'Acne Treatment', 'zh' => '祛痘护理'], 60, 220],
+                    [['en' => 'Consultation', 'zh' => '咨询'], 30, 0],
+                ] as $i => [$name, $minutes, $price]) {
+                    $service = Service::create(['name' => $name, 'duration_min' => $minutes, 'price' => $price, 'sort' => $i]);
+                    $service->practitioners()->sync(array_map(fn ($p) => $p->id, $practitioners));
+                }
+            });
+        }
     }
 }

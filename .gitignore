@@ -30,3 +30,4 @@ Thumbs.db
 # Composer downloaded into the project folder (Windows, no installer)
 /composer.phar
 /composer-setup.php
+/storage/google.json

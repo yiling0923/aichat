@@ -17,7 +17,7 @@ class MenuBot
 {
     private const MAX_CHAIN = 12;
 
-    public function __construct(private LeadService $leads, private HandoverService $handovers) {}
+    public function __construct(private LeadService $leads, private HandoverService $handovers, private BookingStep $booking) {}
 
     /**
      * @return list<\App\Models\Message>
@@ -74,6 +74,22 @@ class MenuBot
             }
 
             return $this->enter($conversation, $flow, $state, (string) ($option['goto'] ?? $flow->mainNodeId()), $out);
+        }
+
+        if ($state['awaiting'] === 'booking') {
+            $result = $this->booking->handle($conversation, $state, $text, $optionId, $conversation->language ?? $language);
+
+            return $this->afterBooking($conversation, $flow, $state, $node, $out, $result, $language);
+        }
+
+        if ($state['awaiting'] === 'my_booking') {
+            $result = $this->booking->handleSummary($conversation, $text, $optionId, $conversation->language ?? $language);
+
+            if ($result['status'] === 'retry') {
+                return $this->finish($conversation, $state, array_merge($out, $result['out']));
+            }
+
+            return $this->afterBooking($conversation, $flow, $state, $node, $out, $result, $language);
         }
 
         if ($state['awaiting'] === 'ask') {
@@ -136,6 +152,29 @@ class MenuBot
                 $state['awaiting'] = 'options';
 
                 return $this->finish($conversation, $state, $out);
+            }
+
+            if ($type === 'booking') {
+                $state['data'] = array_merge($state['data'], ['name' => $state['data']['name'] ?? $conversation->customer?->name, 'phone' => $state['data']['phone'] ?? $conversation->customer?->phone]);
+                $result = $this->booking->begin($conversation, $state, $language);
+                $state['awaiting'] = 'booking';
+
+                return $this->afterBooking($conversation, $flow, $state, $node, $out, $result, $language);
+            }
+
+            if ($type === 'my_booking') {
+                $result = $this->booking->summary($conversation, $language);
+
+                if ($result === null) {
+                    $out[] = $conversation->addMessage('out', 'bot', Strings::get('booking_none_upcoming', $language));
+                    $nodeId = (string) ($node['goto'] ?? $flow->mainNodeId());
+
+                    continue;
+                }
+
+                $state['awaiting'] = 'my_booking';
+
+                return $this->finish($conversation, $state, array_merge($out, $result['out']));
             }
 
             if ($type === 'ask') {
@@ -204,17 +243,23 @@ class MenuBot
             }
         }
 
+        // The option whose matching keyword is longest wins ("cancel booking" beats "booking").
+        // A tie between different options means we cannot tell, so we ask again.
+        $best = 0;
         $found = [];
         foreach ($options as $o) {
+            $score = 0;
             foreach ((array) ($o['keywords'] ?? []) as $keyword) {
                 if (Text::containsKeyword($normalized, (string) $keyword)) {
-                    $found[] = $o;
-                    break;
+                    $score = max($score, mb_strlen(Text::normalize((string) $keyword)));
                 }
+            }
+            if ($score > 0 && $score >= $best) {
+                $found = $score > $best ? [$o] : array_merge($found, [$o]);
+                $best = $score;
             }
         }
 
-        // Only act on a keyword when it points to exactly one option.
         return count($found) === 1 ? $found[0] : null;
     }
 
@@ -268,6 +313,37 @@ class MenuBot
         $this->handovers->start($conversation, $reason, $state['data'] ?? []);
 
         return $out;
+    }
+
+    /**
+     * Carry on after a booking step: keep waiting, move to the next menu step, or hand over.
+     *
+     * @param  array<string, mixed>  $state
+     * @param  array<string, mixed>  $node
+     * @param  list<\App\Models\Message>  $out
+     * @param  array{out: list<\App\Models\Message>, status: string, reason: ?string}  $result
+     * @return list<\App\Models\Message>
+     */
+    private function afterBooking(Conversation $conversation, Flow $flow, array $state, array $node, array $out, array $result, string $language): array
+    {
+        $out = array_merge($out, $result['out']);
+        $language = $conversation->language ?? $language;
+
+        if ($result['status'] === 'handover') {
+            // The booking step already explained when it had something to say.
+            return $this->handover($conversation, $state, $out, (string) $result['reason'], $language, $result['out'] === [] ? 'handover' : null);
+        }
+
+        if ($result['status'] === 'done') {
+            $state['awaiting'] = null;
+            unset($state['booking']);
+
+            return $this->enter($conversation, $flow, $state, (string) ($node['goto'] ?? $flow->mainNodeId()), $out);
+        }
+
+        $state['awaiting'] = $state['awaiting'] === 'my_booking' ? 'my_booking' : 'booking';
+
+        return $this->finish($conversation, $state, $out);
     }
 
     private function optOut(Conversation $conversation): void

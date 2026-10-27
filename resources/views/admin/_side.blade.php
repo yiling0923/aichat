@@ -5,11 +5,12 @@
     </div>
     <div class="sec">Work</div>
     <a @class(['on' => $active === 'inbox']) href="{{ route('inbox') }}">Inbox</a>
-    <a class="soon">Schedule (coming)</a>
+    <a @class(['on' => $active === 'schedule']) href="{{ route('schedule') }}">Schedule</a>
     <a @class(['on' => $active === 'customers']) href="{{ route('customers') }}">Customers</a>
     @if (auth()->user()->role === 'owner')
         <div class="sec">Set up</div>
         <a @class(['on' => $active === 'menu']) href="{{ route('menu') }}">Menu builder</a>
+        <a @class(['on' => $active === 'setup']) href="{{ route('booking.setup') }}">Booking setup</a>
     @endif
     <a class="soon">Settings (coming)</a>
     <div class="me">

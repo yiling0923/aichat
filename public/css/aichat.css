@@ -99,7 +99,7 @@ select.small { padding: 5px 8px; border: 1px solid var(--line); border-radius: 8
 .page .mute { color: var(--mute); font-size: 13px; margin: 4px 0 14px; }
 .bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 .bar.spread { justify-content: space-between; align-items: flex-start; }
-.bar input[type=search], .f input[type=text], .f textarea, .f select, .preview input, .opt select { border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px; font: inherit; font-size: 13px; background: #fff; width: 100%; }
+.bar input[type=search], .f input:not([type=checkbox]):not([type=hidden]), .f textarea, .f select, .preview input, .opt select { border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px; font: inherit; font-size: 13px; background: #fff; width: 100%; }
 .bar input[type=search] { width: 300px; max-width: 100%; }
 .btn.small { padding: 3px 10px; font-size: 12px; }
 .table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 13px; }
@@ -128,3 +128,16 @@ select.small { padding: 5px 8px; border: 1px solid var(--line); border-radius: 8
 .opt { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #fbfdfd; }
 .small-note { font-size: 11.5px; padding: 0 10px 8px; }
 @media (max-width: 1100px) { .builder { grid-template-columns: 1fr; } }
+
+/* Booking pages */
+.card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.card.row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.card.row .f { min-width: 130px; flex: 1; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 12px 0; }
+.page h2 { font-size: 16px; margin: 22px 0 8px; }
+.small-table { max-width: 420px; }
+.small-table input { border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+.note.ok { background: var(--teal-l); color: var(--teal-d); }
+.actions { display: flex; gap: 6px; }
+.actions form { margin: 0; }
+label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 400; color: var(--ink); margin-right: 8px; }

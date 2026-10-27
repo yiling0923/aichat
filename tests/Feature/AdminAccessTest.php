@@ -45,4 +45,25 @@ class AdminAccessTest extends TestCase
         $this->actingAs($user)->post('/logout')->assertRedirect(route('login'));
         $this->assertGuest();
     }
+
+    public function test_chat_traffic_does_not_use_up_the_login_limit(): void
+    {
+        $business = Business::factory()->create(['slug' => 'demo']);
+        User::factory()->create(['email' => 'amy@example.com', 'business_id' => $business->id]);
+
+        for ($i = 0; $i < 12; $i++) {
+            $this->postJson(route('chat.send', 'demo'), ['text' => 'hi']);
+        }
+
+        $this->post('/login', ['email' => 'amy@example.com', 'password' => 'password'])->assertRedirect(route('inbox'));
+    }
+
+    public function test_repeated_wrong_logins_are_limited(): void
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $this->post('/login', ['email' => 'amy@example.com', 'password' => 'wrong']);
+        }
+
+        $this->post('/login', ['email' => 'amy@example.com', 'password' => 'wrong'])->assertStatus(429);
+    }
 }

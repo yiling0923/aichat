@@ -81,41 +81,6 @@ class MenuBotTest extends TestCase
         $this->assertStringContainsString('Mon to Fri', $r->json('messages.1.text'));
     }
 
-    public function test_booking_captures_a_lead(): void
-    {
-        $token = $this->say('hi')->json('token');
-        $this->say('x', $token, 'lang_en');
-        $this->say('x', $token, 'book');
-        $this->say('x', $token, 'laser');
-        $this->say('Amy Tan', $token);
-        $r = $this->say('012-345 6789', $token);
-        $this->assertStringContainsString('When would you like', $this->last($r)[0]);
-        $r = $this->say('Saturday afternoon', $token);
-        $this->assertStringContainsString('Amy Tan', $r->json('messages.1.text'));
-
-        $this->inBusiness(function () {
-            $c = Customer::query()->first();
-            $this->assertSame('Amy Tan', $c->name);
-            $this->assertSame('0123456789', $c->phone);
-            $this->assertSame('Pigmentation Laser', $c->interest);
-            $this->assertSame('warm', $c->score);
-            $this->assertNotNull($c->consented_at);
-            $this->assertSame($c->id, Conversation::query()->first()->customer_id);
-        });
-    }
-
-    public function test_invalid_phone_is_asked_again(): void
-    {
-        $token = $this->say('hi')->json('token');
-        $this->say('x', $token, 'lang_en');
-        $this->say('x', $token, 'book');
-        $this->say('x', $token, 'facial');
-        $this->say('Amy', $token);
-        $r = $this->say('abc', $token);
-        $this->assertStringContainsString('phone number does not look right', $this->last($r)[0]);
-        $this->assertSame('bot', $r->json('mode'));
-    }
-
     public function test_staff_option_and_keyword_hand_over(): void
     {
         $token = $this->say('hi')->json('token');
@@ -143,7 +108,7 @@ class MenuBotTest extends TestCase
     {
         $token = $this->say('hi')->json('token');
         $this->say('x', $token, 'lang_en');
-        $this->say('x', $token, 'book');
+        $this->say('x', $token, 'hours');
         [$text] = $this->last($this->say('menu', $token));
         $this->assertStringContainsString('How can I help', $text);
     }
@@ -170,9 +135,6 @@ class MenuBotTest extends TestCase
             foreach ($node['options'] ?? [] as $o) {
                 $token = $this->say('hi')->json('token');
                 $this->say('x', $token, 'lang_en');
-                if ($id !== 'main' && $id !== 'language') {
-                    $this->say('x', $token, 'book');
-                }
                 $r = $this->say('x', $token, $o['id']);
                 $r->assertOk();
                 $this->assertNotEmpty($r->json('messages'), "option {$o['id']} produced no reply");

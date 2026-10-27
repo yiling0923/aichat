@@ -12,6 +12,9 @@ Events sent so far (each is a JSON body `{event, data, sent_at}`):
 | `handover.reminder` | 10 min with no staff reply |
 | `handover.reassign` | 20 min with no staff reply |
 | `handover.owner_alert` | 30 min with no staff reply |
+| `booking.created` | A customer booked (service, practitioner, `starts_at`, customer name and phone) |
+| `booking.cancelled` | A booking was cancelled by the customer or by staff (`cancelled_by`) |
+| `booking.reminder` | 24 h or 2 h before a visit (`hours_before`). The chat already got a reminder message; use this to also send a WhatsApp template or email |
 
 The starter workflow just records them. Add your own steps, for example a WhatsApp or email alert to staff on `handover.requested`.
 

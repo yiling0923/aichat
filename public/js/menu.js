@@ -7,7 +7,7 @@
   var meta = { languages: ['en', 'zh'], fields: [], types: [] };
   var selected = null;
   var LANG = { en: 'English', zh: '中文' };
-  var TYPE = { options: 'Question with buttons', message: 'Message', ask: 'Ask for details', save_lead: 'Save as lead', handover: 'Hand over to staff' };
+  var TYPE = { options: 'Question with buttons', message: 'Message', ask: 'Ask for details', save_lead: 'Save as lead', handover: 'Hand over to staff', booking: 'Booking (service, day, time)', my_booking: 'My booking (view or cancel)' };
   var FIELD = { name: 'Name', phone: 'Phone', preferred_time: 'Preferred time', interest: 'Interest', note: 'Note' };
 
   function api(path, method, body) {
@@ -106,6 +106,9 @@
       r.value = n.reason || '';
       r.addEventListener('input', function () { n.reason = r.value; });
       box.appendChild(field('Reason shown to staff', r));
+    }
+    if (n.type === 'booking' || n.type === 'my_booking') {
+      box.appendChild(el('p', { class: 'mute small-note', text: 'Services, days and times come from Booking setup. No text is needed here.' }));
     }
     if (n.type !== 'options' && n.type !== 'handover') {
       box.appendChild(field('Then go to', select(stepOptions(), n.goto, null, function (v) { if (v) { n.goto = v; } else { delete n.goto; } }, n.type === 'ask' ? 'Choose...' : 'Main menu')));

@@ -35,6 +35,12 @@ return [
         'secret' => env('N8N_SECRET'),
     ],
 
+    'google_calendar' => [
+        // Path to the service account JSON key. Leave empty to run with the built-in
+        // calendar only (bookings are still saved and double bookings still blocked).
+        'credentials' => env('GOOGLE_SERVICE_ACCOUNT_JSON'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
