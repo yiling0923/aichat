@@ -257,7 +257,7 @@ class AdminPanelTest extends TestCase
         $this->assertSame('New Name', $b->name);
         $this->assertSame('#336699', $b->settings['accent']);
         $this->actingAs($this->owner)->get('/admin/settings')->assertSee('New Name');
-        $this->actingAs($this->owner)->get('/admin/today')->assertSee('--teal: #336699', false);
+        $this->actingAs($this->owner)->get('/admin/today')->assertSee('--accent: #336699', false);
 
         $this->actingAs($this->owner)->post('/admin/settings/profile', ['name' => 'X', 'timezone' => 'Asia/Singapore', 'accent' => 'red;}</style>'])->assertSessionHasErrors('accent');
 

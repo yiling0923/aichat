@@ -17,8 +17,9 @@
         @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
 
         <h2>Opening hours and rules</h2>
-        <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card">
+        <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split">
             @csrf
+            <div>
             <table class="table small-table">
                 <thead><tr><th>Day</th><th>Opens</th><th>Closes</th></tr></thead>
                 @foreach ($days as $d)
@@ -30,6 +31,8 @@
                 @endforeach
             </table>
             <p class="mute small-note">Leave a day empty to close it.</p>
+            </div>
+            <div>
             <div class="grid2">
                 <label class="f"><span>Closed dates (YYYY-MM-DD, comma separated)</span><input type="text" name="closed_dates" value="{{ old('closed_dates', $closedDates) }}"></label>
                 <label class="f"><span>Offer a start time every (minutes)</span><input type="number" name="slot_step_min" value="{{ $rules['slot_step_min'] }}"></label>
@@ -39,6 +42,7 @@
                 <label class="f"><span>Customers may cancel until (hours before)</span><input type="number" name="cancel_hours" value="{{ $rules['cancel_hours'] }}"></label>
             </div>
             <button class="btn primary" type="submit">Save hours and rules</button>
+            </div>
         </form>
 
         <h2>Practitioners</h2>

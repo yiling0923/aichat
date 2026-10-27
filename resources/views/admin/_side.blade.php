@@ -4,7 +4,7 @@
     $isOwner = auth()->user()->role === 'owner';
 @endphp
 @if ($accent && preg_match('/^#[0-9a-fA-F]{6}$/', $accent))
-    <style>:root { --teal: {{ $accent }}; }</style>
+    <style>:root { --accent: {{ $accent }}; }</style>
 @endif
 <aside class="side">
     <div class="ws">
@@ -12,22 +12,22 @@
         <div><b>{{ $business->name }}</b><small>Staff area</small></div>
     </div>
     <div class="sec">Work</div>
-    <a @class(['on' => $active === 'today']) href="{{ route('today') }}">Today</a>
-    <a @class(['on' => $active === 'inbox']) href="{{ route('inbox') }}">Inbox @if ($waiting)<span class="badge">{{ $waiting }}</span>@endif</a>
-    <a @class(['on' => $active === 'conversations']) href="{{ route('conversations') }}">All conversations</a>
-    <a @class(['on' => $active === 'schedule']) href="{{ route('schedule') }}">Schedule</a>
-    <a @class(['on' => $active === 'tasks']) href="{{ route('tasks') }}">Tasks</a>
+    <a @class(['on' => $active === 'today']) href="{{ route('today') }}"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Today</a>
+    <a @class(['on' => $active === 'inbox']) href="{{ route('inbox') }}"><svg viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v7H2v-7z"/></svg>Inbox @if ($waiting)<span class="badge">{{ $waiting }}</span>@endif</a>
+    <a @class(['on' => $active === 'conversations']) href="{{ route('conversations') }}"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>All conversations</a>
+    <a @class(['on' => $active === 'schedule']) href="{{ route('schedule') }}"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Schedule</a>
+    <a @class(['on' => $active === 'tasks']) href="{{ route('tasks') }}"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Tasks</a>
     <div class="sec">People</div>
-    <a @class(['on' => $active === 'customers']) href="{{ route('customers') }}">Customers</a>
+    <a @class(['on' => $active === 'customers']) href="{{ route('customers') }}"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>Customers</a>
     @if (auth()->user()->canManage())
-        <a @class(['on' => $active === 'tags']) href="{{ route('tags') }}">Tags</a>
+        <a @class(['on' => $active === 'tags']) href="{{ route('tags') }}"><svg viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>Tags</a>
     @endif
     <div class="sec">Set up</div>
-    <a @class(['on' => $active === 'library']) href="{{ route('library') }}">Library</a>
+    <a @class(['on' => $active === 'library']) href="{{ route('library') }}"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>Library</a>
     @if ($isOwner)
-        <a @class(['on' => $active === 'menu']) href="{{ route('menu') }}">Menu builder</a>
-        <a @class(['on' => $active === 'setup']) href="{{ route('booking.setup') }}">Booking setup</a>
-        <a @class(['on' => $active === 'settings']) href="{{ route('settings') }}">Settings</a>
+        <a @class(['on' => $active === 'menu']) href="{{ route('menu') }}"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Menu builder</a>
+        <a @class(['on' => $active === 'setup']) href="{{ route('booking.setup') }}"><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Booking setup</a>
+        <a @class(['on' => $active === 'settings']) href="{{ route('settings') }}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
     @endif
     <div class="me">
         {{ auth()->user()->name }}<br><span style="opacity:.7">{{ auth()->user()->role }}</span>

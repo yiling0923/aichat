@@ -25,7 +25,7 @@ class MenuBot
     public function respond(Conversation $conversation, Flow $flow, string $text, ?string $optionId = null): array
     {
         $state = $conversation->state ?? [];
-        $state += ['node' => null, 'awaiting' => null, 'data' => [], 'misses' => 0];
+        $state += ['node' => null, 'awaiting' => null, 'data' => [], 'misses' => 0, 'history' => []];
         $out = [];
         $language = $conversation->language ?? $flow->defaultLanguage();
         $normalized = Text::normalize($text);
@@ -43,11 +43,19 @@ class MenuBot
 
         if ($optionId === null && Text::isCommand($normalized, config('aichat.keywords.menu')) && $state['node'] !== null) {
             $state['misses'] = 0;
+            $state['history'] = [];
 
             return $this->enter($conversation, $flow, $state, $conversation->language ? $flow->mainNodeId() : $flow->start(), $out);
         }
 
         $node = $state['node'] !== null ? $flow->node($state['node']) : null;
+
+        $typedBack = $optionId === null && in_array($state['awaiting'], ['options', 'my_booking'], true)
+            && Text::isCommand($normalized, config('aichat.keywords.back'));
+
+        if ($node !== null && ($optionId === '__back' || $typedBack)) {
+            return $this->goBack($conversation, $flow, $state, $out);
+        }
 
         if ($node === null) {
             return $this->enter($conversation, $flow, $state, $flow->start(), $out);
@@ -72,6 +80,9 @@ class MenuBot
             if (($option['action'] ?? '') === 'handover') {
                 return $this->handover($conversation, $state, $out, (string) ($option['reason'] ?? 'Customer chose staff'), $conversation->language ?? $language);
             }
+
+            $state['history'][] = $state['node'];
+            $state['history'] = array_slice($state['history'], -10);
 
             return $this->enter($conversation, $flow, $state, (string) ($option['goto'] ?? $flow->mainNodeId()), $out);
         }
@@ -144,11 +155,11 @@ class MenuBot
             }
 
             if ($type === 'options') {
-                $options = array_map(fn (array $o) => [
-                    'id' => (string) ($o['id'] ?? ''),
-                    'label' => $flow->localize($o['label'] ?? [], $language),
-                ], array_values($node['options'] ?? []));
-                $out[] = $conversation->addMessage('out', 'bot', $text, ['options' => $options]);
+                // Coming back to the step we left (for example after a message) should not offer Back to itself.
+                while (! empty($state['history']) && end($state['history']) === $nodeId) {
+                    array_pop($state['history']);
+                }
+                $out[] = $conversation->addMessage('out', 'bot', $text, ['options' => $this->optionList($flow, $node, $language, $state)]);
                 $state['awaiting'] = 'options';
 
                 return $this->finish($conversation, $state, $out);
@@ -280,10 +291,7 @@ class MenuBot
 
         if ($resend) {
             $node = $flow->node((string) $state['node']);
-            $options = array_map(fn (array $o) => [
-                'id' => (string) ($o['id'] ?? ''),
-                'label' => $flow->localize($o['label'] ?? [], $language),
-            ], array_values($node['options'] ?? []));
+            $options = $this->optionList($flow, $node, $language, $state);
             $text = Text::fill($flow->localize($node['text'] ?? [], $language), $this->placeholders($conversation, $state));
             $out[] = $conversation->addMessage('out', 'bot', $text, ['options' => $options]);
         }
@@ -334,6 +342,10 @@ class MenuBot
             return $this->handover($conversation, $state, $out, (string) $result['reason'], $language, $result['out'] === [] ? 'handover' : null);
         }
 
+        if ($result['status'] === 'back') {
+            return $this->goBack($conversation, $flow, $state, $out);
+        }
+
         if ($result['status'] === 'done') {
             $state['awaiting'] = null;
             unset($state['booking']);
@@ -344,6 +356,49 @@ class MenuBot
         $state['awaiting'] = $state['awaiting'] === 'my_booking' ? 'my_booking' : 'booking';
 
         return $this->finish($conversation, $state, $out);
+    }
+
+    /**
+     * The buttons of a step, with an automatic Back button once the customer has moved on from another step.
+     *
+     * @param  array<string, mixed>  $node
+     * @param  array<string, mixed>  $state
+     * @return list<array{id: string, label: string}>
+     */
+    private function optionList(Flow $flow, array $node, string $language, array $state): array
+    {
+        $options = array_map(fn (array $o) => [
+            'id' => (string) ($o['id'] ?? ''),
+            'label' => $flow->localize($o['label'] ?? [], $language),
+        ], array_values($node['options'] ?? []));
+
+        if (! empty($state['history'])) {
+            $options[] = ['id' => '__back', 'label' => '← '.Strings::get('opt_back', $language)];
+        }
+
+        return $options;
+    }
+
+    /**
+     * Go to the step the customer came from (the main menu when there is none).
+     *
+     * @param  array<string, mixed>  $state
+     * @param  list<\App\Models\Message>  $out
+     * @return list<\App\Models\Message>
+     */
+    private function goBack(Conversation $conversation, Flow $flow, array $state, array $out): array
+    {
+        $state['misses'] = 0;
+        $state['awaiting'] = null;
+        unset($state['booking']);
+        $target = array_pop($state['history']) ?? $flow->mainNodeId();
+
+        // Back to the very first question (language): forget the language so they can choose again.
+        if ($target === $flow->start() && $conversation->language !== null) {
+            $conversation->forceFill(['language' => null])->save();
+        }
+
+        return $this->enter($conversation, $flow, $state, $flow->hasNode($target) ? $target : $flow->mainNodeId(), $out);
     }
 
     private function optOut(Conversation $conversation): void

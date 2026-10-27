@@ -7,7 +7,7 @@ return [
     // WhatsApp shows at most 10 rows in a list message and 3 reply buttons.
     // Titles: 24 characters in a list row, 20 on a button.
     'limits' => [
-        'options_per_node' => 10,
+        'options_per_node' => 9, // one slot is kept for the automatic Back button
         'label_list' => 24,
         'label_button' => 20,
         'text' => 1024,
@@ -15,7 +15,8 @@ return [
 
     // Typed words the bot understands in any step (lower case, compared after cleaning).
     'keywords' => [
-        'menu' => ['menu', 'main menu', 'start', 'start over', '0', '菜单', '主菜单', '返回'],
+        'menu' => ['menu', 'main menu', 'start', 'start over', '0', '菜单', '主菜单'],
+        'back' => ['back', 'go back', 'previous', '上一步', '返回'],
         'human' => ['human', 'agent', 'staff', 'person', 'real person', 'talk to staff', 'customer service', '真人', '人工', '客服', '转人工'],
         'opt_out' => ['stop', 'unsubscribe', 'opt out', '退订', '取消订阅', '不要再发'],
     ],

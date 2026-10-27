@@ -142,4 +142,50 @@ class MenuBotTest extends TestCase
         }
         $this->assertSame(1, app(FlowRepository::class)->published($this->business)->mainNodeId() === 'main' ? 1 : 0);
     }
+
+    public function test_first_menu_has_no_back_button_and_later_menus_do(): void
+    {
+        $r = $this->say('hi');
+        $token = $r->json('token');
+        $this->assertNotContains('__back', array_column($this->last($r)[1]['options'], 'id'));
+
+        $r = $this->say('x', $token, 'lang_en');
+        $this->assertSame('__back', array_slice(array_column($this->last($r)[1]['options'], 'id'), -1)[0]);
+    }
+
+    public function test_back_returns_to_the_previous_step_so_a_wrong_tap_can_be_undone(): void
+    {
+        $token = $this->say('hi')->json('token');
+        $r = $this->say('x', $token, 'lang_zh');           // wrong language
+        $this->assertStringContainsString('请问需要什么帮助', $this->last($r)[0]);
+
+        $r = $this->say('x', $token, '__back');             // back to the language question
+        $this->assertStringContainsString('choose your language', $this->last($r)[0]);
+
+        $r = $this->say('x', $token, 'lang_en');
+        $this->assertStringContainsString('How can I help', $this->last($r)[0]);
+    }
+
+    public function test_typed_back_works_and_back_after_a_message_does_not_loop(): void
+    {
+        $token = $this->say('hi')->json('token');
+        $this->say('x', $token, 'lang_en');
+        $this->say('x', $token, 'prices');                  // shows prices, then the menu again
+        [$text, $m] = $this->last($this->say('x', $token, 'hours'));
+        $ids = array_column($m['options'], 'id');
+        $this->assertContains('__back', $ids);
+
+        $r = $this->say('back', $token);                    // typed
+        $this->assertStringContainsString('choose your language', $this->last($r)[0]);
+    }
+
+    public function test_back_with_no_history_shows_the_main_menu_and_the_back_button_is_listed_once(): void
+    {
+        $token = $this->say('hi')->json('token');
+        $this->say('x', $token, 'lang_en');
+        $r = $this->say('x', $token, '__back');
+        $ids = array_column($this->last($r)[1]['options'], 'id');
+        $this->assertSame(1, count(array_keys($ids, 'lang_en')));
+        $this->assertNotContains('__back', $ids);
+    }
 }

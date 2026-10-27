@@ -10,8 +10,8 @@
 <div class="center-page">
     <div class="card">
         <div class="brand-row"><span class="logo">A</span> AI Messaging Sales Assistant</div>
-        <h1 style="font-size:22px;margin-bottom:6px">It works on your computer</h1>
-        <p class="mute" style="margin-bottom:14px">Step 0 of the build: the test chat and the staff inbox. The menu bot comes next.</p>
+        <h1>Welcome</h1>
+        <p class="mute" style="margin-bottom:14px">Try the customer chat, or sign in to the staff area.</p>
 
         <ul class="plain">
             @forelse ($businesses as $business)
@@ -23,7 +23,7 @@
                 <li class="mute">No business yet. Run <code>php artisan migrate --seed</code>.</li>
             @endforelse
             <li>
-                <span><b>Staff inbox</b><br><span class="mute">owner@example.com / password (sample login)</span></span>
+                <span><b>Staff area</b><br><span class="mute">owner@example.com / password (sample login)</span></span>
                 <a class="btn" href="{{ route('login') }}">Sign in</a>
             </li>
         </ul>

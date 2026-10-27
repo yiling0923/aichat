@@ -495,4 +495,32 @@ class BookingTest extends TestCase
         $this->inBusiness(fn () => $this->assertSame(0, Booking::query()->count()));
         $this->inBusiness(fn () => $this->assertSame(0, Customer::query()->count()));
     }
+
+    public function test_back_buttons_work_through_the_whole_booking(): void
+    {
+        [$token, $r] = $this->toDays();
+        $this->assertContains('back', $this->optionIds($r));                       // day picker has Back
+
+        $r = $this->say('demo', 'x', $token, 'day_2026-11-03');
+        $this->assertContains('back', $this->optionIds($r));                       // time picker has Back
+        $r = $this->say('demo', 'x', $token, 'back');
+        $this->assertStringContainsString('Which day', $this->lastBot($r)['text']);
+
+        $r = $this->say('demo', 'x', $token, 'back');
+        $this->assertStringContainsString('Which service', $this->lastBot($r)['text']);
+
+        $r = $this->say('demo', 'x', $token, 'back');                              // leaves booking, back to the main menu
+        $this->assertStringContainsString('How can I help', $this->lastBot($r)['text']);
+    }
+
+    public function test_typing_back_while_giving_a_name_returns_to_the_times(): void
+    {
+        [$token] = $this->toDays();
+        $this->say('demo', 'x', $token, 'day_2026-11-03');
+        $this->say('demo', 'x', $token, 'slot_10:00');
+        $r = $this->say('demo', 'back', $token);
+
+        $this->assertStringContainsString('What time', $this->lastBot($r)['text']);
+        $this->inBusiness(fn () => $this->assertSame(0, Booking::query()->count()));
+    }
 }

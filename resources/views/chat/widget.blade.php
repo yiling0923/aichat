@@ -6,7 +6,7 @@
     <title>{{ $business->name }}: test chat</title>
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
 </head>
-<body>
+<body class="chat-body">
 <div class="chat-wrap" id="chat"
      data-slug="{{ $business->slug }}"
      data-send-url="{{ route('chat.send', $business->slug) }}"

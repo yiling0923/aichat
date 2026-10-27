@@ -78,7 +78,7 @@ class BookingStep
                 }
                 $options = $services->map(fn (Service $s) => ['id' => 'svc_'.$s->id, 'label' => $s->label($language)])->all();
 
-                return $this->ask($c, 'booking_pick_service', $options, $language, back: false);
+                return $this->ask($c, 'booking_pick_service', $options, $language);
             }
 
             $service = Service::query()->find($b['service_id'] ?? 0);
@@ -136,6 +136,10 @@ class BookingStep
     private function choose(Conversation $c, array &$state, array $b, string $text, ?string $optionId, string $language): array
     {
         $id = $optionId ?? $this->matchTyped($c, $state, $b, $text, $language);
+
+        if ($id === 'back' && $b['stage'] === 'service') {
+            return $this->result([], 'back');
+        }
 
         if ($id === 'back') {
             $state['booking']['stage'] = $b['stage'] === 'time' ? 'day' : 'service';
@@ -207,6 +211,10 @@ class BookingStep
 
     private function name(Conversation $c, array &$state, array $b, string $text, string $language): array
     {
+        if ($this->typedBack($text)) {
+            return $this->backToTime($c, $state, $language);
+        }
+
         $name = trim($text);
         if ($name === '') {
             return $this->merge([$c->addMessage('out', 'bot', Strings::get('sorry_ask', $language))], $this->prompt($c, $state, $language));
@@ -225,6 +233,10 @@ class BookingStep
 
     private function phone(Conversation $c, array &$state, array $b, string $text, string $language): array
     {
+        if ($this->typedBack($text)) {
+            return $this->backToTime($c, $state, $language);
+        }
+
         $phone = $this->leads->normalizePhone($text);
         $digits = $phone === null ? 0 : strlen(ltrim($phone, '+'));
 
@@ -241,6 +253,19 @@ class BookingStep
         $state['data']['phone'] = $phone;
 
         return $this->finish($c, $state, $language);
+    }
+
+    private function typedBack(string $text): bool
+    {
+        return Text::isCommand(Text::normalize($text), config('aichat.keywords.back'));
+    }
+
+    private function backToTime(Conversation $c, array &$state, string $language): array
+    {
+        $state['booking']['stage'] = 'time';
+        $state['booking']['page'] = 0;
+
+        return $this->prompt($c, $state, $language);
     }
 
     private function finish(Conversation $c, array &$state, string $language): array
@@ -395,7 +420,7 @@ class BookingStep
     private function ask(Conversation $c, string $key, array $options, string $language, array $values = [], bool $back = true): array
     {
         if ($back) {
-            $options[] = ['id' => 'back', 'label' => Strings::get('opt_back', $language)];
+            $options[] = ['id' => 'back', 'label' => '← '.Strings::get('opt_back', $language)];
         }
 
         return $this->result([$c->addMessage('out', 'bot', Text::fill(Strings::get($key, $language), $values), ['options' => $options])]);

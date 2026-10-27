@@ -33,6 +33,7 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.textContent = o.label || o;
+        if (o.id === '__back' || o.id === 'back') { b.className = 'back'; }
         b.addEventListener('click', function () { send(o.label || o, o.id); });
         row.appendChild(b);
       });
