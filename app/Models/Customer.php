@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToBusiness;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
@@ -19,17 +21,30 @@ class Customer extends Model
         'consented_at',
         'opted_out_at',
         'score',
-        'tags',
         'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'tags' => 'array',
             'details' => 'array',
             'consented_at' => 'datetime',
             'opted_out_at' => 'datetime',
         ];
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
     }
 }

@@ -35,11 +35,17 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/note', [InboxController::class, 'note'])->whereNumber('id');
     Route::post('/api/conversations/{id}/give-back', [InboxController::class, 'giveBack'])->whereNumber('id');
     Route::post('/api/conversations/{id}/resolve', [InboxController::class, 'resolve'])->whereNumber('id');
+    Route::post('/api/conversations/{id}/tag', [InboxController::class, 'tag'])->whereNumber('id');
+    Route::post('/api/conversations/{id}/assign', [InboxController::class, 'assign'])->whereNumber('id');
+    Route::get('/api/quick-replies', [\App\Http\Controllers\LibraryController::class, 'list']);
 });
 
 // Customers (all staff) and menu builder (owner only).
 Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers');
+    Route::get('/customers/{id}', [\App\Http\Controllers\CustomerController::class, 'show'])->whereNumber('id')->name('customers.show');
+    Route::post('/customers/bulk', [\App\Http\Controllers\CustomerController::class, 'bulk']);
+    Route::post('/customers/{id}', [\App\Http\Controllers\CustomerController::class, 'update'])->whereNumber('id');
 });
 
 Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
@@ -67,4 +73,37 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::post('/booking-setup/services/{id}', [$c, 'updateService'])->whereNumber('id');
     Route::post('/booking-setup/practitioners', [$c, 'storePractitioner']);
     Route::post('/booking-setup/practitioners/{id}', [$c, 'updatePractitioner'])->whereNumber('id');
+});
+
+// Phase 3: Today, all conversations, tasks, library (everyone); tags and library edits (owner or manager); settings (owner).
+Route::middleware('staff')->prefix('admin')->group(function () {
+    Route::get('/today', [\App\Http\Controllers\TodayController::class, 'index'])->name('today');
+    Route::get('/conversations', [\App\Http\Controllers\ConversationsController::class, 'index'])->name('conversations');
+    Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks');
+    Route::post('/tasks', [\App\Http\Controllers\TaskController::class, 'store']);
+    Route::post('/tasks/{id}/toggle', [\App\Http\Controllers\TaskController::class, 'toggle'])->whereNumber('id');
+    Route::post('/tasks/{id}/delete', [\App\Http\Controllers\TaskController::class, 'destroy'])->whereNumber('id');
+    Route::get('/library', [\App\Http\Controllers\LibraryController::class, 'index'])->name('library');
+});
+
+Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
+    $t = \App\Http\Controllers\TagController::class;
+    Route::get('/tags', [$t, 'index'])->name('tags');
+    Route::post('/tags', [$t, 'store']);
+    Route::post('/tags/{id}', [$t, 'update'])->whereNumber('id');
+    Route::post('/tags/{id}/merge', [$t, 'merge'])->whereNumber('id');
+    Route::post('/tags/{id}/delete', [$t, 'destroy'])->whereNumber('id');
+
+    $l = \App\Http\Controllers\LibraryController::class;
+    Route::post('/library', [$l, 'store']);
+    Route::post('/library/{id}', [$l, 'update'])->whereNumber('id');
+    Route::post('/library/{id}/delete', [$l, 'destroy'])->whereNumber('id');
+});
+
+Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
+    $c = \App\Http\Controllers\SettingsController::class;
+    Route::get('/settings', [$c, 'index'])->name('settings');
+    Route::post('/settings/profile', [$c, 'saveProfile']);
+    Route::post('/settings/team', [$c, 'storeUser']);
+    Route::post('/settings/team/{id}', [$c, 'updateUser'])->whereNumber('id');
 });

@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Business;
 use App\Models\Practitioner;
+use App\Models\QuickReply;
+use App\Models\Tag;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -58,6 +60,24 @@ class DatabaseSeeder extends Seeder
                     $service = Service::create(['name' => $name, 'duration_min' => $minutes, 'price' => $price, 'sort' => $i]);
                     $service->practitioners()->sync(array_map(fn ($p) => $p->id, $practitioners));
                 }
+            });
+        }
+
+        if (Tag::query()->withoutGlobalScopes()->where('business_id', $business->id)->doesntExist()) {
+            app(\App\Support\CurrentBusiness::class)->runAs($business, function () {
+                Tag::create(['name' => 'VIP', 'type' => 'customer', 'color' => '#b45309']);
+                Tag::create(['name' => 'First visit', 'type' => 'customer', 'color' => '#0f766e']);
+                Tag::create(['name' => 'Price question', 'type' => 'chat', 'color' => '#2563eb']);
+                Tag::create(['name' => 'Complaint', 'type' => 'chat', 'color' => '#c2410c']);
+
+                QuickReply::create(['title' => 'Thanks and confirm', 'sort' => 1, 'body' => [
+                    'en' => 'Thank you! We have noted your request and will confirm shortly.',
+                    'zh' => '谢谢！我们已记下您的需求，稍后会向您确认。',
+                ]]);
+                QuickReply::create(['title' => 'Aftercare', 'sort' => 2, 'body' => [
+                    'en' => 'For the next 24 hours please avoid direct sun and heavy make-up. Message us if you have any concern.',
+                    'zh' => '接下来 24 小时请避免日晒和浓妆。如有任何疑问请随时联系我们。',
+                ]]);
             });
         }
     }

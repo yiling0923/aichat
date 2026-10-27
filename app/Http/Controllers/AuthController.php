@@ -21,13 +21,13 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials + ['active' => true], $request->boolean('remember'))) {
             return back()->withErrors(['email' => 'These details do not match our records.'])->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('inbox'));
+        return redirect()->intended(route('today'));
     }
 
     public function logout(Request $request): RedirectResponse

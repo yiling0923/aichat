@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'business_id',
         'role',
+        'active',
     ];
 
     /**
@@ -47,12 +48,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
         ];
     }
 
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
+    }
+
+    /** Owner or manager: may edit the library, tags and other shared settings. */
+    public function canManage(): bool
+    {
+        return in_array($this->role, ['owner', 'manager'], true);
     }
 
     public function isPlatformOwner(): bool

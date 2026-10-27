@@ -3,7 +3,7 @@
 A guided menu bot, staff inbox and booking assistant for WhatsApp, Instagram, Messenger and website chat.
 Built with PHP and Laravel, runs on XAMPP on your own computer. See `docs/` for the plan (PDF) and the page layouts (PDF).
 
-**Where we are: step 2 (booking).** A customer opens the test chat, picks a language, taps buttons
+**Where we are: step 3 (business admin panel).** A customer opens the test chat, picks a language, taps buttons
 (prices, hours, location, promotions, book an appointment, talk to staff) and the bot answers. Booking requests are saved
 as customers. Staff answer handed-over chats in the inbox. The owner edits the menu in the **Menu builder**. No AI is used yet.
 Step 2 adds real booking: the customer taps a service, a day and a time, gives a name and phone, and the booking is saved
@@ -67,6 +67,31 @@ Step 2 adds real booking: the customer taps a service, a day and a time, gives a
    The panel on the right lets you try the draft first. Nothing you try there is saved as a lead or handover.
 
 Typed words that always work: `menu` (back to the main menu), `human` or `staff` (talk to a person), `stop` (no promotional messages).
+
+### Admin panel (step 3)
+
+Sign in and you land on **Today**. The left menu:
+
+| Page | What it does | Who |
+|---|---|---|
+| **Today** | Chats waiting for staff, today's bookings, your tasks | everyone |
+| **Inbox** | Answer chats. Add chat tags, choose who handles it, add a task, insert a saved reply, open the customer | everyone |
+| **All conversations** | Every chat including resolved ones. Search inside messages, filter by status, bot or staff, tag | everyone |
+| **Schedule** | Bookings, cancel, done, no-show | everyone |
+| **Tasks** | Follow-ups with assignee and due date. Also from a chat or customer | everyone |
+| **Customers** | One record per phone number. Filter by score, language, tag. Tick people and add or remove a tag. Open one for details, notes, chats, bookings | everyone |
+| **Tags** | Customer tags and chat tags: create, rename, recolour, merge, delete | owner, manager |
+| **Library** | Saved replies in English and 中文 | everyone reads, owner and manager edit |
+| **Menu builder**, **Booking setup**, **Settings** | Bot menu, services and hours, business name, time zone, accent colour, team accounts | owner |
+
+Roles: **owner** does everything, **manager** can also edit tags and the library, **staff** works the inbox, schedule, customers and tasks.
+An owner can add team members in **Settings**, switch an account off, or set a new password. The business always keeps at least one active owner.
+
+Try it: book in the test chat, tap **Talk to staff**, then sign in. Open the chat from **Today**, add a tag, insert a saved reply,
+add a task, open the customer, and tick them on **Customers** to add the VIP tag. To see the bot use a changed price or answer:
+change a service price in **Booking setup** or a text in **Menu builder** (then Publish) and start a new test chat.
+
+Not in this step yet: media folders and forms in the library, saved views, segments, orders and review invitations. They come with later steps.
 
 ### Booking (step 2)
 
@@ -149,7 +174,7 @@ See `n8n/README.md`. The app works without it.
 | `app/Booking` | Free times, saving and cancelling bookings, Google Calendar |
 | `app/Console` | The handover reminder command |
 | `app/Models` | Business, Customer, Conversation, Message. Every business-owned model is limited to the current business |
-| `app/Http` | Controllers (chat, inbox, login) and middleware |
+| `app/Http` | Controllers (chat, inbox, customers, tasks, tags, library, settings, booking, menu) and middleware |
 | `app/Services` | n8n events, lead saving, handover |
 | `database/migrations` | The database tables, each with a `business_id` |
 | `resources/views`, `public/css`, `public/js` | The pages (no build step needed) |
@@ -159,4 +184,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 3: the business admin panel (today view, tags, tasks, replies library, settings, reports).
+Step 4: real channels. WhatsApp test number first (needs Meta setup and a free tunnel), then Instagram and Messenger.

@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'business.slug' => ResolveBusinessFromSlug::class,
             'staff' => EnsureBusinessStaff::class,
             'owner' => \App\Http\Middleware\EnsureOwner::class,
+            'manager' => \App\Http\Middleware\EnsureManager::class,
         ]);
 
         // ngrok (and later a real server) sits in front of the app.

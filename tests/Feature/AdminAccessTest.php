@@ -22,7 +22,7 @@ class AdminAccessTest extends TestCase
         $business = Business::factory()->create();
         User::factory()->create(['email' => 'amy@example.com', 'business_id' => $business->id]);
 
-        $this->post('/login', ['email' => 'amy@example.com', 'password' => 'password'])->assertRedirect(route('inbox'));
+        $this->post('/login', ['email' => 'amy@example.com', 'password' => 'password'])->assertRedirect(route('today'));
 
         $this->get('/admin')->assertOk()->assertSee($business->name);
     }
@@ -55,7 +55,7 @@ class AdminAccessTest extends TestCase
             $this->postJson(route('chat.send', 'demo'), ['text' => 'hi']);
         }
 
-        $this->post('/login', ['email' => 'amy@example.com', 'password' => 'password'])->assertRedirect(route('inbox'));
+        $this->post('/login', ['email' => 'amy@example.com', 'password' => 'password'])->assertRedirect(route('today'));
     }
 
     public function test_repeated_wrong_logins_are_limited(): void

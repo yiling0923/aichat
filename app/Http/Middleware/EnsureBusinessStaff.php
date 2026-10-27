@@ -24,6 +24,12 @@ class EnsureBusinessStaff
                 : redirect()->route('login');
         }
 
+        if ($user->active === false) {
+            auth()->logout();
+
+            return $request->expectsJson() ? response()->json(['message' => 'Account is switched off.'], 403) : redirect()->route('login');
+        }
+
         $business = $user->business;
 
         abort_if($business === null || ! $business->isActive(), 403, 'No active business for this account.');

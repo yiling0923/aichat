@@ -37,8 +37,16 @@
                         <button class="btn danger" id="btn-resolve" type="button">Resolve</button>
                     </div>
                 </div>
+                <div class="info-bar" id="info-bar">
+                    <span id="info-customer"></span>
+                    <span id="info-tags"></span>
+                    <select id="tag-add" aria-label="Add tag"></select>
+                    <label>Handled by <select id="assign" aria-label="Assign"></select></label>
+                    <button class="btn small" id="btn-task" type="button">Add task</button>
+                </div>
                 <div class="thread-log" id="thread-log"></div>
                 <div class="composer">
+                    <div class="qr-row"><select id="qr" aria-label="Saved replies"><option value="">Insert a saved reply...</option></select></div>
                     <textarea id="reply-text" placeholder="Reply to the customer, or write a private note"></textarea>
                     <div class="row">
                         <button class="btn primary" id="btn-reply" type="button">Send reply</button>

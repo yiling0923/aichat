@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToBusiness;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -24,6 +25,7 @@ class Conversation extends Model
         'language',
         'mode',
         'status',
+        'assigned_to',
         'handover_reason',
         'handover_at',
         'opted_out_at',
@@ -55,6 +57,16 @@ class Conversation extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
     public function messages(): HasMany
