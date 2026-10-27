@@ -1,0 +1,24 @@
+# n8n beside the app (optional)
+
+n8n runs the automations: alerts, reminders, reports. The app works without it.
+In phase 0 it only receives one event (`conversation.started`) so you can see the link working.
+
+## Start n8n on Windows
+
+1. Install **Node.js LTS** from https://nodejs.org (one time).
+2. Open Command Prompt and run: `npx n8n`
+3. Open http://localhost:5678 and create the local owner account.
+
+## Connect it to the app
+
+1. In n8n choose **Workflows > Import from file** and pick `n8n/workflows/01-aichat-events-starter.json`.
+2. Click **Publish** (or toggle **Active**) on the workflow.
+3. Copy the **Production URL** of the "Aichat event" node. It looks like `http://localhost:5678/webhook/aichat`.
+4. Put it in the project's `.env`: `N8N_WEBHOOK_URL=http://localhost:5678/webhook/aichat`
+5. Start a new chat in the test chat. The workflow now shows a new execution with the event.
+
+To try it without publishing, click **Listen for test event** in n8n and set the URL to `http://localhost:5678/webhook-test/aichat`.
+
+Next steps (later phases) add the real alerts: a Telegram or email node after the last node, reminders, and the daily report.
+
+Note: check n8n's licence terms before offering the product publicly. The Laravel scheduler can replace n8n if needed.

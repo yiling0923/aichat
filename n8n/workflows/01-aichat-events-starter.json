@@ -1,0 +1,43 @@
+{
+  "name": "Aichat: events (starter)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aichat",
+        "options": {}
+      },
+      "id": "5d1c0b9e-6a54-4d0a-9d46-2b1f2a8f0a11",
+      "name": "Aichat event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "aichat-events"
+    },
+    {
+      "parameters": {},
+      "id": "a3a0f6ce-8b8f-4a5a-8c0f-0d8c1b5b7e22",
+      "name": "Next: add a Telegram or email alert here",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [300, 0]
+    }
+  ],
+  "connections": {
+    "Aichat event": {
+      "main": [
+        [
+          {
+            "node": "Next: add a Telegram or email alert here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
