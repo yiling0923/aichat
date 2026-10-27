@@ -22,7 +22,18 @@ and answer it as staff in the inbox. The menu bot comes in step 1.
    With Git: `cd C:\xampp\htdocs` then `git clone -b claude/sleepy-brown-fv558x https://github.com/yiling0923/aichat.git aichat`
    (or download the branch as a ZIP from GitHub and unzip it into that folder).
 3. Open http://localhost/phpmyadmin, click **New**, name the database `aichat`, choose `utf8mb4_unicode_ci`, click **Create**.
-4. Open **Command Prompt** in `C:\xampp\htdocs\aichat` and run these one by one:
+4. Make `php` available. In **PowerShell** (or Command Prompt) check:
+
+   ```
+   php -v
+   ```
+
+   If it says `'php' is not recognized`, XAMPP's PHP is not on your PATH. For the current window run
+   `$env:Path += ";C:\xampp\php"` (PowerShell) or `set PATH=C:\xampp\php;%PATH%` (Command Prompt).
+   To fix it for good: Windows key > "Edit the system environment variables" > Environment Variables >
+   Path > Edit > New > `C:\xampp\php` > OK, then reopen the window.
+
+5. In `C:\xampp\htdocs\aichat` run these one by one:
 
    ```
    composer install
@@ -32,7 +43,7 @@ and answer it as staff in the inbox. The menu bot comes in step 1.
    ```
 
    (`setup-windows.bat` in the project folder runs the same steps, if you prefer a double-click.)
-5. Open the pages:
+6. Open the pages:
 
    | Page | Address |
    |---|---|
@@ -68,6 +79,7 @@ See `n8n/README.md`. The app works without it.
 
 | Problem | Fix |
 |---|---|
+| `'php' is not recognized` | XAMPP's PHP is not on the PATH. See step 4, or type `C:\xampp\php\php.exe` instead of `php`. |
 | `composer install` says an extension is missing | Open `C:\xampp\php\php.ini`, remove the `;` in front of that `extension=` line, restart Apache. |
 | Composer says PHP is too old | Install a newer XAMPP (PHP 8.2 or newer). Check with `php -v`. |
 | "Access denied" or "Unknown database" | MySQL not started, or database `aichat` not created. Check `.env` (`DB_DATABASE`, `DB_USERNAME=root`, empty `DB_PASSWORD`). |

@@ -6,6 +6,9 @@ REM This file has not been tested on Windows. If a step fails, run the commands 
 setlocal
 cd /d "%~dp0"
 
+REM Make XAMPP's PHP available to this script even when it is not on the PATH.
+if exist "C:\xampp\php\php.exe" set "PATH=C:\xampp\php;%PATH%"
+
 echo [1/5] Creating the database "aichat" (needs MySQL running in XAMPP)...
 set MYSQL=C:\xampp\mysql\bin\mysql.exe
 if exist "%MYSQL%" (
