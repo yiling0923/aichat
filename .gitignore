@@ -26,3 +26,7 @@ Thumbs.db
 # Local databases
 /database/*.sqlite
 /database/*.sqlite-journal
+
+# Composer downloaded into the project folder (Windows, no installer)
+/composer.phar
+/composer-setup.php
