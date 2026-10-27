@@ -62,7 +62,7 @@ class ChatFlowTest extends TestCase
 
         app(CurrentBusiness::class)->runAs($this->business, function () {
             $this->assertSame(1, Conversation::count());
-            $this->assertSame(4, Message::count());
+            $this->assertSame(5, Message::count()); // 2 + customer + sorry + menu again
         });
     }
 
@@ -105,6 +105,6 @@ class ChatFlowTest extends TestCase
 
         $this->assertSame('human', $response->json('mode'));
         $botMessages = collect($response->json('messages'))->where('from', 'bot');
-        $this->assertCount(1, $botMessages, 'Only the first greeting; no new bot reply after handover.');
+        $this->assertCount(0, $botMessages, 'No new bot reply after handover.');
     }
 }

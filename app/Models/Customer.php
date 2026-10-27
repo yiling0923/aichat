@@ -14,6 +14,10 @@ class Customer extends Model
         'phone',
         'email',
         'language',
+        'interest',
+        'details',
+        'consented_at',
+        'opted_out_at',
         'score',
         'tags',
         'notes',
@@ -23,6 +27,9 @@ class Customer extends Model
     {
         return [
             'tags' => 'array',
+            'details' => 'array',
+            'consented_at' => 'datetime',
+            'opted_out_at' => 'datetime',
         ];
     }
 }

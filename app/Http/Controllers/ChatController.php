@@ -27,7 +27,8 @@ class ChatController extends Controller
     public function send(Request $request, string $slug, BotEngine $bot, N8nNotifier $n8n): JsonResponse
     {
         $data = $request->validate([
-            'text' => ['required', 'string', 'max:1000'],
+            'text' => ['required_without:option_id', 'nullable', 'string', 'max:1000'],
+            'option_id' => ['nullable', 'string', 'max:60'],
             'token' => ['nullable', 'string', 'max:64'],
         ]);
 
@@ -46,13 +47,13 @@ class ChatController extends Controller
             ]);
         }
 
-        $incoming = $conversation->addMessage('in', 'customer', $data['text']);
-        $bot->respond($conversation, $incoming);
+        $incoming = $conversation->addMessage('in', 'customer', (string) ($data['text'] ?? ''));
+        $bot->respond($conversation, $incoming, $data['option_id'] ?? null);
 
         return response()->json([
             'token' => $conversation->token,
             'mode' => $conversation->fresh()->mode,
-            'messages' => $this->messagesAfter($conversation, 0),
+            'messages' => $this->messagesAfter($conversation, $incoming->id - 1),
         ]);
     }
 

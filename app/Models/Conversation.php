@@ -26,6 +26,7 @@ class Conversation extends Model
         'status',
         'handover_reason',
         'handover_at',
+        'opted_out_at',
         'last_message_at',
         'state',
     ];
@@ -34,6 +35,7 @@ class Conversation extends Model
     {
         return [
             'handover_at' => 'datetime',
+            'opted_out_at' => 'datetime',
             'last_message_at' => 'datetime',
             'state' => 'array',
         ];

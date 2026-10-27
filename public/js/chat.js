@@ -33,7 +33,7 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.textContent = o.label || o;
-        b.addEventListener('click', function () { send(o.label || o); });
+        b.addEventListener('click', function () { send(o.label || o, o.id); });
         row.appendChild(b);
       });
       log.appendChild(row);
@@ -54,14 +54,14 @@
     notice.textContent = mode === 'human' ? 'A team member is replying to you.' : '';
   }
 
-  function send(text) {
+  function send(text, optionId) {
     text = (text || '').trim();
     if (!text) { return; }
     input.value = '';
     fetch(sendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ text: text, token: token })
+      body: JSON.stringify({ text: text, option_id: optionId || null, token: token })
     }).then(function (r) { return r.json(); }).then(function (data) {
       if (data.token) {
         token = data.token;

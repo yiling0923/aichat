@@ -6,29 +6,26 @@ use App\Models\Conversation;
 use App\Models\Message;
 
 /**
- * Decides what the bot says. This is the phase 0 placeholder: it only echoes.
- * Phase 1 replaces it with the guided menu bot behind the same method, so the
- * chat page, inbox and tests do not change.
+ * Decides what the bot says. Phase 1: the guided menu bot. Phase 5b can add an
+ * AI mode behind the same method, so the chat page, inbox and channels do not change.
  */
 class BotEngine
 {
+    public function __construct(private MenuBot $menu, private FlowRepository $flows) {}
+
     /**
+     * @param  Flow|null  $flow  a flow to use instead of the published one (menu preview)
      * @return list<Message> messages the bot sent in reply
      */
-    public function respond(Conversation $conversation, Message $incoming): array
+    public function respond(Conversation $conversation, Message $incoming, ?string $optionId = null, ?Flow $flow = null): array
     {
         // Staff are handling this chat, so the bot stays silent.
         if ($conversation->isHandledByStaff()) {
             return [];
         }
 
-        $text = trim((string) $incoming->body);
-        $isFirstReply = ! $conversation->messages()->where('sender_type', 'bot')->exists();
+        $flow ??= $this->flows->published($conversation->business);
 
-        $body = $isFirstReply
-            ? 'Hi! You are chatting with '.$conversation->business->name.'. The menu bot arrives in the next step, so for now I repeat what you type: "'.$text.'"'
-            : 'You said: "'.$text.'". The menu bot is coming in the next step.';
-
-        return [$conversation->addMessage('out', 'bot', $body)];
+        return $this->menu->respond($conversation, $flow, (string) $incoming->body, $optionId);
     }
 }
