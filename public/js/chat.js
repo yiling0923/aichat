@@ -92,6 +92,7 @@
   function setMode(mode) {
     notice.textContent = '';
     status.textContent = mode === 'human' ? 'A team member is replying' : 'Replies instantly';
+    document.getElementById('human-bar').hidden = mode !== 'human';
   }
   function syncSend() { sendBtn.disabled = busy || !input.value.trim(); }
   input.addEventListener('input', syncSend);
@@ -155,6 +156,8 @@
     try { localStorage.removeItem(storageKey); } catch (e) { /* ignore */ }
     token = null; seen = {}; lastId = 0; log.innerHTML = ''; notice.textContent = ''; setMode('bot'); greet(); input.focus();
   });
+
+  document.getElementById('human-menu').addEventListener('click', function () { send('menu', '__menu'); });
 
   form.addEventListener('submit', function (e) { e.preventDefault(); send(input.value); });
 

@@ -20,6 +20,15 @@ class BotEngine
      */
     public function respond(Conversation $conversation, Message $incoming, ?string $optionId = null, ?Flow $flow = null): array
     {
+        // A customer who is tired of waiting can type "menu" (or tap the button) to get the bot back.
+        if ($conversation->isHandledByStaff() && $this->wantsMenu((string) $incoming->body, $optionId)) {
+            $conversation->giveBackToBot();
+            $conversation->forceFill(['state' => null])->save();
+            if ($conversation->channel !== 'preview' && $conversation->business !== null) {
+                app(\App\Services\Notifier::class)->notify($conversation->business, 'message', \App\Services\Notifier::chatName($conversation).' went back to the menu', 'The customer chose the bot again. The chat is back with the bot.', route('inbox', ['c' => $conversation->id]));
+            }
+        }
+
         // Staff are handling this chat, so the bot stays silent.
         if ($conversation->isHandledByStaff()) {
             if ($conversation->channel !== 'preview' && $conversation->business !== null && (string) $incoming->body !== '') {
@@ -41,5 +50,10 @@ class BotEngine
         $flow ??= $this->flows->published($conversation->business);
 
         return $this->menu->respond($conversation, $flow, (string) $incoming->body, $optionId);
+    }
+
+    private function wantsMenu(string $text, ?string $optionId): bool
+    {
+        return $optionId === '__menu' || in_array(\App\Bot\Text::normalize($text), ['menu', 'main menu', 'back to menu', 'bot', '菜单', '主菜单', '返回菜单'], true);
     }
 }

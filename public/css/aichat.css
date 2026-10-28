@@ -1085,3 +1085,7 @@ html { scroll-behavior: smooth; }
 @media (max-width: 900px) { .td-cols { grid-template-columns: 1fr; } .td-actions .btn { flex: 1; text-align: center; } .td-slot.now, .td-slot.next { margin: 0 -14px; padding-left: 14px; padding-right: 14px; } }
 @media (max-width: 1100px) { .td-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .td-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .td-kpi { padding: 12px; } .td-kpi .ic { display: none; } .td-kpi b { font-size: 24px; } .td-kpi:last-child { grid-column: 1 / -1; } }
+.human-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; background: #fff8e6; border-top: 1px solid #f3dca0; font-size: 12px; line-height: 1.4; color: #7a5200; }
+.human-bar[hidden] { display: none; }
+.human-bar button { flex: none; border: 1px solid #e3c477; background: #fff; color: #7a5200; border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+.human-bar button:hover { background: #fff2cc; }

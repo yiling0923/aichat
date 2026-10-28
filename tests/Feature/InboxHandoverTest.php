@@ -40,6 +40,22 @@ class InboxHandoverTest extends TestCase
         $this->assertSame('human', $visitorView->json('mode'));
     }
 
+    public function test_a_waiting_customer_can_type_menu_to_get_the_bot_back(): void
+    {
+        $token = $this->postJson('/api/chat/demo/messages', ['text' => 'Hello'])->json('token');
+        $conversation = app(CurrentBusiness::class)->runAs($this->business, fn () => Conversation::where('token', $token)->first());
+        $this->actingAs($this->staff)->postJson('/admin/api/conversations/'.$conversation->id.'/reply', ['text' => 'One moment'])->assertJsonPath('mode', 'human');
+
+        // While staff own the chat the bot is silent.
+        $silent = $this->postJson('/api/chat/demo/messages', ['text' => 'hello?', 'token' => $token])->assertOk();
+        $this->assertSame('human', $silent->json('mode'));
+
+        // "menu" (or the button) hands it back and shows the main menu again.
+        $back = $this->postJson('/api/chat/demo/messages', ['text' => 'menu', 'option_id' => '__menu', 'token' => $token])->assertOk();
+        $this->assertSame('bot', $back->json('mode'));
+        $this->assertNotEmpty(array_filter($back->json('messages'), fn ($m) => $m['from'] === 'bot'));
+    }
+
     public function test_giving_the_chat_back_makes_the_bot_answer_again(): void
     {
         $token = $this->postJson('/api/chat/demo/messages', ['text' => 'Hello'])->json('token');

@@ -358,3 +358,9 @@ Schedule colours (section on Schedule): blue = Confirmed (upcoming), green = Don
 3. Left: "Needs a person" with a Reply button for each, then today's bookings as a timeline with Done, Now, Next and No-show tags.
 4. Right: your tasks (tick the circle to finish one, overdue ones are red), a small bar chart of this week, recent activity, and AI use for owners.
 5. With no data (new business) every box shows a friendly message instead of being empty. On a phone it becomes one column.
+
+## AP. Waiting for a person (customer side)
+
+1. In the customer chat, type `human`. The bot stops answering on purpose, because a person should reply. A yellow bar now appears above the message box: "A team member will reply here" with a **Back to menu / 返回菜单** button.
+2. Press the button (or type `menu`): the bot answers again and shows the main menu. Staff get a bell alert that the customer went back to the menu.
+3. If staff reply in the Inbox instead, the bar disappears once they give the chat back to the bot.
