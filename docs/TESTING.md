@@ -143,6 +143,13 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 5. Make a booking in the chat: everyone gets "New booking". Cancel it as the customer (My booking): "Booking cancelled by ...". Add a task assigned to someone else: only they get "New task for you".
 6. **Turn on desktop alerts** (bottom of the bell): the browser asks permission; after that a pop-up appears for new alerts while the staff page is open in any tab.
 
+### Q. Channels page
+1. **Settings > Channels**: four status cards at the top (Website chat always on; WhatsApp, Messenger, Instagram show Not connected / Connected / Needs attention).
+2. **Website chat**: Copy the link, or copy the embed code and paste it into any web page to show the chat there.
+3. **Connect a channel**: pick WhatsApp, Messenger or Instagram; the "Where to find these" box changes. **Show** reveals the token while you paste it.
+4. Each connected account has a coloured dot (green working, amber off, red problem), **Check connection**, **Subscribe to messages**, a folded **Settings** area (name, token, on/off, reminder template, Remove) and, for WhatsApp, **Send me a test message**.
+5. **Meta app connection** (bottom, folded unless something is missing): four checks (public address, app ID, app secret, verify token) with what to do for each, Copy buttons, and **Save these in Meta for me**.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

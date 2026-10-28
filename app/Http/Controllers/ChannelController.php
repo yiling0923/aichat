@@ -32,6 +32,9 @@ class ChannelController extends Controller
             'verifyToken' => (string) config('services.meta.verify_token'),
             'secretSet' => (string) config('services.meta.app_secret') !== '',
             'isLocal' => (bool) preg_match('#^https?://(localhost|127\.|192\.168\.|10\.)#', $url),
+            'appIdSet' => (string) config('services.meta.app_id') !== '',
+            'verifySet' => (string) config('services.meta.verify_token') !== '',
+            'chatUrl' => route('chat.show', $request->user()->business->slug),
         ]);
     }
 

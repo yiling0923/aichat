@@ -561,4 +561,24 @@ class ChannelTest extends TestCase
         $this->assertCount(1, $this->sent());
         $this->in(fn () => $this->assertLessThanOrEqual(now()->timestamp, Conversation::query()->first()->last_inbound_at->timestamp));
     }
+
+    public function test_the_channels_page_shows_status_cards_website_embed_and_setup_checks(): void
+    {
+        config(['app.url' => 'https://abc123.lhr.life', 'services.meta.app_id' => '555', 'services.meta.app_secret' => 'sec', 'services.meta.verify_token' => 'tok']);
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        Channel::query()->withoutGlobalScopes()->where('business_id', $this->business->id)->delete();
+
+        $r = $this->actingAs($owner)->get('/admin/channels')->assertOk();
+        $r->assertSee('Website chat')->assertSee('Always on')->assertSee('Not connected')->assertSee('Nothing connected yet')
+            ->assertSee('&lt;iframe src=', false)->assertSee('/chat/'.$this->business->slug, false)->assertSee('All set');
+
+        $this->actingAs($owner)->post('/admin/channels', ['type' => 'whatsapp', 'name' => 'Front desk', 'external_id' => '15551', 'access_token' => 'tok-x'])->assertRedirect();
+        $this->get('/admin/channels')->assertOk()->assertSee('Front desk')->assertSee('Connected')->assertSee('Working')->assertSee('Send me a test message')->assertDontSee('tok-x');
+
+        Channel::query()->where('external_id', '15551')->update(['last_error' => 'Token expired']);
+        $this->get('/admin/channels')->assertSee('Needs attention')->assertSee('Problem')->assertSee('Token expired');
+
+        config(['services.meta.app_secret' => '', 'services.meta.verify_token' => '']);
+        $this->get('/admin/channels')->assertSee('2 to fix')->assertSee('Add META_APP_SECRET to .env')->assertSee('Add META_VERIFY_TOKEN to .env');
+    }
 }
