@@ -186,12 +186,12 @@ class ReportData
         ];
     }
 
-    /** One row per day: chats, new customers, bookings made. @return list<array{date: string, chats: int, customers: int, bookings: int}> */
+    /** One row per day: chats, new customers, bookings made, paid sales. @return list<array{date: string, chats: int, customers: int, bookings: int, revenue: float}> */
     public function daily(): array
     {
         $days = [];
         for ($d = $this->from->copy(); $d->lte($this->to); $d->addDay()) {
-            $days[$d->format('Y-m-d')] = ['date' => $d->format('Y-m-d'), 'chats' => 0, 'customers' => 0, 'bookings' => 0];
+            $days[$d->format('Y-m-d')] = ['date' => $d->format('Y-m-d'), 'chats' => 0, 'customers' => 0, 'bookings' => 0, 'revenue' => 0.0];
         }
 
         $bucket = function (Collection $times, string $key) use (&$days): void {
@@ -206,6 +206,13 @@ class ReportData
         $bucket($this->chats($this->from, $this->to)->limit(20000)->pluck('created_at'), 'chats');
         $bucket(Customer::query()->whereBetween('created_at', [$this->from, $this->to])->limit(20000)->pluck('created_at'), 'customers');
         $bucket($this->bookings($this->from, $this->to)->limit(20000)->pluck('created_at'), 'bookings');
+
+        foreach (Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$this->from, $this->to])->limit(20000)->get(['ordered_at', 'amount']) as $o) {
+            $day = Carbon::parse($o->ordered_at, 'UTC')->setTimezone($this->tz)->format('Y-m-d');
+            if (isset($days[$day])) {
+                $days[$day]['revenue'] += (float) $o->amount;
+            }
+        }
 
         return array_values($days);
     }
@@ -267,7 +274,7 @@ class ReportData
         $local = fn ($t) => $t ? Carbon::parse($t)->setTimezone($this->tz)->format('Y-m-d H:i') : '';
 
         return match ($section) {
-            'daily' => [['Date', 'Chats started', 'New customers', 'Bookings made'], array_map(fn ($r) => array_values($r), $this->daily())],
+            'daily' => [['Date', 'Chats started', 'New customers', 'Bookings made'], array_map(fn ($r) => [$r['date'], $r['chats'], $r['customers'], $r['bookings']], $this->daily())],
             'bookings' => [['Booked on', 'Visit', 'Customer', 'Phone', 'Service', 'Practitioner', 'Status'],
                 $this->bookings($this->from, $this->to)->with(['customer', 'service', 'practitioner'])->orderBy('starts_at')->limit(20000)->get()
                     ->map(fn ($b) => [$local($b->created_at), $local($b->starts_at), $b->customer?->name, $b->customer?->phone, $b->service?->label('en'), $b->practitioner?->name, $b->status])->all()],

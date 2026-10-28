@@ -57,7 +57,7 @@ class ReportsTest extends TestCase
         $this->seedData();
 
         $this->actingAs($this->user)->get('/admin/reports')->assertOk()
-            ->assertSee('Export CSV')->assertSee('Chats started per day')->assertSee('Busiest weekdays')->assertSee('Busiest hours')
+            ->assertSee('Export CSV')->assertSee('Day by day')->assertSee('Busiest weekdays')->assertSee('Busiest hours')
             ->assertSee('By practitioner')->assertSee('No-show rate')->assertSee('Dr One')->assertSee('Laser')->assertSee('WhatsApp');
     }
 
