@@ -61,6 +61,15 @@ class AutomationRunner
                 continue;
             }
 
+            // One open survey per customer: the chat can only remember one. The next one is sent on a later run
+            // (nothing is logged, so this booking is still due), once this one is answered or a day has passed.
+            $waiting = Survey::query()->where('customer_id', $b->customer_id)->whereNull('answered_at')->whereNotNull('sent_at')
+                ->where('sent_at', '>', $now->copy()->subDay())->exists();
+
+            if ($waiting) {
+                continue;
+            }
+
             $language = $this->language($b->customer);
             $result = $this->outreach->send(
                 $b->customer, (array) $a->message, $this->values($b->customer, $business, $b, $language),

@@ -623,4 +623,27 @@ class MarketingTest extends TestCase
         $texts = array_map(fn ($b) => $b['text']['body'] ?? ($b['interactive']['body']['text'] ?? ''), $sent);
         $this->assertStringContainsString('Thank you for your feedback', implode(' | ', $texts));
     }
+
+    public function test_only_one_survey_waits_for_an_answer_per_customer_and_the_next_follows_after_it(): void
+    {
+        [$c, $chat] = $this->customer();
+        $this->booking($c, $chat, 'completed', '2026-11-10 04:00:00');
+        $this->booking($c, $chat, 'completed', '2026-11-10 05:00:00');
+        $this->enable('survey');
+
+        $this->assertSame(1, $this->runAutomations()['survey']);
+        $this->assertSame(0, $this->runAutomations()['survey']);                                  // first one is still waiting
+        $this->assertCount(1, $this->botMessages($chat));
+
+        $this->chatSend($chat, 'x', 'rate_5');                                                   // answered
+        $this->assertSame(1, $this->runAutomations()['survey']);                                  // now the second goes out
+
+        $this->in(function () {
+            $this->assertSame(2, Survey::count());
+            $this->assertSame(1, Survey::query()->whereNotNull('rating')->count());
+        });
+
+        $this->chatSend($chat, 'x', 'rate_4');
+        $this->in(fn () => $this->assertSame(2, Survey::query()->whereNotNull('rating')->count()));
+    }
 }
