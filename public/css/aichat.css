@@ -691,3 +691,62 @@ details.inline summary { display: inline; cursor: pointer; font-weight: 600; tex
 .task-meta .late { color: var(--red); font-weight: 600; }
 .assignee { flex: none; font-size: 12.5px; color: var(--mute); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { .assignee { display: none; } }
+
+/* Inbox chat screen */
+.thread-head { gap: 12px; padding: 12px 18px; }
+.th-av { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--accent-m); color: var(--accent-d); display: grid; place-items: center; font-weight: 700; }
+.th-id { flex: 1; min-width: 0; }
+.th-id b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.th-id .mute { font-size: 12px; }
+.th-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.back-btn { display: none; }
+.info-bar { gap: 8px 12px; }
+.cust-link { font-weight: 600; }
+.log-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
+.log-wrap .thread-log { flex: 1; }
+.jump { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); border: 0; background: var(--ink); color: #fff; padding: 7px 14px; border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); }
+.jump.hidden { display: none; }
+.daysep { align-self: center; font-size: 11.5px; font-weight: 600; color: var(--mute); background: #e8eded; padding: 3px 12px; border-radius: 999px; margin: 8px 0 2px; }
+.m { max-width: min(560px, 78%); }
+.m .mt { white-space: pre-wrap; }
+.m small { text-align: right; }
+.m.customer small { text-align: left; }
+.m.system { align-self: center; max-width: 90%; background: #e8eded; border: 0; color: var(--mute); text-align: center; }
+.m.private { align-self: flex-end; }
+.m .lock { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+.m small.fail { color: var(--red); opacity: 1; font-weight: 600; text-align: left; }
+.composer { padding: 0 18px 14px; }
+.c-tabs { display: flex; gap: 4px; align-items: flex-end; border-bottom: 1px solid var(--line-s); margin: 0 -18px 10px; padding: 0 18px; }
+.c-tabs button { border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--mute); padding: 10px 12px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.c-tabs button.on { color: var(--accent); border-bottom-color: var(--accent); }
+.c-tabs select { margin-left: auto; width: auto; max-width: 200px; height: 30px; margin-bottom: 5px; font-size: 12.5px; }
+.composer textarea { min-height: 44px; max-height: 170px; resize: none; line-height: 1.45; }
+.composer.note-mode textarea { background: var(--ambers); border-color: #fedf89; }
+.composer.note-mode .c-tabs button.on { color: var(--amber); border-bottom-color: var(--amber); }
+.composer .row { justify-content: space-between; flex-wrap: nowrap; }
+#c-hint { font-size: 12px; }
+.empty .empty-ic { width: 54px; height: 54px; margin: 0 auto 10px; border-radius: 50%; background: var(--accent-l); color: var(--accent); display: grid; place-items: center; font-size: 24px; }
+.tpl-options { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; max-height: 220px; overflow: auto; }
+.tpl-opt { display: grid; grid-template-columns: 18px 1fr; column-gap: 8px; align-items: start; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; cursor: pointer; }
+.tpl-opt input { grid-row: span 2; margin-top: 3px; }
+.tpl-opt span { color: var(--mute); font-size: 12.5px; }
+.tpl-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-l); }
+@media (max-width: 900px) {
+  .shell:has(.inbox) { height: 100vh; }
+  .inbox { grid-template-columns: 1fr; height: calc(100vh - 56px); }
+  .inbox .thread { display: none; }
+  .inbox.chat-open .list { display: none; }
+  .inbox.chat-open .thread { display: flex; }
+  .back-btn { display: inline-flex; }
+  .m { max-width: 88%; }
+  .th-actions .btn { padding: 0 8px; }
+  .thread-head { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+  .th-id { flex: 1 1 120px; }
+  .th-id .mute { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #mode-badge { order: 3; }
+  .th-actions { order: 4; flex-basis: 100%; justify-content: flex-start; }
+  .info-bar { padding: 8px 12px; }
+  .composer { padding: 0 12px 12px; }
+  .c-tabs { margin: 0 -12px 8px; padding: 0 12px; }
+}
+#tpl-params .f { margin-bottom: 12px; }

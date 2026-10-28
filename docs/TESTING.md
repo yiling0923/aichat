@@ -205,6 +205,14 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 4. **Edit** opens a pop-up to change the text, due time and person, or **Delete**. Giving a task to someone else sends them a bell notification.
 5. Tasks from a customer page or the Inbox show the customer's name and an **Open chat** link.
 
+### Z. Inbox chat screen
+1. Open a chat in the **Inbox**. The header shows the customer's initial, channel, and a tag: **Bot is answering** (green) or **You are handling this** (amber), with **Give back to bot** and **Resolve**.
+2. Messages: day dividers (Today, Yesterday), times, who sent it (Bot or Staff), centred grey system notes (such as the handover), and yellow **Private note** cards. If you scroll up to read, new messages do not pull you down: a **N new messages** button appears instead.
+3. **Composer**: tabs **Reply to customer** and **Private note**. Enter sends, Shift+Enter makes a new line; the box grows as you type. **Saved replies** (right) inserts the reply in the customer's language with their name filled in.
+4. **+ Task** opens a small form (it suggests "Follow up with ..."), no more pop-up prompt boxes. Messages such as "Saved" or errors appear as a short banner at the bottom.
+5. WhatsApp chat older than 24 hours: the yellow bar has **Send a template**. Pick one, fill the parts (name is pre-filled), see the preview, press **Send template**.
+6. On a phone: the list and the chat are separate screens; the **←** button goes back to the list.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

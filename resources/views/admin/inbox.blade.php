@@ -26,17 +26,24 @@
         </section>
 
         <section class="thread">
-            <div class="empty" id="thread-empty">Select a conversation on the left.</div>
+            <div class="empty" id="thread-empty">
+                <div class="empty-ic">&#9993;</div>
+                <b>Select a conversation</b>
+                <p class="mute">Pick a chat on the left to read it and reply.</p>
+            </div>
             <div id="thread" class="hidden">
                 <div class="thread-head">
-                    <div>
+                    <button class="btn small back-btn" id="btn-back" type="button" aria-label="Back to the list">&larr;</button>
+                    <span class="th-av" id="thread-av"></span>
+                    <div class="th-id">
                         <b id="thread-title"></b>
-                        <div class="mute" id="thread-meta" style="font-size:12px"></div>
+                        <div class="mute" id="thread-meta"></div>
                     </div>
-                    <div style="display:flex;gap:8px">
-                        <button class="btn" id="btn-summarize" type="button" style="display:none">Summarise (AI)</button>
-                        <button class="btn" id="btn-give-back" type="button">Give back to bot</button>
-                        <button class="btn danger" id="btn-resolve" type="button">Resolve</button>
+                    <span class="tag" id="mode-badge"></span>
+                    <div class="th-actions">
+                        <button class="btn small" id="btn-summarize" type="button" style="display:none">Summarise (AI)</button>
+                        <button class="btn small" id="btn-give-back" type="button">Give back to bot</button>
+                        <button class="btn small primary" id="btn-resolve" type="button">Resolve</button>
                     </div>
                 </div>
                 <div class="note warn hidden" id="window-bar">
@@ -48,22 +55,45 @@
                     <span id="info-tags"></span>
                     <select id="tag-add" aria-label="Add tag"></select>
                     <label>Handled by <select id="assign" aria-label="Assign"></select></label>
-                    <button class="btn small" id="btn-task" type="button">Add task</button>
+                    <button class="btn small" id="btn-task" type="button">+ Task</button>
                 </div>
-                <div class="thread-log" id="thread-log"></div>
-                <div class="composer">
-                    <div class="qr-row"><select id="qr" aria-label="Saved replies"><option value="">Insert a saved reply...</option></select></div>
-                    <textarea id="reply-text" placeholder="Reply to the customer, or write a private note"></textarea>
+                <div class="log-wrap">
+                    <div class="thread-log" id="thread-log"></div>
+                    <button class="jump hidden" id="btn-jump" type="button">New messages &darr;</button>
+                </div>
+                <div class="composer" id="composer">
+                    <div class="c-tabs">
+                        <button type="button" class="on" data-mode="reply">Reply to customer</button>
+                        <button type="button" data-mode="note">Private note</button>
+                        <select id="qr" aria-label="Saved replies"><option value="">Saved replies...</option></select>
+                    </div>
+                    <textarea id="reply-text" rows="2" placeholder="Write a reply. Enter sends, Shift+Enter starts a new line."></textarea>
                     <div class="row">
-                        <button class="btn primary" id="btn-reply" type="button">Send reply</button>
-                        <button class="btn" id="btn-note" type="button">Save as private note</button>
-                        <span class="mute" style="font-size:12px">A reply makes you the owner of the chat, so the bot stays quiet.</span>
+                        <span class="mute" id="c-hint">Replying makes you the owner of the chat, so the bot stays quiet.</span>
+                        <button class="btn primary" id="btn-send" type="button">Send reply</button>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 </div>
+<dialog id="task-dialog" class="dlg">
+    <button type="button" class="dlg-x" aria-label="Close">&times;</button>
+    <h3>Add a task for this chat</h3>
+    <label class="f" style="margin-top:12px"><span>What needs doing?</span><input type="text" id="tk-title" maxlength="200" placeholder="Call the customer back"></label>
+    <label class="f"><span>Due (optional)</span><input type="datetime-local" id="tk-due"></label>
+    <div class="dlg-foot"><button class="btn primary" id="tk-save" type="button">Add task</button></div>
+</dialog>
+<dialog id="tpl-dialog" class="dlg wide">
+    <button type="button" class="dlg-x" aria-label="Close">&times;</button>
+    <h3>Send a template</h3>
+    <p class="mute" style="margin-top:4px">The 24-hour window is closed, so WhatsApp only allows a template Meta has approved.</p>
+    <div id="tpl-options" class="tpl-options"></div>
+    <div id="tpl-params"></div>
+    <div class="f"><span>How it will look</span><div class="wa-bubble" id="tpl-preview">Choose a template.</div></div>
+    <div class="dlg-foot"><button class="btn primary" id="tpl-send" type="button" disabled>Send template</button></div>
+</dialog>
+<div class="toast" id="toast" hidden></div>
 <script src="{{ asset('js/inbox.js') }}"></script>
 <script src="{{ asset('js/notifications.js') }}"></script>
 </body>

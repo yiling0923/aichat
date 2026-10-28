@@ -109,4 +109,12 @@ class SmartUiTest extends TestCase
         $owner = $this->owner;
         $this->actingAs($owner)->get('/admin/automations')->assertOk()->assertSee('class="card fold"', false)->assertSee('Satisfaction survey');
     }
+
+    public function test_the_inbox_chat_screen_has_tabs_dialogs_and_the_jump_button(): void
+    {
+        $this->actingAs($this->owner)->get('/admin')->assertOk()
+            ->assertSee('Reply to customer')->assertSee('Private note')->assertSee('id="btn-send"', false)->assertSee('id="task-dialog"', false)
+            ->assertSee('id="tpl-dialog"', false)->assertSee('id="btn-jump"', false)->assertSee('id="mode-badge"', false)->assertSee('id="btn-back"', false)
+            ->assertSee('Enter sends, Shift+Enter');
+    }
 }
