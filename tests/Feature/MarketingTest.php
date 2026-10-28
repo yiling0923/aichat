@@ -594,4 +594,33 @@ class MarketingTest extends TestCase
             $this->get($url)->assertRedirect(route('login'));
         }
     }
+
+    /** Answers a survey that was sent on WhatsApp (a tap on a list row). */
+    public function test_a_survey_rating_tapped_on_whatsapp_is_recorded_and_answered(): void
+    {
+        config(['services.meta.app_secret' => 'topsecret']);
+        Http::fake(['graph.facebook.com/*' => Http::response(['messages' => [['id' => 'wamid.OUT']]])]);
+        [$c] = $this->customer(['name' => 'Amy']);
+        $this->in(fn () => Conversation::query()->delete());
+        $chat = $this->whatsappChat($c, '2026-11-10 07:00:00');                                  // customer wrote an hour ago
+        $this->booking($c, $chat, 'completed', '2026-11-10 05:00:00');
+        $this->enable('survey');
+
+        $this->assertSame(1, $this->runAutomations()['survey']);
+
+        $payload = ['object' => 'whatsapp_business_account', 'entry' => [['id' => 'W1', 'changes' => [['field' => 'messages', 'value' => [
+            'messaging_product' => 'whatsapp', 'metadata' => ['phone_number_id' => 'PN1'],
+            'contacts' => [['profile' => ['name' => 'Amy'], 'wa_id' => '60123']],
+            'messages' => [['from' => '60123', 'id' => 'wamid.rate', 'timestamp' => '1793000000', 'type' => 'interactive',
+                'interactive' => ['type' => 'list_reply', 'list_reply' => ['id' => 'rate_5', 'title' => '5 - Excellent']]]],
+        ]]]]]];
+        $raw = json_encode($payload);
+        $before = count(Http::recorded());
+        $this->call('POST', '/webhook/meta', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_HUB_SIGNATURE_256' => 'sha256='.hash_hmac('sha256', $raw, 'topsecret')], $raw)->assertOk();
+
+        $this->in(fn () => $this->assertSame(5, Survey::query()->first()->rating));
+        $sent = Http::recorded()->slice($before)->map(fn ($p) => $p[0]->data())->values()->all();
+        $texts = array_map(fn ($b) => $b['text']['body'] ?? ($b['interactive']['body']['text'] ?? ''), $sent);
+        $this->assertStringContainsString('Thank you for your feedback', implode(' | ', $texts));
+    }
 }
