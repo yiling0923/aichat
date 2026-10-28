@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Turn every chat into a booking</title>
+    <meta property="og:title" content="Turn every chat into a booking">
+    <meta name="theme-color" content="#0f766e">
     <meta name="description" content="One inbox for WhatsApp, Instagram, Messenger and your website. A bot that answers instantly, takes bookings and hands over to your team.">
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
 </head>
@@ -13,33 +15,49 @@
     <nav>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
         <a class="btn" href="{{ route('login') }}">Sign in</a>
         <a class="btn primary" href="{{ route('signup') }}">Start free trial</a>
     </nav>
 </header>
 
 <section class="lp-hero">
-    <h1>Turn every chat into a booking</h1>
-    <p>One inbox for WhatsApp, Instagram, Messenger and your website. A bot answers customers instantly in English and 中文, takes bookings straight into your calendar, and hands over to your team when a person is needed.</p>
-    <div class="lp-cta">
-        <a class="btn primary big" href="{{ route('signup') }}">Start your {{ config('plans.trial_days') }}-day free trial</a>
-        <a class="btn big" href="#how">See how it works</a>
+    <div class="lp-hero-in">
+        <div class="lp-hero-text">
+            <span class="lp-pill">For salons, clinics, studios and shops</span>
+            <h1>Turn every chat into a booking</h1>
+            <p>One inbox for WhatsApp, Instagram, Messenger and your website. A bot answers customers instantly in English and 中文, books them into your calendar, and hands over to your team when a person is needed.</p>
+            <div class="lp-cta">
+                <a class="btn primary big" href="{{ route('signup') }}">Start your {{ config('plans.trial_days') }}-day free trial</a>
+                <a class="btn big" href="#how">See how it works</a>
+            </div>
+            <small class="mute">No card needed. Set up in about 10 minutes.</small>
+        </div>
+        <div class="lp-phone" aria-hidden="true">
+            <div class="lp-phone-top"><span class="logo">G</span><div><b>Glow Beauty Studio</b><small>Replies instantly</small></div></div>
+            <div class="lp-msgs">
+                <div class="m in">Hi, do you have a slot for a facial this Saturday?</div>
+                <div class="m out">Yes! Saturday has 11:00, 14:30 and 16:00 free. Which suits you?</div>
+                <div class="m in">14:30 please</div>
+                <div class="m out ok">&#10003; Booked: Facial, Sat 14:30. We will remind you the day before.</div>
+            </div>
+        </div>
     </div>
-    <small class="mute">No card needed. Set up in about 10 minutes.</small>
+    <div class="lp-channels"><span>Works with</span><b>WhatsApp</b><b>Instagram</b><b>Messenger</b><b>Website chat</b><b>Google Calendar</b></div>
 </section>
 
 <section id="features" class="lp-section">
     <h2>Everything a busy front desk does, without the busy</h2>
     <div class="lp-grid">
         @foreach ([
-            ['Instant replies, day and night', 'Prices, opening hours, location and offers answered in seconds, in English and Chinese.'],
-            ['Bookings that cannot clash', 'Customers pick a service, day and time. Double bookings are blocked and Google Calendar stays in sync.'],
-            ['One shared team inbox', 'Every channel in one place. The bot steps aside when a person takes over, and gives the chat back when you are done.'],
-            ['Smart AI help, under control', 'AI can answer free-text questions from your own information only, or just suggest replies for your team to approve.'],
-            ['Follow-ups that run themselves', 'Reminders, satisfaction surveys, review requests and win-back messages, only to people who agreed to hear from you.'],
-            ['Clear reports', 'Chats, bookings, no-shows, busiest times, survey scores and revenue, with CSV export.'],
-        ] as [$title, $text])
-            <div class="lp-card"><h3>{{ $title }}</h3><p>{{ $text }}</p></div>
+            ['&#9889;', 'Instant replies, day and night', 'Prices, opening hours, location and offers answered in seconds, in English and Chinese.'],
+            ['&#128197;', 'Bookings that cannot clash', 'Customers pick a service, day and time. Double bookings are blocked and Google Calendar stays in sync.'],
+            ['&#128172;', 'One shared team inbox', 'Every channel in one place. The bot steps aside when a person takes over, and gives the chat back when you are done.'],
+            ['&#10024;', 'Smart AI help, under control', 'AI can answer free-text questions from your own information only, or just suggest replies for your team to approve.'],
+            ['&#128276;', 'Follow-ups that run themselves', 'Reminders, satisfaction surveys, review requests and win-back messages, only to people who agreed to hear from you.'],
+            ['&#128200;', 'Clear reports', 'Chats, bookings, no-shows, busiest times, survey scores and revenue, with CSV export.'],
+        ] as [$icon, $title, $text])
+            <div class="lp-card"><span class="lp-ic">{!! $icon !!}</span><h3>{{ $title }}</h3><p>{{ $text }}</p></div>
         @endforeach
     </div>
 </section>
@@ -58,7 +76,7 @@
     <p class="mute lp-sub">Start free. Upgrade when you are ready.</p>
     <div class="lp-grid three">
         @foreach (config('plans.plans') as $key => $plan)
-            <div class="lp-card price">
+            <div class="lp-card price {{ $key === 'starter' ? 'pop' : '' }}">@if ($key === 'starter')<span class="lp-badge">Most popular</span>@endif
                 <h3>{{ $plan['name'] }}</h3>
                 <p class="amount">{{ $plan['price_cents'] === 0 ? 'Free' : '$'.number_format($plan['price_cents'] / 100) }}<small>{{ $plan['price_cents'] === 0 ? ' for '.config('plans.trial_days').' days' : ' / month' }}</small></p>
                 <ul>
@@ -70,6 +88,24 @@
             </div>
         @endforeach
     </div>
+</section>
+
+<section id="faq" class="lp-section">
+    <h2>Questions people ask</h2>
+    <div class="lp-faq">
+        <details><summary>Do I need technical skills?</summary><p>No. You paste your price list, we draft your services and answers, and you approve them. Connecting channels is guided, with test buttons.</p></details>
+        <details><summary>Will the bot say something wrong?</summary><p>The menu bot only says what you wrote. The optional AI answers from your own information and can be set to only suggest replies that your team approves first.</p></details>
+        <details><summary>Can my team take over a chat?</summary><p>Yes. Reply in the inbox and the bot stays quiet. Press "Give back to bot" when you are done.</p></details>
+        <details><summary>Which languages are supported?</summary><p>English and Chinese today. The bot replies in the language the customer uses.</p></details>
+        <details><summary>What happens after the free trial?</summary><p>You choose a plan or stop. Nothing is charged without your approval, and you can export your customer list any time.</p></details>
+        <details><summary>Is my customers' data safe?</summary><p>Each business only sees its own data. Customers can ask for their data to be downloaded or erased, and promotions go only to people who agreed.</p></details>
+    </div>
+</section>
+
+<section class="lp-final">
+    <h2>Stop losing customers to slow replies</h2>
+    <p>Start your free trial and have your first chat link live today.</p>
+    <a class="btn big lp-white" href="{{ route('signup') }}">Start your {{ config('plans.trial_days') }}-day free trial</a>
 </section>
 
 @if (app()->environment('local'))
@@ -86,7 +122,7 @@
 
 <footer class="lp-foot">
     <span>&copy; {{ date('Y') }} AI Messaging Sales Assistant</span>
-    <span><a href="{{ route('terms') }}">Terms</a> · <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('login') }}">Sign in</a></span>
+    <span><a href="#features">Features</a> · <a href="#pricing">Pricing</a> · <a href="#faq">FAQ</a> · <a href="{{ route('terms') }}">Terms</a> · <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('login') }}">Sign in</a></span>
 </footer>
 </body>
 </html>

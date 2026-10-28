@@ -264,3 +264,9 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 1. Sign out and open `/login`: same look as sign-up, with "Show" on the password and "Keep me signed in".
 2. Type a wrong password: the message appears under the email and your email stays filled in.
 3. Press "Forgot password?", send the link, open it from `storage/logs/laravel.log`, choose a new password. All three pages share the same style.
+
+## AD. Landing page
+
+1. Open `/` signed out. Top: headline, a sample booking chat, and the channels it works with.
+2. Scroll: features, how it works, plans (Starter marked "Most popular"), questions (click one to open), and a final sign-up band.
+3. On a phone the menu shrinks to Sign in and Start free trial, and everything stacks in one column.
