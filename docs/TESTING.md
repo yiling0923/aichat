@@ -335,3 +335,5 @@ Open the chat link (Settings, "Your customer chat link").
 2. In the customer chat, type `human`. Within about 10 seconds you hear a four-note chime, the bell shakes and the number goes up. A new booking or message gives a softer two-note chime.
 3. Click the bell: the bottom left says "Sound is on". Press it to turn sound off (and again to turn it on and hear a test chime). Your choice is remembered in that browser.
 4. Check your computer or phone volume is up and the browser tab is not muted.
+
+Bell menu position (AM, step 5): open the bell on the Inbox page, on Today, and on a phone. The list must always sit fully on screen, never hidden behind the left menu.

@@ -462,7 +462,7 @@ body.lp { height: auto; background: var(--surface); }
 .bell-btn svg { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .bell-badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .bell-badge[hidden] { display: none; }
-.bell-menu { position: absolute; right: 0; top: 44px; z-index: 30; width: min(380px, 92vw); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(16, 40, 40, .16); overflow: hidden; }
+.bell-menu { position: absolute; right: 0; top: 44px; z-index: 200; width: min(380px, 92vw); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(16, 40, 40, .16); overflow: hidden; }
 .bell-menu[hidden] { display: none; }
 .bell-head, .bell-foot { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; font-size: 13px; }
 .bell-head { border-bottom: 1px solid var(--line-s); }

@@ -84,7 +84,17 @@
 
   function load() { fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d) { render(d); } }).catch(function () {}); }
 
-  btn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; if (!menu.hidden) { load(); } });
+  // Place the menu under the bell but always inside the screen, whatever column the bell is in (the Inbox list is narrow).
+  function place() {
+    var r = btn.getBoundingClientRect(), w = Math.min(380, window.innerWidth - 16);
+    var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+    menu.style.position = 'fixed'; menu.style.width = w + 'px'; menu.style.left = left + 'px'; menu.style.right = 'auto';
+    menu.style.top = (r.bottom + 8) + 'px';
+    menu.querySelector('.bell-list').style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 130) + 'px';
+  }
+  window.addEventListener('resize', function () { if (!menu.hidden) { place(); } });
+
+  btn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; if (!menu.hidden) { place(); load(); } });
   document.addEventListener('click', function (e) { if (!e.target.closest('#bell')) { menu.hidden = true; } });
   document.getElementById('bell-all').addEventListener('click', function () { post('/read-all').then(load); });
 
