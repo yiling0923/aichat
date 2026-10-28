@@ -919,3 +919,29 @@ tr[hidden] { display: none; }
 @media (min-width: 721px) { .plat-main .filters .seg { width: auto; } }
 @media (max-width: 720px) { .plat-main .filters { flex-direction: column; align-items: stretch; } }
 @media (max-width: 720px) { .plat-main .filters .grow { flex: none; } }
+
+/* Customer chat polish */
+.chat-wrap { height: calc(100dvh - 40px); }
+.chat-head { box-shadow: 0 1px 0 rgba(0, 0, 0, .06); }
+.chat-head .who-box { flex: 1; min-width: 0; }
+.chat-head small { display: flex; align-items: center; gap: 6px; }
+.chat-head .dot { width: 7px; height: 7px; border-radius: 50%; background: #86efac; box-shadow: 0 0 0 3px rgba(134, 239, 172, .25); }
+.chat-restart { border: 0; background: rgba(255, 255, 255, .16); color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 17px; cursor: pointer; }
+.chat-restart:hover { background: rgba(255, 255, 255, .28); }
+.bubble { position: relative; }
+.bubble time { display: block; font-size: 10.5px; opacity: .55; margin-top: 3px; text-align: right; }
+.bubble a { color: inherit; text-decoration: underline; word-break: break-all; }
+.bubble.typing { display: flex; gap: 4px; padding: 13px 14px; }
+.bubble.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); animation: chat-dot 1s infinite ease-in-out; }
+.bubble.typing i:nth-child(2) { animation-delay: .15s; }
+.bubble.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes chat-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
+.chat-form { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); align-items: center; }
+.chat-form input { font-size: 16px; }
+.chat-form input:focus { outline: 2px solid var(--accent-m); border-color: var(--accent); }
+.chat-form button { width: 42px; height: 42px; padding: 0; display: grid; place-items: center; flex: none; }
+.chat-form button:disabled { background: var(--line); color: #fff; cursor: default; }
+.chat-foot { text-align: center; font-size: 10.5px; color: var(--faint); padding: 0 0 8px; background: #fff; }
+.option-row button { min-height: 36px; }
+@media (max-width: 520px) { .chat-wrap { height: 100dvh; } }
+@media (prefers-reduced-motion: reduce) { .bubble.typing i { animation: none; } }

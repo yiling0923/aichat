@@ -286,3 +286,13 @@ Sign in as the platform owner (`php artisan aichat:make-platform-owner you@examp
 2. Type in the search box or press Trial, Paying, Needs attention or Paused: the list narrows without reloading.
 3. Press Pause on a business: a small pop-up asks for an optional reason. The row turns pink and shows the reason. Press Resume to undo.
 4. Invitations tab: "Make a code" opens a pop-up. New codes show in the list; "Copy link" copies the sign-up link with the code in it.
+
+## AG. Customer chat
+
+Open the chat link (Settings, "Your customer chat link").
+1. The header shows the business name and "Replies instantly" with a green dot. It uses the colour you chose in Settings.
+2. Press Start, tap the buttons, then type a message. The send arrow is grey until you type something. Three bouncing dots show while the bot is thinking.
+3. Each message shows its time. Links in messages are clickable.
+4. When staff reply from the Inbox, the header says "A team member is replying".
+5. The circular arrow in the header starts a new chat after a confirmation.
+6. On a phone the chat fills the screen and the keyboard does not hide the box.

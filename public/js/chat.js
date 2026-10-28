@@ -18,6 +18,19 @@
 
   try { token = localStorage.getItem(storageKey); } catch (e) { token = null; }
 
+  // Plain text with clickable links. Built with the DOM, never as HTML.
+  function appendText(el, text) {
+    var re = /(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) { el.appendChild(document.createTextNode(text.slice(last, m.index))); }
+      var a = document.createElement('a');
+      a.href = m[0]; a.textContent = m[0]; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      el.appendChild(a);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) { el.appendChild(document.createTextNode(text.slice(last))); }
+  }
+
   function line(from, text, options) {
     var div = document.createElement('div');
     div.className = 'bubble ' + from;
@@ -27,7 +40,10 @@
       who.textContent = 'Staff';
       div.appendChild(who);
     }
-    div.appendChild(document.createTextNode(text || ''));
+    appendText(div, text || '');
+    var stamp = document.createElement('time');
+    stamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    div.appendChild(stamp);
     log.appendChild(div);
 
     if (options && options.length) {
@@ -50,8 +66,9 @@
   function showTyping() {
     if (typing) { return; }
     typing = document.createElement('div');
-    typing.className = 'bubble bot';
-    typing.textContent = '...';
+    typing.className = 'bubble bot typing';
+    typing.setAttribute('aria-label', 'Typing');
+    typing.innerHTML = '<i></i><i></i><i></i>';
     log.appendChild(typing);
     log.scrollTop = log.scrollHeight;
   }
@@ -70,17 +87,24 @@
     });
   }
 
+  var status = document.getElementById('chat-status');
+  var sendBtn = document.getElementById('chat-send');
   function setMode(mode) {
-    notice.textContent = mode === 'human' ? 'A team member is replying to you.' : '';
+    notice.textContent = '';
+    status.textContent = mode === 'human' ? 'A team member is replying' : 'Replies instantly';
   }
+  function syncSend() { sendBtn.disabled = busy || !input.value.trim(); }
+  input.addEventListener('input', syncSend);
 
   function send(text, optionId) {
     text = (text || '').trim();
     if (!text || busy) { return; }
     busy = true;
     input.value = '';
+    syncSend();
     notice.textContent = '';
     if (welcomeRow && welcomeRow.parentNode) { welcomeRow.parentNode.removeChild(welcomeRow); welcomeRow = null; }
+    log.querySelectorAll('.option-row').forEach(function (r) { r.parentNode.removeChild(r); });
     showTyping();
     fetch(sendUrl, {
       method: 'POST',
@@ -93,6 +117,7 @@
     }).then(function (data) {
       hideTyping();
       busy = false;
+      syncSend();
       if (data.token) {
         token = data.token;
         try { localStorage.setItem(storageKey, token); } catch (e) { /* storage may be blocked */ }
@@ -103,9 +128,10 @@
       hideTyping();
       busy = false;
       input.value = text;
+      syncSend();
       notice.textContent = e.message === 'slow'
-        ? 'You are sending messages very fast. Please wait a moment and try again.'
-        : 'Could not send. Please check your connection and try again.';
+        ? 'You are sending messages very fast. Please wait a moment. 请稍等片刻。'
+        : 'Could not send. Check your connection and try again. 发送失败，请检查网络。';
     });
   }
 
@@ -124,14 +150,19 @@
       .catch(function () { /* try again on the next tick */ });
   }
 
+  document.getElementById('chat-restart').addEventListener('click', function () {
+    if (!window.confirm('Start a new chat? 开始新的对话？')) { return; }
+    try { localStorage.removeItem(storageKey); } catch (e) { /* ignore */ }
+    token = null; seen = {}; lastId = 0; log.innerHTML = ''; notice.textContent = ''; setMode('bot'); greet(); input.focus();
+  });
+
   form.addEventListener('submit', function (e) { e.preventDefault(); send(input.value); });
 
-  if (token) {
-    poll();
-  } else {
-    // A first-time visitor sees a greeting instead of an empty box. Nothing is saved until they answer.
+  // A first-time visitor sees a greeting instead of an empty box. Nothing is saved until they answer.
+  function greet() {
     line('bot', 'Hi! Welcome to ' + businessName + '.\n您好！欢迎来到' + businessName + '。', [{ label: 'Start / 开始', id: null, text: 'start' }]);
     welcomeRow = log.lastChild;
   }
+  if (token) { poll(); } else { greet(); }
   setInterval(poll, 3000);
 })();
