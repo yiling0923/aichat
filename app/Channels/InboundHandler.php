@@ -72,6 +72,12 @@ class InboundHandler
 
             $replies = $this->bot->respond($conversation, $incoming, $event->optionId);
 
+            // A trace for troubleshooting: what arrived and what the bot did with it.
+            Log::info('Meta message handled', [
+                'channel' => $channel->type, 'conversation' => $conversation->id, 'option' => $event->optionId,
+                'mode' => $conversation->fresh()->mode, 'replies' => count($replies),
+            ]);
+
             if ($replies === [] && $conversation->isHandledByStaff()) {
                 $this->n8n->send('customer.message', [
                     'business' => $business->slug,

@@ -40,7 +40,10 @@ class MetaWebhookController extends Controller
             return response('Forbidden', 403);
         }
 
-        foreach ($parser->parse((array) $request->json()->all()) as $event) {
+        $events = $parser->parse((array) $request->json()->all());
+        Log::info('Meta webhook received', ['messages' => count($events)]);
+
+        foreach ($events as $event) {
             try {
                 $handler->handle($event);
             } catch (Throwable $e) {
