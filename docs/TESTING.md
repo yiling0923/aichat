@@ -337,3 +337,12 @@ Open the chat link (Settings, "Your customer chat link").
 4. Check your computer or phone volume is up and the browser tab is not muted.
 
 Bell menu position (AM, step 5): open the bell on the Inbox page, on Today, and on a phone. The list must always sit fully on screen, never hidden behind the left menu.
+
+## AN. Sample data (so every page has something to show)
+
+For testing only. In your project folder run:
+- `php artisan aichat:sample-data` fills the sample clinic (Lumiere) with about 45 customers, 130 bookings (last 6 weeks and next 2), paid orders, 16 chats (some waiting for staff), tasks, surveys, an automation log, two broadcasts, AI usage and bell alerts.
+- Run it again any time to refresh it. It never doubles up.
+- `php artisan aichat:sample-data --remove` clears only the sample rows (their emails end in `@sample.test`). Your own data stays.
+- Another business: `--business=your-slug`. More or fewer people: `--customers=80`.
+Then press Ctrl+F5 and look at Today, Schedule, Customers, Reports, Orders, Inbox and Marketing.
