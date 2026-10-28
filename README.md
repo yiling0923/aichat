@@ -107,8 +107,10 @@ For Meta to reach your computer you need a public address, so we use a free tunn
    Then run `php artisan config:clear`.
 8. Sign in as owner (use the tunnel address from now on, or http://localhost/aichat/public) and open **Channels**. The page shows your **Callback URL** and **Verify token**.
 9. Under **Add an account** choose **WhatsApp**, paste the Phone number ID, WhatsApp Business Account ID and the access token, and click **Add channel**. Then click **Check connection**: it should say "Connected to ...".
-10. Back in Meta: **WhatsApp > Configuration > Webhook > Edit**. Paste the Callback URL and Verify token from the Channels page and click **Verify and save**.
-    Then under **Webhook fields** click **Subscribe** next to **messages**. In the app, also press **Subscribe to messages** on the channel.
+10. **Easiest way:** add `META_APP_ID=` (Meta app dashboard, Application Settings > Basic, "Application Number") to `.env`, run `php artisan config:clear`, keep the tunnel open,
+    and press **Save these in Meta for me** on the Channels page. It saves the Callback URL and Verify token in Meta for you. Then press **Subscribe to messages** on the channel and skip to step 11.
+    (The manual way, if you prefer: in Meta: **WhatsApp > Configuration > Webhook > Edit**. Paste the Callback URL and Verify token from the Channels page and click **Verify and save**.
+    Then under **Webhook fields** click **Subscribe** next to **messages**. In the app, also press **Subscribe to messages** on the channel.)
 11. Test: on the Channels page type your phone number (country code, no `+`) and press **Send a test message**. You get Meta's "hello_world" message.
     Reply to it from your phone with `hi`. Within seconds the bot answers with language buttons. Tap through the menu and make a booking. The chat appears in the **Inbox**.
 

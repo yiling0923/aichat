@@ -8,6 +8,7 @@ use App\Models\MessageTemplate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Throwable;
 
@@ -100,6 +101,45 @@ class ChannelController extends Controller
 
             return back()->withErrors(['channel' => 'Meta says: '.$e->getMessage()]);
         }
+    }
+
+    /**
+     * Saves our Callback URL and Verify token in the Meta app, for the kinds of channel that are connected.
+     * Meta calls our address straight away to check it, so the tunnel must be running.
+     */
+    public function registerWebhook(MetaGraph $graph): RedirectResponse
+    {
+        $appId = (string) config('services.meta.app_id');
+        $secret = (string) config('services.meta.app_secret');
+        $verify = (string) config('services.meta.verify_token');
+
+        if ($appId === '' || $secret === '' || $verify === '') {
+            return back()->withErrors(['channel' => 'Set META_APP_ID, META_APP_SECRET and META_VERIFY_TOKEN in .env, then run php artisan config:clear.']);
+        }
+
+        $objects = ['whatsapp' => ['whatsapp_business_account', 'messages'], 'messenger' => ['page', 'messages,messaging_postbacks'], 'instagram' => ['instagram', 'messages,messaging_postbacks']];
+        $types = Channel::query()->pluck('type')->unique();
+        $url = rtrim((string) config('app.url'), '/').'/webhook/meta';
+        $done = [];
+
+        foreach ($types as $type) {
+            [$object, $fields] = $objects[$type];
+
+            try {
+                $response = Http::asForm()->timeout(15)->post($graph->url($appId.'/subscriptions'), [
+                    'object' => $object, 'callback_url' => $url, 'verify_token' => $verify, 'fields' => $fields,
+                    'access_token' => $appId.'|'.$secret,
+                ]);
+                $graph->orFail($response);
+                $done[] = Channel::TYPES[$type];
+            } catch (Throwable $e) {
+                return back()->withErrors(['channel' => 'Meta says: '.$e->getMessage().' (the tunnel must be open and the address must match APP_URL)']);
+            }
+        }
+
+        return $done === []
+            ? back()->withErrors(['channel' => 'Add a channel first.'])
+            : back()->with('status', 'Webhook saved in Meta for '.implode(', ', $done).'. Now press "Subscribe to messages" on the channel and send a test.');
     }
 
     /** Tells Meta to send this account's messages to our webhook. */

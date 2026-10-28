@@ -418,6 +418,36 @@ class ChannelTest extends TestCase
             ->assertDontSee('This address only works on your own computer');
     }
 
+    public function test_the_webhook_can_be_saved_in_meta_from_the_channels_page(): void
+    {
+        config(['services.meta.app_id' => '555', 'app.url' => 'https://abc123.lhr.life/aichat/public']);
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $this->meta(['graph.facebook.com/v21.0/555/subscriptions' => Http::response(['success' => true])]);
+
+        $this->actingAs($owner)->post('/admin/channels/webhook')->assertSessionHas('status', fn ($s) => str_contains($s, 'WhatsApp'));
+
+        Http::assertSent(fn ($r) => str_contains($r->url(), '/555/subscriptions')
+            && $r['object'] === 'whatsapp_business_account'
+            && $r['callback_url'] === 'https://abc123.lhr.life/aichat/public/webhook/meta'
+            && $r['verify_token'] === 'verify-me'
+            && $r['fields'] === 'messages'
+            && $r['access_token'] === '555|topsecret');
+    }
+
+    public function test_saving_the_webhook_needs_the_app_settings_and_shows_meta_errors(): void
+    {
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+
+        $this->actingAs($owner)->post('/admin/channels/webhook')->assertSessionHasErrors('channel');   // no META_APP_ID
+
+        config(['services.meta.app_id' => '555']);
+        $this->meta(['graph.facebook.com/*' => Http::response(['error' => ['message' => 'Callback verification failed']], 400)]);
+        $this->actingAs($owner)->post('/admin/channels/webhook')->assertSessionHasErrors('channel');
+
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $this->actingAs($staff)->post('/admin/channels/webhook')->assertForbidden();
+    }
+
     public function test_check_subscribe_and_test_message_buttons(): void
     {
         $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);

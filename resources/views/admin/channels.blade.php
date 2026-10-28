@@ -13,6 +13,11 @@
             <label class="f"><span>Callback URL</span><input type="text" readonly value="{{ $webhookUrl }}" onclick="this.select()"></label>
             <label class="f"><span>Verify token</span><input type="text" readonly value="{{ $verifyToken ?: '(not set: add META_VERIFY_TOKEN to .env)' }}" onclick="this.select()"></label>
         </div>
+        <form method="post" action="{{ url('/admin/channels/webhook') }}" class="bar" style="margin-top:12px">
+            @csrf
+            <button class="btn primary" type="submit">Save these in Meta for me</button>
+            <span class="mute small-note">Needs META_APP_ID, META_APP_SECRET and META_VERIFY_TOKEN in .env, and the tunnel open. Easier than hunting for the page in Meta.</span>
+        </form>
         @if ($isLocal)
             <div class="note warn">This address only works on your own computer. Meta needs a public address: start a free tunnel (ngrok) and set <code>APP_URL</code> in <code>.env</code> to the tunnel address, then run <code>php artisan config:clear</code>.</div>
         @endif

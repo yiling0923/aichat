@@ -111,6 +111,7 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     $ch = \App\Http\Controllers\ChannelController::class;
     Route::get('/channels', [$ch, 'index'])->name('channels');
     Route::post('/channels', [$ch, 'store']);
+    Route::post('/channels/webhook', [$ch, 'registerWebhook']);
     Route::post('/channels/{id}', [$ch, 'update'])->whereNumber('id');
     Route::post('/channels/{id}/delete', [$ch, 'destroy'])->whereNumber('id');
     Route::post('/channels/{id}/check', [$ch, 'check'])->whereNumber('id');

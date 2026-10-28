@@ -37,6 +37,7 @@ return [
 
     'meta' => [
         // One Meta app serves every business. Set these in .env (see README, Step 4).
+        'app_id' => env('META_APP_ID'),
         'app_secret' => env('META_APP_SECRET'),
         'verify_token' => env('META_VERIFY_TOKEN'),
         'graph_version' => env('META_GRAPH_VERSION', 'v21.0'),
