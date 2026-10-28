@@ -291,3 +291,15 @@ details.menu summary::-webkit-details-marker { display: none; }
 .tile span { font-size: 12.5px; color: var(--mute); line-height: 1.4; }
 .crumb { display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--mute); margin-bottom: 8px; }
 .mini-link { font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+/* Reports: calmer layout */
+.kpis.main { grid-template-columns: repeat(auto-fit, minmax(min(200px, 44%), 1fr)); }
+.kpis.main .kpi b { font-size: 30px; }
+.strip { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 11px 16px; margin-bottom: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); font-size: 12.5px; color: var(--mute); }
+.strip b { color: var(--ink); font-size: 14px; }
+.strip small { color: var(--faint); }
+.rtab[hidden] { display: none; }
+.filters { padding: 10px 14px; }
+.cols { grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); }
+.tabs { overflow-x: auto; white-space: nowrap; }
+.tabs a { flex: none; }
