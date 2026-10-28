@@ -22,7 +22,7 @@
                 <label class="f"><span>Email</span><input type="email" name="email" value="{{ old('email', $customer->email) }}"></label>
                 <label class="f"><span>Language</span>
                     <select name="language"><option value="">-</option>@foreach (config('aichat.languages') as $l)<option value="{{ $l }}" @selected($customer->language === $l)>{{ strtoupper($l) }}</option>@endforeach</select></label>
-                <label class="f"><span>Score</span>
+                <label class="f"><span>Lead level (Hot = ready to buy)</span>
                     <select name="score"><option value="">-</option>@foreach (['hot', 'warm', 'cold'] as $s)<option value="{{ $s }}" @selected($customer->score === $s)>{{ ucfirst($s) }}</option>@endforeach</select></label>
             </div>
             <div class="f"><span>Tags</span>

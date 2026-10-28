@@ -160,7 +160,7 @@ class ReportData
             'chatsByChannel' => $this->chats($this->from, $this->to)->select('channel', DB::raw('count(*) as n'))->groupBy('channel')->orderByDesc('n')->get()
                 ->map(fn ($r) => ['label' => self::CHANNELS[$r->channel] ?? ucfirst($r->channel), 'n' => (int) $r->n])->all(),
             'leadsByScore' => Customer::query()->whereBetween('created_at', [$this->from, $this->to])->select('score', DB::raw('count(*) as n'))->groupBy('score')->orderByDesc('n')->get()
-                ->map(fn ($r) => ['label' => ucfirst($r->score ?: 'No score'), 'n' => (int) $r->n])->all(),
+                ->map(fn ($r) => ['label' => ucfirst($r->score ?: 'Not set'), 'n' => (int) $r->n])->all(),
             'bookingStatus' => $byStatus->map(fn ($n, $k) => ['label' => ucfirst(str_replace('_', ' ', $k)), 'n' => $n])->values()->all(),
             'topServices' => $valid->countBy('service_id')->sortDesc()->take(6)->map(fn ($n, $id) => ['label' => $services[$id]?->label('en') ?? '-', 'n' => $n])->values()->all(),
             'byPractitioner' => $valid->countBy('practitioner_id')->sortDesc()->take(8)->map(fn ($n, $id) => ['label' => $practitioners[$id]?->name ?? '-', 'n' => $n])->values()->all(),
@@ -271,7 +271,7 @@ class ReportData
             'bookings' => [['Booked on', 'Visit', 'Customer', 'Phone', 'Service', 'Practitioner', 'Status'],
                 $this->bookings($this->from, $this->to)->with(['customer', 'service', 'practitioner'])->orderBy('starts_at')->limit(20000)->get()
                     ->map(fn ($b) => [$local($b->created_at), $local($b->starts_at), $b->customer?->name, $b->customer?->phone, $b->service?->label('en'), $b->practitioner?->name, $b->status])->all()],
-            'customers' => [['Added', 'Name', 'Phone', 'Email', 'Language', 'Score', 'Interest', 'Opted out of promotions'],
+            'customers' => [['Added', 'Name', 'Phone', 'Email', 'Language', 'Lead level', 'Interest', 'Opted out of promotions'],
                 Customer::query()->whereBetween('created_at', [$this->from, $this->to])->orderBy('created_at')->limit(20000)->get()
                     ->map(fn ($c) => [$local($c->created_at), $c->name, $c->phone, $c->email, $c->language, $c->score, $c->interest, $c->opted_out_at ? 'yes' : 'no'])->all()],
             'orders' => [['Date', 'Reference', 'Customer', 'Items', 'Amount', 'Status'],

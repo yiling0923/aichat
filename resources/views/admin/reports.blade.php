@@ -100,7 +100,7 @@
     <section class="rtab" id="tab-people" hidden>
         <div class="masonry">
             <div class="card"><h3>Chats by channel</h3>@include('admin._bars', ['rows' => $s['chatsByChannel']])</div>
-            <div class="card"><h3>New customers by score</h3>@include('admin._bars', ['rows' => $s['leadsByScore']])</div>
+            <div class="card"><h3>New customers by lead level</h3>@include('admin._bars', ['rows' => $s['leadsByScore']])</div>
             <div class="card"><h3>Most tapped buttons</h3>@include('admin._bars', ['rows' => $s['topTaps']])</div>
             <div class="card"><h3>Survey ratings</h3>@include('admin._bars', ['rows' => $s['ratings']])</div>
         </div>
