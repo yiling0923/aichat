@@ -10,7 +10,7 @@ class Strings
 {
     private const MAP = [
         'en' => [
-            'sorry_choose' => 'Sorry, I did not understand that. Please choose one of the options below.',
+            'sorry_choose' => 'Sorry, I did not understand that. Please tap one of the options below, or type "human" to talk to our team.',
             'sorry_ask' => 'Sorry, that does not look right. Please try again.',
             'invalid_phone' => 'That phone number does not look right. Please type the full number, for example 012-345 6789.',
             'back_to_menu' => 'Main menu',
@@ -23,7 +23,7 @@ class Strings
             'booking_pick_day' => 'Which day suits you?',
             'booking_pick_time' => 'What time on {day}?',
             'booking_ask_name' => 'Almost done. What is your name? (Type back to change the time.)',
-            'booking_ask_phone' => 'Thanks, {name}. What is your phone number? By sharing it you agree that we may contact you about your booking. (Type back to change the time.)',
+            'booking_ask_phone' => 'Thanks, {name}. What is your phone number? We will only use it to contact you about this booking. (Type back to change the time.)',
             'booking_confirmed' => "You are booked, {name}!\n{service}\n{when}\nWith {who}\nWe will remind you before your visit. To change or cancel, choose My booking in the menu.",
             'booking_slot_taken' => 'Sorry, that time was just taken. Please choose another time.',
             'booking_no_slots' => 'Sorry, there are no free times in the coming days. I am connecting you with our team.',
@@ -50,7 +50,7 @@ class Strings
             'opt_more_times' => 'More times',
         ],
         'zh' => [
-            'sorry_choose' => '抱歉，我没有理解。请从下面的选项中选择。',
+            'sorry_choose' => '抱歉，我没有理解。请点选下面的选项，或输入“人工”联系我们的团队。',
             'sorry_ask' => '抱歉，这个好像不对，请再试一次。',
             'invalid_phone' => '这个电话号码好像不对，请输入完整号码，例如 012-345 6789。',
             'back_to_menu' => '主菜单',
@@ -63,7 +63,7 @@ class Strings
             'booking_pick_day' => '哪一天方便？',
             'booking_pick_time' => '{day} 几点方便？',
             'booking_ask_name' => '快好了。请问您怎么称呼？（输入“返回”可更改时间。）',
-            'booking_ask_phone' => '谢谢，{name}。请问您的电话号码是多少？提供号码即表示您同意我们就此预约联系您。（输入“返回”可更改时间。）',
+            'booking_ask_phone' => '谢谢，{name}。请问您的电话号码是多少？我们只会用它来联系您处理这次预约。（输入“返回”可更改时间。）',
             'booking_confirmed' => "预约成功，{name}！\n{service}\n{when}\n接待：{who}\n我们会在您到访前提醒您。如需更改或取消，请在菜单选择“我的预约”。",
             'booking_slot_taken' => '抱歉，这个时间刚刚被预约了，请选择其他时间。',
             'booking_no_slots' => '抱歉，近期没有空档。我正在为您转接我们的团队。',

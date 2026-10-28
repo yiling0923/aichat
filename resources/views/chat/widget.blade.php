@@ -9,6 +9,7 @@
 <body class="chat-body">
 <div class="chat-wrap" id="chat"
      data-slug="{{ $business->slug }}"
+     data-name="{{ $business->name }}"
      data-send-url="{{ route('chat.send', $business->slug) }}"
      data-poll-url="{{ route('chat.poll', $business->slug) }}">
     <div class="chat-head">

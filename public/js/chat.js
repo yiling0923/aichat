@@ -7,6 +7,10 @@
   var notice = document.getElementById('chat-notice');
   var sendUrl = root.dataset.sendUrl;
   var pollUrl = root.dataset.pollUrl;
+  var businessName = root.dataset.name || '';
+  var welcomeRow = null;
+  var busy = false;
+  var typing = null;
   var storageKey = 'aichat-token-' + root.dataset.slug;
   var token = null;
   var seen = {};
@@ -34,12 +38,27 @@
         b.type = 'button';
         b.textContent = o.label || o;
         if (o.id === '__back' || o.id === 'back') { b.className = 'back'; }
-        b.addEventListener('click', function () { send(o.label || o, o.id); });
+        b.addEventListener('click', function () { send(o.text || o.label || o, o.id); });
         row.appendChild(b);
       });
       log.appendChild(row);
     }
     log.scrollTop = log.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    if (typing) { return; }
+    typing = document.createElement('div');
+    typing.className = 'bubble bot';
+    typing.textContent = '...';
+    log.appendChild(typing);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function hideTyping() {
+    if (typing && typing.parentNode) { typing.parentNode.removeChild(typing); }
+    typing = null;
   }
 
   function render(messages) {
@@ -57,20 +76,37 @@
 
   function send(text, optionId) {
     text = (text || '').trim();
-    if (!text) { return; }
+    if (!text || busy) { return; }
+    busy = true;
     input.value = '';
+    notice.textContent = '';
+    if (welcomeRow && welcomeRow.parentNode) { welcomeRow.parentNode.removeChild(welcomeRow); welcomeRow = null; }
+    showTyping();
     fetch(sendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ text: text, option_id: optionId || null, token: token })
-    }).then(function (r) { return r.json(); }).then(function (data) {
+    }).then(function (r) {
+      if (r.status === 429) { throw new Error('slow'); }
+      if (!r.ok) { throw new Error('failed'); }
+      return r.json();
+    }).then(function (data) {
+      hideTyping();
+      busy = false;
       if (data.token) {
         token = data.token;
         try { localStorage.setItem(storageKey, token); } catch (e) { /* storage may be blocked */ }
       }
       setMode(data.mode);
       render(data.messages || []);
-    }).catch(function () { notice.textContent = 'Could not send. Please try again.'; });
+    }).catch(function (e) {
+      hideTyping();
+      busy = false;
+      input.value = text;
+      notice.textContent = e.message === 'slow'
+        ? 'You are sending messages very fast. Please wait a moment and try again.'
+        : 'Could not send. Please check your connection and try again.';
+    });
   }
 
   function poll() {
@@ -90,6 +126,12 @@
 
   form.addEventListener('submit', function (e) { e.preventDefault(); send(input.value); });
 
-  if (token) { poll(); }
+  if (token) {
+    poll();
+  } else {
+    // A first-time visitor sees a greeting instead of an empty box. Nothing is saved until they answer.
+    line('bot', 'Hi! Welcome to ' + businessName + '.\n您好！欢迎来到' + businessName + '。', [{ label: 'Start / 开始', id: null, text: 'start' }]);
+    welcomeRow = log.lastChild;
+  }
   setInterval(poll, 3000);
 })();
