@@ -270,3 +270,11 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 1. Open `/` signed out. Top: headline, a sample booking chat, and the channels it works with.
 2. Scroll: features, how it works, plans (Starter marked "Most popular"), questions (click one to open), and a final sign-up band.
 3. On a phone the menu shrinks to Sign in and Start free trial, and everything stacks in one column.
+
+## AE. Setup wizard (Getting started)
+
+1. Open Getting started as the owner. A progress bar and five step chips sit at the top; finished steps show a tick.
+2. Step 1: paste a few price lines (for example `Facial - RM 188 (60 min)`), press "Draft my setup". Each service is one neat row with a tick box. Untick one: the row fades and the button count goes down.
+3. Press "Approve and save". Then check Booking setup for the services. "Discard draft" asks before throwing it away.
+4. Step 3 has a copyable chat link. Step 5: "I am ready, go live" changes the top to "You are live".
+5. On a phone every row stacks and nothing is cut off.
