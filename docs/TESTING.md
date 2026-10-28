@@ -296,3 +296,10 @@ Open the chat link (Settings, "Your customer chat link").
 4. When staff reply from the Inbox, the header says "A team member is replying".
 5. The circular arrow in the header starts a new chat after a confirmation.
 6. On a phone the chat fills the screen and the keyboard does not hide the box.
+
+## AH. Plan and billing
+
+1. Open Plan & billing as the owner. The top card shows your plan, its status and bars for AI replies, team members, practitioners and channels. Bars turn amber near the limit and red at the limit.
+2. In the last 3 days of a trial (or after it ends) a coloured message explains what happens.
+3. Choose Starter (test mode takes no money). The page then shows "Your plan" on Starter, "Upgrade to Growth" on the other, the renewal date, and a row under Payments.
+4. "Cancel renewal" asks first, then shows "Not renewing" and "Works until ...".

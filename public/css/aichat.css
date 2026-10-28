@@ -945,3 +945,23 @@ tr[hidden] { display: none; }
 .option-row button { min-height: 36px; }
 @media (max-width: 520px) { .chat-wrap { height: 100dvh; } }
 @media (prefers-reduced-motion: reduce) { .bubble.typing i { animation: none; } }
+
+/* Billing */
+.bill-now { display: grid; grid-template-columns: minmax(220px, 1fr) 2fr; gap: 28px; align-items: start; }
+.bill-plan h2 { margin: 2px 0 8px; font-size: 26px; }
+.bill-use { display: grid; gap: 14px; }
+.use-row .progress { margin: 6px 0 2px; }
+.progress.warn span { background: #f59e0b; }
+.bill-h { margin: 22px 0 10px; }
+.bill-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; max-width: 700px; }
+.bill-card { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.bill-card h3 { margin: 0; }
+.bill-card .amount { font-size: 32px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+.bill-card .amount small { font-size: 13px; font-weight: 500; color: var(--mute); }
+.bill-card ul { list-style: none; margin: 0; padding: 0; flex: 1; font-size: 13.5px; color: var(--mute); }
+.bill-card li { padding: 6px 0; border-top: 1px solid var(--line-s); }
+.bill-card li::before { content: "\2713"; color: var(--accent); font-weight: 700; margin-right: 8px; }
+.bill-card li b { color: var(--ink); }
+.bill-card.pop, .bill-card.cur { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+@media (max-width: 720px) { .bill-now { grid-template-columns: 1fr; gap: 18px; } }
+.bill-card li { display: block !important; text-align: left; }
