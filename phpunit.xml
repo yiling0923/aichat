@@ -30,6 +30,16 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="LOG_CHANNEL" value="null"/>
+        <env name="AI_PROVIDER" value="off"/>
+        <env name="ANTHROPIC_API_KEY" value=""/>
+        <env name="META_APP_ID" value=""/>
+        <env name="META_APP_SECRET" value=""/>
+        <env name="META_VERIFY_TOKEN" value=""/>
+        <env name="N8N_WEBHOOK_URL" value=""/>
+        <env name="N8N_SECRET" value=""/>
+        <env name="GOOGLE_SERVICE_ACCOUNT_JSON" value=""/>
+        <env name="BILLING_PROVIDER" value="local"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
