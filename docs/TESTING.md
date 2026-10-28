@@ -164,6 +164,12 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 5. Each button is a small card ("Button 1: English"); typed words are folded under "Typed words (n)".
 6. **Delete step** warns which other steps link to it. **Publish** refuses a menu with broken links and says so; a good menu says "Published. Customers see the new menu now."
 
+### T. Tags page
+1. **Settings > Tags**: two tabs, **People** and **Chats**, with counts. In each tab: a "New tag" row with a name and colour dots, a search box, **A to Z / Most used** sorting, and one row per tag with how many customers or chats use it. The count is a link: it opens Customers or All conversations filtered by that tag.
+2. Under **Ideas**, click a suggestion such as "+ VIP": the tag is created at once (suggestions you already have are not shown).
+3. **Edit** opens a pop-up: rename, pick a colour (dots or the colour box), **Merge into another tag**, or **Delete tag**. Text on light colours turns dark so it stays readable.
+4. Customers list and Inbox still show the tags as coloured chips.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

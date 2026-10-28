@@ -13,13 +13,30 @@ use Illuminate\Validation\Rule;
  */
 class TagController extends Controller
 {
+    public const PALETTE = ['#0f766e', '#2563eb', '#7c3aed', '#db2777', '#b91c1c', '#c2410c', '#b45309', '#15803d', '#475569'];
+
+    /** One-click ideas shown for tags that do not exist yet. */
+    public const SUGGESTIONS = [
+        'customer' => ['VIP', 'First visit', 'Regular', 'Needs follow-up', 'Referred by a friend'],
+        'chat' => ['Price question', 'Complaint', 'Booking help', 'Urgent', 'Feedback'],
+    ];
+
+    private function sorted($tags, string $count, ?string $sort)
+    {
+        return $sort === 'uses' ? $tags->sortByDesc($count)->values() : $tags->sortBy(fn ($t) => mb_strtolower($t->name))->values();
+    }
+
     public function index(Request $request): View
     {
         return view('admin.tags', [
             'business' => $request->user()->business,
             'active' => 'tags',
-            'customerTags' => Tag::query()->where('type', 'customer')->withCount('customers')->orderBy('name')->get(),
-            'chatTags' => Tag::query()->where('type', 'chat')->withCount('conversations')->orderBy('name')->get(),
+            'customerTags' => $this->sorted(Tag::query()->where('type', 'customer')->withCount('customers')->get(), 'customers_count', $request->query('sort')),
+            'chatTags' => $this->sorted(Tag::query()->where('type', 'chat')->withCount('conversations')->get(), 'conversations_count', $request->query('sort')),
+            'sort' => $request->query('sort') === 'uses' ? 'uses' : 'name',
+            'tab' => $request->query('tab') === 'chat' ? 'chat' : 'customer',
+            'suggestions' => self::SUGGESTIONS,
+            'palette' => self::PALETTE,
         ]);
     }
 
