@@ -611,7 +611,7 @@ class MarketingTest extends TestCase
         $payload = ['object' => 'whatsapp_business_account', 'entry' => [['id' => 'W1', 'changes' => [['field' => 'messages', 'value' => [
             'messaging_product' => 'whatsapp', 'metadata' => ['phone_number_id' => 'PN1'],
             'contacts' => [['profile' => ['name' => 'Amy'], 'wa_id' => '60123']],
-            'messages' => [['from' => '60123', 'id' => 'wamid.rate', 'timestamp' => '1793000000', 'type' => 'interactive',
+            'messages' => [['from' => '60123', 'id' => 'wamid.rate', 'timestamp' => (string) now()->timestamp, 'type' => 'interactive',
                 'interactive' => ['type' => 'list_reply', 'list_reply' => ['id' => 'rate_5', 'title' => '5 - Excellent']]]],
         ]]]]]];
         $raw = json_encode($payload);

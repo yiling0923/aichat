@@ -21,6 +21,10 @@ return [
         'opt_out' => ['stop', 'unsubscribe', 'opt out', '退订', '取消订阅', '不要再发'],
     ],
 
+    // A WhatsApp/Messenger/Instagram message written more than this many minutes ago (delivered late by Meta)
+    // is saved for staff but not answered by the bot.
+    'stale_message_minutes' => 30,
+
     // After this many unmatched or invalid replies in a row the bot hands over to staff.
     'max_misses' => 2,
 

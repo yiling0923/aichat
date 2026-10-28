@@ -297,7 +297,7 @@ class AiTest extends TestCase
 
         $payload = ['object' => 'whatsapp_business_account', 'entry' => [['id' => 'W', 'changes' => [['field' => 'messages', 'value' => [
             'metadata' => ['phone_number_id' => 'PN1'], 'contacts' => [['profile' => ['name' => 'Amy'], 'wa_id' => '6012']],
-            'messages' => [['from' => '6012', 'id' => 'wamid.q', 'timestamp' => '1', 'type' => 'text', 'text' => ['body' => 'what time are you around']]],
+            'messages' => [['from' => '6012', 'id' => 'wamid.q', 'timestamp' => (string) now()->timestamp, 'type' => 'text', 'text' => ['body' => 'what time are you around']]],
         ]]]]]];
         $raw = json_encode($payload);
         $this->call('POST', '/webhook/meta', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_HUB_SIGNATURE_256' => 'sha256='.hash_hmac('sha256', $raw, 'topsecret')], $raw)->assertOk();

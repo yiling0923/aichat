@@ -68,14 +68,14 @@ class ChannelTest extends TestCase
             'messaging_product' => 'whatsapp',
             'metadata' => ['display_phone_number' => '15550001111', 'phone_number_id' => $phoneId],
             'contacts' => [['profile' => ['name' => 'Amy'], 'wa_id' => $from]],
-            'messages' => [['from' => $from, 'id' => $id, 'timestamp' => '1793000000', 'type' => 'text', 'text' => ['body' => $text]]],
+            'messages' => [['from' => $from, 'id' => $id, 'timestamp' => (string) now()->timestamp, 'type' => 'text', 'text' => ['body' => $text]]],
         ]]]]]];
     }
 
     private function waTap(string $optionId, string $id): array
     {
         $body = $this->waText('x', $id);
-        $body['entry'][0]['changes'][0]['value']['messages'][0] = ['from' => '60123456789', 'id' => $id, 'timestamp' => '1793000001', 'type' => 'interactive',
+        $body['entry'][0]['changes'][0]['value']['messages'][0] = ['from' => '60123456789', 'id' => $id, 'timestamp' => (string) now()->timestamp, 'type' => 'interactive',
             'interactive' => ['type' => 'button_reply', 'button_reply' => ['id' => $optionId, 'title' => 'x']]];
 
         return $body;
@@ -195,7 +195,7 @@ class ChannelTest extends TestCase
         $this->in(fn () => Channel::create(['type' => 'instagram', 'name' => 'IG', 'external_id' => 'IG1', 'waba_id' => 'PAGE1', 'access_token' => 'tok-ig']));
 
         $message = fn (string $object, string $account) => ['object' => $object, 'entry' => [['id' => $account, 'messaging' => [
-            ['sender' => ['id' => 'USER9'], 'recipient' => ['id' => $account], 'timestamp' => 1793000000000, 'message' => ['mid' => 'm_'.$object, 'text' => 'hi']],
+            ['sender' => ['id' => 'USER9'], 'recipient' => ['id' => $account], 'timestamp' => now()->timestamp * 1000, 'message' => ['mid' => 'm_'.$object, 'text' => 'hi']],
         ]]]];
 
         $this->hook($message('page', 'PAGE1'))->assertOk();
@@ -215,7 +215,7 @@ class ChannelTest extends TestCase
     public function test_quick_reply_taps_and_echoes(): void
     {
         $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'PAGE1', 'access_token' => 't']));
-        $send = fn (array $m) => $this->hook(['object' => 'page', 'entry' => [['id' => 'PAGE1', 'messaging' => [$m + ['recipient' => ['id' => 'PAGE1'], 'timestamp' => 1793000000000]]]]]);
+        $send = fn (array $m) => $this->hook(['object' => 'page', 'entry' => [['id' => 'PAGE1', 'messaging' => [$m + ['recipient' => ['id' => 'PAGE1'], 'timestamp' => now()->timestamp * 1000]]]]]);
 
         $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm1', 'text' => 'hi']]);
         $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm2', 'text' => 'English', 'quick_reply' => ['payload' => 'lang_en']]]);
@@ -520,5 +520,45 @@ class ChannelTest extends TestCase
         $this->actingAs($manager)->post('/admin/templates', ['channel_id' => $this->wa->id, 'name' => 'dup', 'language' => 'en', 'category' => 'UTILITY', 'body' => 'x'])
             ->assertSessionHasErrors('template');
         $this->in(fn () => $this->assertStringContainsString('Template name already used', MessageTemplate::query()->first()->last_error));
+    }
+
+    public function test_a_message_delivered_hours_late_is_kept_but_not_answered(): void
+    {
+        $body = $this->waText('what is the pricing for a facial', 'wamid.late');
+        $body['entry'][0]['changes'][0]['value']['messages'][0]['timestamp'] = (string) now()->subHours(3)->timestamp;
+
+        $this->hook($body)->assertOk();
+
+        $this->assertSame([], $this->sent());
+        $this->in(function () {
+            $c = Conversation::query()->first();
+            $this->assertSame(1, Message::query()->where('direction', 'in')->count());
+            $this->assertStringContainsString('arrived 3 hours late', Message::query()->where('sender_type', 'system')->first()->body);
+            $this->assertTrue(Message::query()->where('sender_type', 'system')->first()->is_private);
+            $this->assertEqualsWithDelta(now()->subHours(3)->timestamp, $c->last_inbound_at->timestamp, 2);   // the 24-hour window counts from when they wrote
+        });
+
+        // The next message is fresh and is answered as normal.
+        $this->hook($this->waText('hi', 'wamid.fresh'));
+        $this->assertCount(1, $this->sent());
+    }
+
+    public function test_a_message_older_than_a_day_leaves_the_window_closed(): void
+    {
+        $body = $this->waText('hello', 'wamid.old');
+        $body['entry'][0]['changes'][0]['value']['messages'][0]['timestamp'] = (string) now()->subHours(30)->timestamp;
+        $this->hook($body)->assertOk();
+
+        $this->in(fn () => $this->assertFalse(Conversation::query()->first()->windowOpen()));
+    }
+
+    public function test_a_timestamp_in_the_future_counts_as_now(): void
+    {
+        $body = $this->waText('hello', 'wamid.future');
+        $body['entry'][0]['changes'][0]['value']['messages'][0]['timestamp'] = (string) now()->addHours(5)->timestamp;
+        $this->hook($body)->assertOk();
+
+        $this->assertCount(1, $this->sent());
+        $this->in(fn () => $this->assertLessThanOrEqual(now()->timestamp, Conversation::query()->first()->last_inbound_at->timestamp));
     }
 }

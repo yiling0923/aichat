@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\N8nNotifier;
 use App\Support\CurrentBusiness;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -60,8 +61,13 @@ class InboundHandler
                 $this->n8n->send('conversation.started', ['business' => $business->slug, 'conversation_id' => $conversation->id, 'channel' => $channel->type]);
             }
 
+            // The time the customer really wrote it (Meta can deliver late), never in the future and never going backwards.
+            $wrote = $event->timestamp ? Carbon::createFromTimestamp($event->timestamp) : now();
+            $wrote = $wrote->gt(now()) ? now() : $wrote;
+            $stale = $wrote->lt(now()->subMinutes((int) config('aichat.stale_message_minutes')));
+
             $conversation->forceFill([
-                'last_inbound_at' => now(),
+                'last_inbound_at' => $conversation->last_inbound_at && $conversation->last_inbound_at->gt($wrote) ? $conversation->last_inbound_at : $wrote,
                 'status' => 'open',
                 'contact_name' => $conversation->contact_name ?: $event->name,
             ])->save();
@@ -69,6 +75,15 @@ class InboundHandler
 
             $incoming = $conversation->addMessage('in', 'customer', $event->text);
             $incoming->forceFill(['external_id' => $event->messageId])->save();
+
+            // A message that arrives long after it was written (the tunnel was down, Meta retried): keep it for the
+            // team, but do not answer it now. The customer has moved on and a late answer would only confuse them.
+            if ($stale) {
+                $conversation->addMessage('out', 'system', 'This message arrived '.$wrote->diffForHumans(null, true).' late (it was written at '.$wrote->setTimezone($business->timezone ?: 'UTC')->format('d M H:i').'). The bot did not answer it.', null, true);
+                $this->n8n->send('customer.message', ['business' => $business->slug, 'conversation_id' => $conversation->id, 'channel' => $channel->type, 'text' => Str::limit($event->text, 200), 'late' => true]);
+
+                return;
+            }
 
             $replies = $this->bot->respond($conversation, $incoming, $event->optionId);
 
