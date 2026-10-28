@@ -865,3 +865,40 @@ html { scroll-behavior: smooth; }
   .lp-section { padding: 44px 5vw; }
   .lp-foot { flex-direction: column; }
 }
+
+/* Setup wizard */
+.wiz-progress { margin-bottom: 14px; display: grid; gap: 10px; }
+.wiz-steps { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 6px; }
+.wiz-steps a { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px 5px 6px; border-radius: 999px; background: var(--bg); color: var(--ink); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+.wiz-steps a.done { background: var(--accent-l); color: var(--accent-d); }
+.wn { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--line); color: var(--ink); font-size: 12px; font-weight: 700; flex: none; }
+.wiz-steps a.done .wn, .wn.ok { background: var(--accent); color: #fff; }
+.wiz { margin-bottom: 12px; scroll-margin-top: 70px; }
+.wiz > header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
+.wiz > header > div { flex: 1; min-width: 0; }
+.wiz > header .wn { width: 30px; height: 30px; font-size: 13px; margin-top: 1px; }
+.wiz > header h3 { margin: 0 0 2px; }
+.wiz > header p { margin: 0; }
+.wiz form .f { margin-top: 12px; }
+.wiz textarea { width: 100%; }
+.wiz-h { margin: 16px 0 6px; font-size: 13px; }
+.draft-row { display: grid; grid-template-columns: 28px 1.6fr 1.2fr 84px 100px; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line-s); }
+.draft-row .num { width: 100%; }
+.draft-faq { display: grid; grid-template-columns: 28px 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line-s); }
+.draft-faq input, .draft-faq textarea { width: 100%; margin-bottom: 6px; }
+.tick { display: grid; place-items: center; }
+[data-row].off { opacity: .45; }
+.wiz-links { display: grid; gap: 8px; margin-top: 10px; }
+.wiz-links > div { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; background: var(--bg); border-radius: 10px; }
+.wiz-links > div .btn { margin-left: auto; }
+.wiz .copy-row { margin-top: 10px; }
+@media (max-width: 720px) {
+  .draft-row { grid-template-columns: 28px 1fr 1fr; }
+  .draft-row .c-name, .draft-row .c-zh { grid-column: 2 / 4; }
+  .draft-row .c-min { grid-column: 2; }
+  .draft-row .c-price { grid-column: 3; }
+  .wiz > header { flex-wrap: wrap; }
+  .wiz > header > div { flex-basis: calc(100% - 48px); }
+  .wiz > header > .btn, .wiz > header > form { margin-left: 42px; }
+}
+.wiz-steps li { border: 0 !important; padding: 0 !important; }
