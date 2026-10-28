@@ -13,14 +13,16 @@
         </div>
     </div>
     @error('automation')<div class="note err">{{ $message }}</div>@enderror
-    <div class="note warn">Runs automatically every 5 minutes if the Windows Task Scheduler job is set up (README, "Staff reminders"). On WhatsApp, Messenger and Instagram a message can only be sent within 24 hours of the customer's last message, unless you give an approved WhatsApp template name.</div>
+    <p class="help-line">Checked every 5 minutes. On WhatsApp, Messenger and Instagram a message can only go out within 24 hours of the customer's last message, unless you give an approved WhatsApp template name.</p>
 
     @foreach ($automations as $a)
         @php $d = $defs[$a->key]; @endphp
-        <form method="post" action="{{ url('/admin/automations/'.$a->key) }}" class="card">
+        <details class="card fold" @if ($a->enabled) open @endif>
+        <summary><span><b>{{ $d['title'] }}</b> <span class="tag {{ $a->enabled ? 'ok' : '' }}">{{ $a->enabled ? 'On' : 'Off' }}</span><small class="mute fold-help">{{ $d['help'] }}</small></span></summary>
+        <form method="post" action="{{ url('/admin/automations/'.$a->key) }}">
             @csrf
-            <div class="bar spread">
-                <div><h3>{{ $d['title'] }}</h3><p class="mute small-note" style="padding:0">{{ $d['help'] }}</p></div>
+            <div class="bar spread" style="margin-top:12px">
+                <span></span>
                 <label class="f"><span>Status</span>
                     <select name="enabled"><option value="0" @selected(! $a->enabled)>Off</option><option value="1" @selected($a->enabled)>On</option></select></label>
             </div>
@@ -45,5 +47,6 @@
             </div>
             <button class="btn primary" type="submit">Save</button>
         </form>
+        </details>
     @endforeach
 @endsection

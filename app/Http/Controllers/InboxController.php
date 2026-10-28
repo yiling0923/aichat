@@ -48,6 +48,8 @@ class InboxController extends Controller
                     'mode' => $c->mode,
                     'status' => $c->status,
                     'preview' => $last?->body,
+                    'last_from' => $last?->direction,
+                    'needs_reply' => $c->status === 'open' && $c->mode === 'human',
                     'assigned_to' => $c->assigned_to,
                     'tags' => $c->tags->map->only(['id', 'name', 'color'])->values()->all(),
                     'last_message_at' => $c->last_message_at?->toIso8601String(),

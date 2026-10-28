@@ -11,6 +11,13 @@
 <div class="shell">
     @include('admin._side', ['active' => $active])
     <main class="page">
+        <div class="topbar">
+            <div class="gsearch">
+                <input id="gsearch" type="search" placeholder="Search customers and chats" autocomplete="off" aria-label="Search" data-url="{{ url('/admin/api/search') }}">
+                <kbd>Ctrl K</kbd>
+                <div id="gresults" class="gresults" hidden></div>
+            </div>
+        </div>
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
         @if (in_array($active, ['library', 'tags', 'ai', 'templates', 'channels', 'menu', 'setup', 'settings', 'billing', 'setup-guide']) && auth()->user()->canManage())
             <a class="crumb" href="{{ route('manage') }}">&larr; Settings</a>
@@ -25,6 +32,7 @@
         @yield('content')
     </main>
 </div>
+<script src="{{ asset('js/search.js') }}"></script>
 @stack('scripts')
 </body>
 </html>

@@ -1,21 +1,9 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Booking setup: {{ $business->name }}</title>
-    <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
-</head>
-<body>
-<div class="shell">
-    @include('admin._side', ['active' => 'setup'])
-    <main class="page">
+@extends('admin.layout')
+@section('title', 'Booking setup')
+@section('content')
         <h1>Booking setup</h1>
         <p class="mute">What customers can book, who does it, and when. Google Calendar:
             <span class="tag {{ $googleOn ? 'ok' : 'warn' }}">{{ $googleOn ? 'connected' : 'not connected (using the built-in calendar)' }}</span></p>
-        @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
-        @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
-
         <h2>Opening hours and rules</h2>
         <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split">
             @csrf
@@ -34,7 +22,12 @@
             </div>
             <div>
             <div class="grid2">
-                <label class="f"><span>Closed dates (YYYY-MM-DD, comma separated)</span><input type="text" name="closed_dates" value="{{ old('closed_dates', $closedDates) }}"></label>
+                <div class="f closed-box">
+                    <span>Days you are closed (holidays)</span>
+                    <input type="hidden" name="closed_dates" id="closed-dates" value="{{ old('closed_dates', $closedDates) }}">
+                    <div class="closed-add"><input type="date" id="closed-pick" aria-label="Pick a date"><button type="button" class="btn small" id="closed-add">Add</button></div>
+                    <div class="closed-list" id="closed-list"></div>
+                </div>
                 <label class="f"><span>Offer a start time every (minutes)</span><input type="number" name="slot_step_min" value="{{ $rules['slot_step_min'] }}"></label>
                 <label class="f"><span>Gap after each appointment (minutes)</span><input type="number" name="buffer_min" value="{{ $rules['buffer_min'] }}"></label>
                 <label class="f"><span>Earliest booking from now (hours)</span><input type="number" name="min_notice_hours" value="{{ $rules['min_notice_hours'] }}"></label>
@@ -93,7 +86,27 @@
             </div>
             <button class="btn primary" type="submit">Add service</button>
         </form>
-    </main>
-</div>
-</body>
-</html>
+@endsection
+@push('scripts')
+<script>
+    (function () {
+        var hidden = document.getElementById('closed-dates'), list = document.getElementById('closed-list'), pick = document.getElementById('closed-pick');
+        var dates = hidden.value.split(',').map(function (d) { return d.trim(); }).filter(function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d); });
+        function show() {
+            dates = Array.from(new Set(dates)).sort();
+            hidden.value = dates.join(', ');
+            list.innerHTML = '';
+            if (!dates.length) { list.innerHTML = '<span class="mute">None. Add a day above.</span>'; }
+            dates.forEach(function (d) {
+                var c = document.createElement('span'); c.className = 'fchip';
+                c.textContent = new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) + ' ';
+                var x = document.createElement('a'); x.href = '#'; x.innerHTML = '&times;'; x.setAttribute('aria-label', 'Remove');
+                x.addEventListener('click', function (e) { e.preventDefault(); dates.splice(dates.indexOf(d), 1); show(); });
+                c.appendChild(x); list.appendChild(c);
+            });
+        }
+        document.getElementById('closed-add').addEventListener('click', function () { if (pick.value) { dates.push(pick.value); pick.value = ''; show(); } });
+        show();
+    })();
+</script>
+@endpush

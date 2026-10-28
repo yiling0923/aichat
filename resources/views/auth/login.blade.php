@@ -26,7 +26,7 @@
             <a href="{{ route('password.request') }}" style="margin-left:10px;font-size:12px">Forgot password?</a>
         </form>
         <p class="mute" style="margin-top:14px;font-size:12px">New here? <a href="{{ route('signup') }}">Start a free trial</a></p>
-        <p class="mute" style="margin-top:6px;font-size:12px">Sample login after seeding: owner@example.com / password</p>
+        @if (app()->environment('local'))<p class="mute" style="margin-top:6px;font-size:12px">Local testing: owner@example.com / password</p>@endif
     </div>
 </div>
 </body>

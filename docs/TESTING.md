@@ -127,6 +127,14 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 7. On a phone (no dragging): open the booking pop-up and use **Change time**.
 8. With Google Calendar connected, the event is replaced at the new time. Events you added by hand in Google are not checked when moving.
 
+### O. Polish pass (landing, search, inbox, today)
+1. Open `http://localhost/aichat/public/` signed out: a proper landing page with features, how it works and pricing (the demo block with test chats shows only on your PC, `APP_ENV=local`).
+2. In the staff area press **Ctrl+K** (or `/`): the search box at the top is focused. Type 2 letters of a customer name or phone: results appear; arrow keys and Enter open one. It also finds words inside chats.
+3. **Today** (owner): a "Get set up" card with a progress bar until services, hours, a channel and go-live are done.
+4. **Inbox**: each chat shows an initial, channel, time and last message; chats waiting for a person have an amber edge and a "Needs a person" tag.
+5. **Booking setup**: "Days you are closed" is a date picker with removable chips (no more typing dates with commas).
+6. **Marketing > Automations**: each automation is a folded card (open when switched on).
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

@@ -23,6 +23,7 @@ class BookingSetupController extends Controller
         $business = $request->user()->business;
 
         return view('admin.booking-setup', [
+            'active' => 'setup',
             'business' => $business,
             'services' => Service::query()->with('practitioners')->orderBy('sort')->orderBy('id')->get(),
             'practitioners' => Practitioner::query()->with('services')->orderBy('id')->get(),

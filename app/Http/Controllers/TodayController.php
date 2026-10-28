@@ -42,6 +42,20 @@ class TodayController extends Controller
             'newLeads' => Customer::query()->where('created_at', '>=', now()->subDays(7))->count(),
             'openChats' => Conversation::query()->where('channel', '!=', 'preview')->where('status', 'open')->count(),
             'hour' => (int) now($tz)->format('G'),
+            'checklist' => $user->role === 'owner' ? $this->checklist($business) : [],
         ]);
+    }
+
+    /** What a new owner still has to do. Empty once everything is done, so the card disappears. @return list<array{done: bool, text: string, url: string}> */
+    private function checklist($business): array
+    {
+        $steps = [
+            ['done' => \App\Models\Service::query()->exists(), 'text' => 'Add your services and prices', 'url' => route('booking.setup')],
+            ['done' => ! empty($business->settings['hours']), 'text' => 'Set your opening hours', 'url' => route('booking.setup')],
+            ['done' => \App\Models\Channel::query()->where('active', true)->exists(), 'text' => 'Connect WhatsApp, Messenger or Instagram (optional for the website chat)', 'url' => route('channels')],
+            ['done' => $business->setup_done_at !== null || $business->plan === null, 'text' => 'Try your chat, then go live', 'url' => route('setup')],
+        ];
+
+        return collect($steps)->every(fn ($s) => $s['done']) ? [] : $steps;
     }
 }

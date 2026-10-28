@@ -4,6 +4,20 @@
     <h1>{{ $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening') }}, {{ auth()->user()->name }}</h1>
     <p class="mute">{{ now($business->timezone)->format('l, d F Y') }}</p>
 
+    @if ($checklist)
+        @php $done = collect($checklist)->where('done', true)->count(); @endphp
+        <div class="card setup-card">
+            <div class="bar spread"><h3>Get set up</h3><span class="mute">{{ $done }} of {{ count($checklist) }} done</span></div>
+            <div class="progress"><span style="width: {{ round($done / count($checklist) * 100) }}%"></span></div>
+            <ul>
+                @foreach ($checklist as $step)
+                    <li><span>@if ($step['done'])<span class="tick ok">&#10003;</span> <s class="mute">{{ $step['text'] }}</s>@else<span class="tick">&#9675;</span> {{ $step['text'] }}@endif</span>
+                        @unless ($step['done'])<a class="btn small" href="{{ $step['url'] }}">Do it</a>@endunless</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="grid3">
         <div class="stat"><b>{{ $waiting->count() }}</b><span>chats waiting for staff</span></div>
         <div class="stat"><b>{{ $bookings->count() }}</b><span>bookings today</span></div>

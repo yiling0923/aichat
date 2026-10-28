@@ -30,17 +30,32 @@
         listEl.innerHTML = '<div class="empty">No conversations yet.<br>Open the test chat and send a message.</div>';
         return;
       }
+      var labels = { web: 'Website', whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram' };
       data.conversations.forEach(function (c) {
         var d = document.createElement('div');
-        d.className = 'conv' + (current === c.id ? ' on' : '');
-        var tag = c.mode === 'human' ? '<span class="tag warn">staff</span>' : '<span class="tag ok">bot</span>';
-        d.innerHTML = '<b></b> ' + tag + '<p></p>';
+        d.className = 'conv' + (current === c.id ? ' on' : '') + (c.needs_reply ? ' urgent' : '');
+        d.innerHTML = '<span class="av"></span><div class="cb"><div class="ct"><b></b><time></time></div><p></p><div class="cm"></div></div>';
+        d.querySelector('.av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
         d.querySelector('b').textContent = c.name;
-        d.querySelector('p').textContent = c.preview || '';
+        d.querySelector('time').textContent = ago(c.last_message_at);
+        d.querySelector('p').textContent = c.preview || 'No messages yet';
+        var meta = d.querySelector('.cm');
+        var ch = document.createElement('span'); ch.className = 'chan'; ch.textContent = labels[c.channel] || c.channel; meta.appendChild(ch);
+        if (c.needs_reply) { var n = document.createElement('span'); n.className = 'tag warn'; n.textContent = 'Needs a person'; meta.appendChild(n); }
+        else if (c.mode === 'human') { var h = document.createElement('span'); h.className = 'tag'; h.textContent = 'Staff'; meta.appendChild(h); }
         d.addEventListener('click', function () { openConversation(c.id); });
         listEl.appendChild(d);
       });
     });
+  }
+
+  function ago(iso) {
+    if (!iso) { return ''; }
+    var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) { return 'now'; }
+    if (s < 3600) { return Math.floor(s / 60) + 'm'; }
+    if (s < 86400) { return Math.floor(s / 3600) + 'h'; }
+    return Math.floor(s / 86400) + 'd';
   }
 
   function addLine(m) {

@@ -302,7 +302,7 @@ class SelfServiceTest extends TestCase
     {
         $this->get('/terms')->assertOk()->assertSee('Terms of service');
         $this->get('/privacy')->assertOk()->assertSee('Privacy notice');
-        $this->get('/')->assertSee('Sign up');
+        $this->get('/')->assertOk()->assertSee('Start free trial')->assertSee('Pricing')->assertSee('Terms');
         $this->get('/signup')->assertOk();
     }
 
