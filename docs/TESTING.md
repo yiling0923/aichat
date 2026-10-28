@@ -278,3 +278,11 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 3. Press "Approve and save". Then check Booking setup for the services. "Discard draft" asks before throwing it away.
 4. Step 3 has a copyable chat link. Step 5: "I am ready, go live" changes the top to "You are live".
 5. On a phone every row stacks and nothing is cut off.
+
+## AF. Platform console
+
+Sign in as the platform owner (`php artisan aichat:make-platform-owner you@example.com`).
+1. Top row: businesses, on trial, paying (with monthly total) and money taken in 30 days.
+2. Type in the search box or press Trial, Paying, Needs attention or Paused: the list narrows without reloading.
+3. Press Pause on a business: a small pop-up asks for an optional reason. The row turns pink and shows the reason. Press Resume to undo.
+4. Invitations tab: "Make a code" opens a pop-up. New codes show in the list; "Copy link" copies the sign-up link with the code in it.

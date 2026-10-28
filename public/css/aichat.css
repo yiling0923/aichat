@@ -902,3 +902,20 @@ html { scroll-behavior: smooth; }
   .wiz > header > .btn, .wiz > header > form { margin-left: 42px; }
 }
 .wiz-steps li { border: 0 !important; padding: 0 !important; }
+
+/* Platform console */
+.plat-bar { display: flex; align-items: center; gap: 14px; padding: 12px 6vw; background: var(--surface); border-bottom: 1px solid var(--line); }
+.plat-bar b { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.plat-main { max-width: 1180px; margin: 0 auto; padding: 22px 6vw 48px; }
+.plat-main .page-head { margin-bottom: 12px; }
+.plat-main .filters .seg { flex-wrap: wrap; }
+.plat-main .filters .seg a { cursor: pointer; }
+tr.is-paused td { background: #fdf6f6; }
+tr[hidden] { display: none; }
+@media (max-width: 720px) { .plat-bar .mute { display: none; } .plat-main { padding: 16px 4vw 40px; } }
+.plat-main .filters .seg { width: 100%; }
+.plat-main .table-wrap { overflow-x: auto; }
+.plat-main .table { min-width: 640px; }
+@media (min-width: 721px) { .plat-main .filters .seg { width: auto; } }
+@media (max-width: 720px) { .plat-main .filters { flex-direction: column; align-items: stretch; } }
+@media (max-width: 720px) { .plat-main .filters .grow { flex: none; } }
