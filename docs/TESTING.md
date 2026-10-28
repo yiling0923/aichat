@@ -385,8 +385,8 @@ Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answe
 
 ## AS. Visit done, then pay at the shop
 
-1. Book a visit in the chat for a priced service. After its time passes, open Schedule, click the booking and press **Mark done** (or press Done in the List view).
-2. The message says an order of that price is waiting for payment. Open **Orders**: a new row with reference `BK-...` and status "Waiting for payment".
-3. The customer pays at the shop: press **Mark paid** on that row. For a discount, press **Edit**, change the amount, set Paid and Save.
+1. Book a visit in the chat for a priced service. A booking can only be marked done after its time has passed. For testing, move it into the past (see the tinker line in the chat with the developer), then open Schedule → List. Visits that finished but were never marked now stay in "Upcoming" with an amber "Finished? Mark it" tag and the Done and No-show buttons.
+2. Press **Done** (or "Mark done" in the booking pop-up). You jump straight to **Orders** with a **Collect payment** pop-up: the customer and service, the amount (change it for a discount), "How did they pay?" (cash, card, bank transfer or QR, other) and notes.
+3. Press **Save**: the order is Paid and the notes say "Paid by card." If the customer pays later, close the pop-up: the order stays "Waiting for payment" and you can press **Mark paid** on its row any time.
 4. The customer's page shows "RM ... unpaid" under Spent while an order is waiting.
-5. No order is made for free services (price 0), no-shows, or a second press of Done.
+5. No order and no pop-up for free services (price 0), no-shows, or a second press of Done.

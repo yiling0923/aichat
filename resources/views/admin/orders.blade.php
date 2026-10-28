@@ -84,14 +84,17 @@
         <form method="post" id="od-form" action="{{ url('/admin/orders') }}">
             @csrf
             <div class="grid2" style="margin-top:12px">
-                <label class="f"><span>Customer</span>
+                <p id="od-summary" class="mute" hidden style="margin:2px 0 4px"></p>
+            <label class="f" data-paying-hide><span>Customer</span>
                     <select name="customer_id" id="od-customer"><option value="">No customer</option>@foreach ($customers as $c)<option value="{{ $c->id }}">{{ $c->name ?: $c->phone }}</option>@endforeach</select></label>
                 <label class="f"><span>Amount ({{ $cur }})</span><input type="number" step="0.01" min="0" name="amount" id="od-amount" required></label>
-                <label class="f"><span>What was ordered</span><input type="text" name="items" id="od-items" maxlength="500" placeholder="3 facials package"></label>
+                <label class="f" data-paying-hide><span>What was ordered</span><input type="text" name="items" id="od-items" maxlength="500" placeholder="3 facials package"></label>
                 <label class="f"><span>Status</span><select name="status" id="od-status">@foreach ($statuses as $s)<option value="{{ $s }}">{{ $label[$s] }}</option>@endforeach</select></label>
-                <label class="f"><span>Date (empty means now)</span><input type="datetime-local" name="ordered_at" id="od-date"></label>
-                <label class="f"><span>Reference (optional)</span><input type="text" name="reference" id="od-ref" maxlength="60"></label>
+                <label class="f" data-paying-hide><span>Date (empty means now)</span><input type="datetime-local" name="ordered_at" id="od-date"></label>
+                <label class="f" data-paying-hide><span>Reference (optional)</span><input type="text" name="reference" id="od-ref" maxlength="60"></label>
             </div>
+            <label class="f" id="od-method-wrap" hidden><span>How did they pay?</span>
+                <select name="method" id="od-method"><option value="">Not recorded</option>@foreach ($methods as $k => $m)<option value="{{ $k }}">{{ $m }}</option>@endforeach</select></label>
             <label class="f"><span>Notes</span><textarea name="notes" id="od-notes" rows="2" maxlength="2000"></textarea></label>
             <div class="dlg-foot"><button class="btn primary" type="submit">Save</button><button class="btn danger push" type="submit" id="od-delete" hidden onclick="return confirm('Delete this order? This cannot be undone.')">Delete</button></div>
         </form>
@@ -103,18 +106,31 @@
   var dlg = document.getElementById('order-dialog'), form = document.getElementById('od-form'), del = document.getElementById('od-delete');
   var f = { c: 'od-customer', a: 'od-amount', i: 'od-items', s: 'od-status', d: 'od-date', r: 'od-ref', n: 'od-notes' };
   Object.keys(f).forEach(function (k) { f[k] = document.getElementById(f[k]); });
-  function open(d) {
+  var methodWrap = document.getElementById('od-method-wrap'), methodSel = document.getElementById('od-method');
+  function showMethod() { methodWrap.hidden = f.s.value !== 'paid' || f.s.dataset.was === 'paid'; if (methodWrap.hidden) { methodSel.value = ''; } }
+  f.s.addEventListener('change', showMethod);
+  function open(d, pay) {
     var edit = d && d.action;
-    document.getElementById('od-title').textContent = edit ? 'Edit order' : 'New order';
+    document.getElementById('od-title').textContent = pay ? 'Collect payment' : (edit ? 'Edit order' : 'New order');
     form.action = edit ? d.action : '{{ url('/admin/orders') }}';
     f.c.value = edit ? (d.customer || '') : ''; f.a.value = edit ? d.amount : ''; f.i.value = edit ? (d.items || '') : '';
     f.s.value = edit ? d.status : 'paid'; f.d.value = edit ? (d.date || '') : ''; f.r.value = edit ? (d.reference || '') : ''; f.n.value = edit ? (d.notes || '') : '';
-    del.hidden = !edit; if (edit) { del.setAttribute('formaction', d.delete); }
-    dlg.showModal(); (edit ? f.a : f.i).focus();
+    document.querySelectorAll('[data-paying-hide]').forEach(function (el) { el.hidden = !!pay; });
+    var sum = document.getElementById('od-summary'); sum.hidden = !pay;
+    if (pay) { sum.textContent = [f.c.options[f.c.selectedIndex] ? f.c.options[f.c.selectedIndex].text : '', d.items].filter(Boolean).join(' · '); }
+    del.hidden = !edit || pay; if (edit) { del.setAttribute('formaction', d.delete); }
+    f.s.dataset.was = edit ? d.status : '';
+    if (pay) { f.s.value = 'paid'; }
+    showMethod();
+    dlg.showModal(); (pay ? methodSel : (edit ? f.a : f.i)).focus();
   }
   document.getElementById('new-order').addEventListener('click', function () { open(null); });
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });
+  @if ($payOrder)
+  // Arrived from "Mark done": open the payment details for that visit straight away.
+  open({ action: @json(url('/admin/orders/'.$payOrder->id)), delete: '', customer: @json($payOrder->customer_id), reference: @json($payOrder->reference), items: @json($payOrder->items), amount: @json((string) $payOrder->amount), status: 'pending', date: '', notes: @json($payOrder->notes) }, true);
+  @endif
 })();
 </script>
 @endpush

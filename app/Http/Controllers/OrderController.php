@@ -16,6 +16,8 @@ class OrderController extends Controller
 {
     private const STATUSES = ['pending', 'paid', 'refunded', 'cancelled'];
 
+    public const METHODS = ['cash' => 'Cash', 'card' => 'Card', 'transfer' => 'Bank transfer or QR', 'other' => 'Other'];
+
     public const PERIODS = ['all' => 'All time', 'month' => 'This month', 'last_month' => 'Last month', '30' => 'Last 30 days', '90' => 'Last 90 days', 'year' => 'This year'];
 
     public function index(Request $request): View
@@ -61,6 +63,8 @@ class OrderController extends Controller
             'paidTotal' => (float) ($totals['paid']->total ?? 0),
             'sums' => collect(self::STATUSES)->mapWithKeys(fn ($s) => [$s => ['n' => (int) ($totals[$s]->n ?? 0), 'total' => (float) ($totals[$s]->total ?? 0)]])->all(),
             'filterCustomer' => $customer > 0 ? Customer::query()->find($customer) : null,
+            'payOrder' => ($payId = (int) $request->query('pay')) > 0 ? Order::query()->where('status', 'pending')->find($payId) : null,
+            'methods' => self::METHODS,
         ]);
     }
 
@@ -102,6 +106,7 @@ class OrderController extends Controller
             'amount' => ['sometimes', 'numeric', 'between:0,10000000'],
             'ordered_at' => ['sometimes', 'nullable', 'date'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'method' => ['nullable', Rule::in(array_keys(self::METHODS))],
         ]);
 
         $order = Order::query()->findOrFail($id);
@@ -113,6 +118,13 @@ class OrderController extends Controller
         if (array_key_exists('ordered_at', $data)) {
             $data['ordered_at'] = ! empty($data['ordered_at']) ? \Carbon\Carbon::parse($data['ordered_at'], $tz)->utc() : $order->ordered_at;
         }
+
+        // How it was paid is kept in the notes, when an order becomes paid.
+        if (($data['status'] ?? null) === 'paid' && $order->status !== 'paid' && ! empty($data['method'])) {
+            $base = array_key_exists('notes', $data) ? (string) $data['notes'] : (string) $order->notes;
+            $data['notes'] = trim($base.' Paid by '.strtolower(self::METHODS[$data['method']]).'.');
+        }
+        unset($data['method']);
 
         $order->update($data);
 

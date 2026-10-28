@@ -49,10 +49,13 @@ class VisitOrderTest extends TestCase
     public function test_marking_a_visit_done_creates_an_order_waiting_for_payment(): void
     {
         $b = $this->booking(188);
-        $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/mark', ['status' => 'completed'])->assertRedirect()
-            ->assertSessionHas('status', fn ($s) => str_contains($s, '188.00') && str_contains($s, 'waiting for payment'));
+        $order = null;
+        $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/mark', ['status' => 'completed'])
+            ->assertSessionHas('status', fn ($s) => str_contains($s, '188.00') && str_contains($s, 'Collect the payment'));
 
         $order = $this->in(fn () => Order::query()->first());
+        // Straight to the payment details for that visit.
+        $this->get('/admin/orders?pay='.$order->id)->assertOk()->assertSee('Collect payment')->assertSee('How did they pay?')->assertSee('/admin/orders/'.$order->id, false);
         $this->assertSame('pending', $order->status);
         $this->assertSame('188.00', (string) $order->amount);
         $this->assertSame($this->customer->id, $order->customer_id);
@@ -72,6 +75,25 @@ class VisitOrderTest extends TestCase
         $missed = $this->booking(200);
         $this->post('/admin/schedule/'.$missed->id.'/mark', ['status' => 'no_show']);
         $this->assertSame(1, $this->in(fn () => Order::count()));
+    }
+
+    public function test_done_goes_straight_to_the_payment_screen_and_records_how_it_was_paid(): void
+    {
+        $b = $this->booking(300);
+        $r = $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/mark', ['status' => 'completed']);
+        $order = $this->in(fn () => Order::query()->first());
+        $r->assertRedirect(route('orders', ['pay' => $order->id]));
+
+        $this->post('/admin/orders/'.$order->id, ['status' => 'paid', 'amount' => 250, 'method' => 'card', 'notes' => 'Member discount.'])->assertSessionHasNoErrors();
+        $fresh = $this->in(fn () => Order::query()->first());
+        $this->assertSame('paid', $fresh->status);
+        $this->assertSame('250.00', (string) $fresh->amount);
+        $this->assertSame('Member discount. Paid by card.', $fresh->notes);
+
+        // A free visit has nothing to collect: no jump to the payment screen.
+        $free = $this->booking(0);
+        $this->post('/admin/schedule/'.$free->id.'/mark', ['status' => 'completed'])->assertRedirect();
+        $this->assertStringNotContainsString('pay=', (string) session('_previous.url'));
     }
 
     public function test_mark_paid_button_and_unpaid_note_on_the_customer(): void

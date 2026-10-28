@@ -88,7 +88,7 @@
                     <td>{{ $b->service->label('en') }}<br><small class="mute">{{ $b->service->duration_min }} min</small></td>
                     <td>{{ $b->practitioner->name }}</td>
                     <td>{{ $b->customer?->name ?: '-' }}<br><small class="mute">{{ $b->customer?->phone }}</small></td>
-                    <td><span class="tag {{ $b->status === 'confirmed' ? 'ok' : 'warn' }}">{{ str_replace('_', ' ', $b->status) }}</span>
+                    <td><span class="tag {{ $b->status === 'confirmed' ? ($b->ends_at->isPast() ? 'warn' : 'ok') : 'warn' }}">{{ $b->status === 'confirmed' && $b->ends_at->isPast() ? 'Finished? Mark it' : str_replace('_', ' ', $b->status) }}</span>
                         @if ($b->status === 'confirmed' && ! $b->google_event_id && $b->practitioner->google_calendar_id)
                             <br><small class="mute">not in Google Calendar</small>
                         @endif

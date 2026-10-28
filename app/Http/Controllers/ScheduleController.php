@@ -33,7 +33,8 @@ class ScheduleController extends Controller
             $bookings = Booking::query()
                 ->with(['service', 'practitioner', 'customer'])
                 ->when($practitionerId, fn ($q) => $q->where('practitioner_id', $practitionerId))
-                ->when($show === 'upcoming', fn ($q) => $q->where('status', 'confirmed')->where('ends_at', '>=', now())->orderBy('starts_at'))
+                // Upcoming also keeps recent visits nobody has marked Done or No-show yet, so they are never lost.
+                ->when($show === 'upcoming', fn ($q) => $q->where('status', 'confirmed')->where('ends_at', '>=', now()->subDays(30))->orderBy('starts_at'))
                 ->when($show !== 'upcoming', fn ($q) => $q->where(fn ($w) => $w->where('status', '!=', 'confirmed')->orWhere('ends_at', '<', now()))->orderByDesc('starts_at'))
                 ->limit(200)
                 ->get();
@@ -163,6 +164,7 @@ class ScheduleController extends Controller
         $data = $request->validate(['status' => ['required', 'in:completed,no_show']]);
         $booking = Booking::query()->with(['service', 'customer'])->findOrFail($id);
         $message = 'Booking updated.';
+        $order = null;
 
         if ($booking->status === 'confirmed') {
             $booking->update(['status' => $data['status']]);
@@ -171,12 +173,13 @@ class ScheduleController extends Controller
                 $order = $this->orderForVisit($booking);
                 if ($order !== null) {
                     $cur = $request->user()->business->settings['currency'] ?? 'RM';
-                    $message = 'Marked done. An order of '.$cur.' '.number_format((float) $order->amount, 2).' is waiting for payment in Orders. Press "Mark paid" there when the customer has paid.';
+                    $message = 'Marked done. Collect the payment of '.$cur.' '.number_format((float) $order->amount, 2).' below, or close this and mark it paid later.';
                 }
             }
         }
 
-        return back()->with('status', $message);
+        // Straight to the payment details for this visit, so the shop can take the money right away.
+        return $order !== null ? redirect()->route('orders', ['pay' => $order->id])->with('status', $message) : back()->with('status', $message);
     }
 
     /** The customer pays at the shop, so a finished visit becomes an unpaid order. Free services and repeats make none. */
