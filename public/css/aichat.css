@@ -305,3 +305,48 @@ details.menu summary::-webkit-details-marker { display: none; }
 .tabs a { flex: none; }
 .masonry { column-width: 380px; column-gap: 14px; }
 .masonry > .card { break-inside: avoid; margin: 0 0 14px; display: block; width: 100%; }
+
+/* Schedule calendar */
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; }
+.seg a { padding: 5px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--mute); }
+.seg a:hover { text-decoration: none; color: var(--ink); }
+.seg a.on { background: var(--accent); color: #fff; }
+.cal-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.cal-bar .grow { flex: 1; }
+.cal-bar select { width: auto; height: 32px; }
+.cal-title { font-size: 15px; margin-left: 6px; }
+.month { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.month .mh { padding: 8px; font-size: 11.5px; font-weight: 600; color: var(--mute); text-transform: uppercase; letter-spacing: .03em; background: #f8fafa; border-bottom: 1px solid var(--line); }
+.mc { min-height: 104px; padding: 4px 5px 6px; border-right: 1px solid var(--line-s); border-bottom: 1px solid var(--line-s); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mc:nth-child(7n) { border-right: 0; }
+.mc.other { background: #fafcfc; }
+.mc.other .dn { color: var(--faint); }
+.mc .dn { align-self: flex-end; width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 12px; font-weight: 600; color: var(--ink); border-radius: 50%; }
+.mc .dn:hover { background: var(--accent-l); text-decoration: none; }
+.mc.today .dn { background: var(--accent); color: #fff; }
+.chip, .ev { font: inherit; text-align: left; cursor: pointer; border: 0; border-left: 3px solid var(--accent); background: var(--accent-l); color: var(--ink); border-radius: 6px; }
+.chip { font-size: 11.5px; padding: 2px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.chip:hover, .ev:hover { background: var(--accent-m); }
+.st-completed { border-left-color: var(--green); background: var(--greens); }
+.st-no_show { border-left-color: var(--amber); background: var(--ambers); }
+.more { font-size: 11px; color: var(--mute); padding-left: 4px; }
+.week-scroll { overflow-x: auto; }
+.week { display: grid; grid-template-columns: 52px repeat(7, minmax(110px, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 860px; }
+.week .wh { padding: 8px; text-align: center; font-size: 12px; color: var(--mute); background: #f8fafa; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line-s); }
+.week .wh b { color: var(--ink); font-size: 14px; }
+.week .wh.today b { background: var(--accent); color: #fff; border-radius: 50%; display: inline-block; width: 24px; line-height: 24px; }
+.week .wh.gutter { border-left: 0; }
+.week .gutter.hours div { height: var(--hh); font-size: 11px; color: var(--faint); text-align: right; padding: 2px 6px 0 0; }
+.week .wd { position: relative; height: calc(var(--hours) * var(--hh)); border-left: 1px solid var(--line-s); background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--hh) - 1px), var(--line-s) calc(var(--hh) - 1px), var(--line-s) var(--hh)); }
+.week .wd.today { background-color: color-mix(in srgb, var(--accent) 4%, #fff); }
+.ev { position: absolute; font-size: 11.5px; line-height: 1.3; padding: 3px 6px; overflow: hidden; }
+.ev small { color: var(--mute); font-size: 10.5px; }
+.dlg { border: 0; border-radius: var(--radius); padding: 20px; width: min(380px, 92vw); box-shadow: 0 20px 50px rgba(16, 40, 40, .25); margin: auto; }
+.dlg::backdrop { background: rgba(10, 26, 26, .4); }
+.dlg .btn { margin-top: 14px; }
+.detail { list-style: none; margin-top: 10px; }
+.detail li { display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--line-s); font-size: 13px; }
+.detail li span:first-child { color: var(--mute); }
+@media (max-width: 700px) { .mc { min-height: 70px; } .chip b { display: none; } }
+.legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.legend .chip { width: auto; cursor: default; }

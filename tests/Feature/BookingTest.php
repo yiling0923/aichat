@@ -421,7 +421,7 @@ class BookingTest extends TestCase
         $id = $this->inBusiness(fn () => Booking::query()->first()->id);
         $otherId = $this->inBusiness(fn () => Booking::query()->first()->id, $other);
 
-        $this->actingAs($staff)->get('/admin/schedule')->assertOk()->assertSee('Amy Tan')->assertDontSee('Secret Person');
+        $this->actingAs($staff)->get('/admin/schedule?view=list')->assertOk()->assertSee('Amy Tan')->assertDontSee('Secret Person');
         $this->actingAs($staff)->post("/admin/schedule/{$otherId}/cancel")->assertNotFound();
         $this->actingAs($staff)->post("/admin/schedule/{$id}/cancel")->assertRedirect();
         $this->inBusiness(fn () => $this->assertSame('cancelled', Booking::query()->first()->status));
