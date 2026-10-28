@@ -2,7 +2,7 @@
 @section('title', 'Schedule')
 @section('content')
     @php
-        $link = fn (array $over = []) => route('schedule', array_filter(['view' => $view, 'practitioner' => $practitionerId] + $over, fn ($v) => $v !== null && $v !== ''));
+        $link = fn (array $over = []) => route('schedule', array_filter($over + ['view' => $view, 'practitioner' => $practitionerId], fn ($v) => $v !== null && $v !== ''));
     @endphp
     <div class="page-head">
         <div><h1>Schedule</h1><p class="mute">Bookings made in the chat. Times are in {{ $business->timezone }}.</p></div>

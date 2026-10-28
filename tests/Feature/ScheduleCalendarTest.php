@@ -168,4 +168,20 @@ class ScheduleCalendarTest extends TestCase
         $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/move', ['starts_at' => '2001-01-01 10:00'])->assertSessionHasErrors('starts_at');
         $this->get('/admin/schedule?date='.substr($when, 0, 10))->assertSee('Change time')->assertSee('draggable="true"', false);
     }
+
+    public function test_the_view_buttons_link_to_the_other_views_and_keep_the_practitioner_filter(): void
+    {
+        $this->make('Link Lee', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDay()->format('Y-m-d H:i'));
+        $dr = app(CurrentBusiness::class)->runAs($this->business, fn () => Practitioner::first());
+        $this->actingAs($this->staff);
+
+        $month = $this->get('/admin/schedule?practitioner='.$dr->id)->assertOk();
+        $month->assertSee('view=week', false)->assertSee('view=list', false)->assertSee('practitioner='.$dr->id, false);
+        $this->assertMatchesRegularExpression('/<a [^>]*href="[^"]*view=week[^"]*"[^>]*>Week<\/a>/', $month->getContent());
+        $this->assertMatchesRegularExpression('/<a [^>]*href="[^"]*view=list[^"]*"[^>]*>List<\/a>/', $month->getContent());
+
+        $week = $this->get('/admin/schedule?view=week')->assertOk();
+        $this->assertMatchesRegularExpression('/<a [^>]*href="[^"]*view=month[^"]*"[^>]*>Month<\/a>/', $week->getContent());
+        $this->get('/admin/schedule?view=list')->assertOk()->assertSee('Upcoming');
+    }
 }
