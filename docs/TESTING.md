@@ -156,6 +156,14 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 3. Staff accounts see the cards and **Copy English** but no New reply or Edit.
 4. In the **Inbox**, "Insert a saved reply" now groups the list. The text goes in the customer's language (Chinese if they chose 中文) and `{name}` becomes their name (or "there" when unknown), `{business}` your business name.
 
+### S. Menu builder polish
+1. **Settings > Menu builder**: the tag at the top says **Published**; **Save draft** is greyed out until you change something.
+2. Edit any text: the tag changes to **Unsaved changes**. Press **Save draft** or **Ctrl+S**: a "Draft saved" message appears and the tag becomes "Saved, not published". Leaving the page with unsaved changes asks first.
+3. Under "What the bot says" the **{name} {business} ...** buttons insert a placeholder where your cursor is.
+4. **+ Add step**: a pop-up asks for a name and what the step does (with a one-line explanation). The step id is made for you.
+5. Each button is a small card ("Button 1: English"); typed words are folded under "Typed words (n)".
+6. **Delete step** warns which other steps link to it. **Publish** refuses a menu with broken links and says so; a good menu says "Published. Customers see the new menu now."
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

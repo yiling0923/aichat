@@ -23,7 +23,7 @@ class MenuController extends Controller
 
     public function index(Request $request): View
     {
-        return view('admin.menu', ['business' => $request->user()->business]);
+        return view('admin.menu', ['business' => $request->user()->business, 'active' => 'menu']);
     }
 
     public function show(Request $request): JsonResponse
