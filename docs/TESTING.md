@@ -176,6 +176,15 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 3. **New template** (or a card under **Start from an example**): choose number, language, name (it fixes spaces and capitals for you), type, and write the message. The **1 · name, 2 · service, 3 · date and time** buttons add the changing parts; "How it will look" shows it with sample values. **Send to Meta for review** submits it.
 4. **Remove** only removes it from this list; it stays in Meta until you delete it there.
 
+### V. AI assistant page
+1. **Settings > AI assistant**: a tag at the top says Real AI, Practice AI or AI off; technical help is folded under "How to turn it on".
+2. **How should the AI help?**: four cards (Off, Suggest, Approve "Good start", Auto). Click one, then **Save**.
+3. **Tone and style**: type your own or click the "+ Friendly and short" style buttons. **Spending limit** (folded) sets the monthly maximum.
+4. **This month**: a bar showing AI replies used against your limit (your plan's limit too), when it resets, and a warning near the limit.
+5. **Try it**: click an example question (it uses one of your real services) or type your own. The answer appears as a chat bubble with what the AI understood. (Needs `AI_PROVIDER=fake` or `claude` in `.env`.)
+6. **Extra answers**: **Add an answer**, or click an idea such as "+ Parking". **Edit** opens a pop-up with a Delete button and a "may use" switch.
+7. Folded at the bottom: everything the AI knows, and the recent AI calls in plain words (Answered, Stopped, Failed).
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

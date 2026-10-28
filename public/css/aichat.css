@@ -586,3 +586,31 @@ body.lp { height: auto; background: var(--surface); }
 .tpl[hidden] { display: none; }
 .tile.ex { text-align: left; font: inherit; cursor: pointer; }
 .wa-bubble { font-weight: 400; }
+
+/* AI assistant page */
+.mode-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.mode { position: relative; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; box-shadow: var(--shadow); }
+.mode input { position: absolute; opacity: 0; pointer-events: none; }
+.mode b { font-size: 14.5px; display: flex; gap: 8px; align-items: center; }
+.mode span { font-size: 12.5px; color: var(--mute); line-height: 1.45; }
+.mode:hover { border-color: var(--accent-m); }
+.mode.on { border-color: var(--accent); background: var(--accent-l); }
+.mode:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ai-usage { margin-top: 14px; }
+.usage-line { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 13.5px; }
+.usage-sub { display: flex; gap: 22px; margin-top: 10px; font-size: 12.5px; color: var(--mute); }
+.usage-sub b { color: var(--ink); }
+.progress.hot span { background: var(--red); }
+.try-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; }
+#try-out { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+#try-out .bubble { max-width: 560px; }
+#try-out .bubble.customer { align-self: flex-end; }
+.try-meta { display: flex; gap: 6px; }
+.safe ul { margin: 8px 0 0 18px; color: var(--mute); font-size: 13px; }
+.safe li { margin: 4px 0; }
+.card.safe { margin-top: 16px; }
+.know { white-space: pre-wrap; font-size: 12px; background: var(--bg); border-radius: 10px; padding: 12px 14px; margin: 0 18px 18px; max-height: 360px; overflow: auto; }
+details.inline { display: inline; }
+details.inline summary { display: inline; cursor: pointer; font-weight: 600; text-decoration: underline; }
+.reply.off { opacity: .6; }
+.card .f + .var-row { margin-top: 8px; }

@@ -481,7 +481,7 @@ class AiTest extends TestCase
 
         $this->actingAs($staff)->get('/admin/ai')->assertForbidden();
         $this->actingAs($staff)->post('/admin/ai', ['mode' => 'auto', 'monthly_cap' => 5])->assertForbidden();
-        $this->actingAs($manager)->get('/admin/ai')->assertOk()->assertSee('AI assistant')->assertSee('fake');
+        $this->actingAs($manager)->get('/admin/ai')->assertOk()->assertSee('AI assistant')->assertSee('Practice AI');
 
         $this->actingAs($manager)->post('/admin/ai', ['mode' => 'approve', 'monthly_cap' => 50, 'instructions' => 'Short answers.'])->assertSessionHasNoErrors();
         $b = $this->business->fresh();
@@ -533,7 +533,35 @@ class AiTest extends TestCase
         $this->in(fn () => AiUsage::create(['purpose' => 'reply', 'provider' => 'claude', 'status' => 'ok', 'input_tokens' => 2000000, 'output_tokens' => 0, 'created_at' => now()]), $this->other);
 
         $r = $this->actingAs($manager)->get('/admin/ai')->assertOk();
-        $r->assertSee('AI calls this month (limit 300)');
-        $this->assertStringContainsString('<b>1</b><span>AI calls this month', $r->getContent());
+        $r->assertSee('of 300 AI replies used');
+        $this->assertStringContainsString('<b>1</b> of 300 AI replies used', $r->getContent());
+    }
+
+    public function test_the_ai_page_shows_mode_cards_usage_bar_ideas_and_the_never_list(): void
+    {
+        $manager = User::factory()->create(['business_id' => $this->business->id, 'role' => 'manager']);
+        $this->in(fn () => KnowledgeEntry::create(['title' => 'Parking', 'answer' => ['en' => 'Free for 2 hours'], 'active' => true]));
+
+        $r = $this->actingAs($manager)->get('/admin/ai')->assertOk();
+        $r->assertSee('How should the AI help?')->assertSee('Suggest')->assertSee('Approve')->assertSee('Good start')->assertSee('Auto')
+            ->assertSee('Resets on')->assertSee('What the AI will never do')->assertSee('Parking')->assertSee('+ Payment methods')->assertDontSee('data-idea="Parking"', false)
+            ->assertSee('data-edit', false)->assertSee('Try it');
+
+        $this->post('/admin/ai', ['mode' => 'approve', 'monthly_cap' => 50, 'instructions' => 'Friendly and short.'])->assertRedirect();
+        $this->get('/admin/ai')->assertSee('Friendly and short.')->assertSee('of 50 AI replies used');
+    }
+
+    public function test_the_usage_bar_warns_near_the_limit_and_shows_the_plan_limit(): void
+    {
+        $manager = User::factory()->create(['business_id' => $this->business->id, 'role' => 'manager']);
+        $this->business->forceFill(['plan' => 'trial', 'subscription_status' => 'trialing', 'trial_ends_at' => now()->addDays(3), 'settings' => ['ai' => ['mode' => 'auto', 'monthly_cap' => 1000]]])->save();
+        $this->in(function () {
+            for ($i = 0; $i < 95; $i++) {
+                AiUsage::create(['purpose' => 'reply', 'provider' => 'fake', 'status' => 'ok', 'created_at' => now()]);
+            }
+        });
+
+        $r = $this->actingAs($manager)->get('/admin/ai')->assertOk();
+        $r->assertSee('of 100 AI replies used')->assertSee('Almost at the limit')->assertSee('Your plan also allows 100 a month');
     }
 }

@@ -46,6 +46,10 @@ class AiSettingsController extends Controller
             'entries' => KnowledgeEntry::query()->orderBy('id')->get(),
             'knowledgeText' => $knowledge->build($business),
             'recent' => AiUsage::query()->orderByDesc('id')->limit(8)->get(),
+            'planLimit' => app(\App\Billing\Plans::class)->limit($business, 'ai'),
+            'resets' => now()->addMonth()->startOfMonth()->format('j M'),
+            'firstService' => optional(\App\Models\Service::query()->orderBy('sort')->first())->label('en'),
+            'topicIdeas' => ['Parking', 'Payment methods', 'Aftercare', 'Cancellation policy', 'Walk-ins', 'First visit'],
         ]);
     }
 
