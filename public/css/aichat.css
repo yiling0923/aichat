@@ -144,9 +144,7 @@ body.chat-body { background: radial-gradient(circle at 15% 0%, var(--accent-l), 
 .bar.spread h1 + .mute { margin: 2px 0 0; }
 .actions { display: flex; gap: 6px; }
 .actions form, .inline { display: inline; margin: 0; }
-.pager { margin-top: 14px; display: flex; gap: 8px; }
-.pager nav > div:first-child { display: none; }
-.pager svg { width: 16px; }
+.pager { margin-top: 14px; }
 
 /* Tables */
 .table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 13.5px; box-shadow: var(--shadow); }
@@ -1020,3 +1018,11 @@ html { scroll-behavior: smooth; }
 @keyframes bell-ring { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-5deg); } }
 .bell-foot button.off { color: var(--mute); }
 @media (prefers-reduced-motion: reduce) { .bell-btn.ring svg { animation: none; } }
+
+/* Page bar */
+.pg { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 4px 2px; font-size: 13px; color: var(--mute); }
+.pg b { color: var(--ink); }
+.pg-btns { display: flex; align-items: center; gap: 10px; }
+.pg-page { font-size: 12.5px; }
+.pg .btn.pg-off { opacity: .45; cursor: default; pointer-events: none; }
+@media (max-width: 520px) { .pg { justify-content: center; } .pg-info { width: 100%; text-align: center; } }

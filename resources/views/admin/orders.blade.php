@@ -74,7 +74,7 @@
         </tbody>
     </table>
     </div>
-    <div class="pager">{{ $orders->links('pagination::simple-default') }}</div>
+    <div class="pager">{{ $orders->links('pagination.bar') }}</div>
 
     <dialog id="order-dialog" class="dlg wide">
         <button type="button" class="dlg-x" aria-label="Close">&times;</button>

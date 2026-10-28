@@ -40,5 +40,5 @@
         @endforelse
         </tbody>
     </table>
-    <div class="pager">{{ $conversations->links('pagination::simple-default') }}</div>
+    <div class="pager">{{ $conversations->links('pagination.bar') }}</div>
 @endsection

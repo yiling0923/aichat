@@ -51,5 +51,5 @@
             </tbody>
         </table>
     </form>
-    <div class="pager">{{ $customers->links('pagination::simple-default') }}</div>
+    <div class="pager">{{ $customers->links('pagination.bar') }}</div>
 @endsection

@@ -34,7 +34,7 @@
         </tbody>
     </table>
     </div>
-    <div class="pager">{{ $logs->links('pagination::simple-default') }}</div>
+    <div class="pager">{{ $logs->links('pagination.bar') }}</div>
 
     <h3 class="bill-h">Survey answers and review links</h3>
     <div class="table-wrap" style="max-height:none">

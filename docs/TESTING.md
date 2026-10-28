@@ -346,3 +346,5 @@ For testing only. In your project folder run:
 - `php artisan aichat:sample-data --remove` clears only the sample rows (their emails end in `@sample.test`). Your own data stays.
 - Another business: `--business=your-slug`. More or fewer people: `--customers=80`.
 Then press Ctrl+F5 and look at Today, Schedule, Customers, Reports, Orders, Inbox and Marketing.
+
+Page bar (AN, step 2): with the sample data, open Customers, Orders, Conversations or the Activity log. At the bottom you see "Showing 1-25 of 133", greyed "Previous" on page 1, "Page 1 of 6" and a "Next" button, centred on a phone.

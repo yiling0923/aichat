@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Support\CurrentBusiness;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Any page list in the app uses the same neat Previous / Next bar.
+        Paginator::defaultView('pagination.bar');
+        Paginator::defaultSimpleView('pagination.bar');
+
         // Behind a tunnel (ngrok, localhost.run, Cloudflare) the app only sees plain http, so it would
         // write http:// into forms and links. When APP_URL is https and the visitor arrives on a real
         // host name (not localhost), always build https addresses.
