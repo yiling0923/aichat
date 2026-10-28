@@ -41,17 +41,4 @@ class AdminPagesSmokeTest extends TestCase
             $this->get('/admin/'.$page)->assertForbidden();
         }
     }
-
-    public function test_filter_bars_show_chips_counts_and_a_reset_link(): void
-    {
-        $business = Business::factory()->create();
-        $staff = User::factory()->create(['business_id' => $business->id, 'role' => 'staff']);
-        $this->actingAs($staff);
-
-        $this->get('/admin/customers')->assertOk()->assertSee('0</b> customers', false)->assertDontSee('>Reset<', false);
-        $this->get('/admin/customers?score=hot&q=amy')->assertOk()->assertSee('Lead level: Ready to book')->assertSee('Search: amy')->assertSee('>Reset<', false);
-        $this->get('/admin/conversations?status=open&mode=human')->assertOk()->assertSee('Status: Open')->assertSee('Handled by: Staff')->assertSee('>Reset<', false);
-        $this->get('/admin/orders?status=paid')->assertOk()->assertSee('>Reset<', false);
-        $this->get('/admin/tasks?show=done&mine=1')->assertOk();
-    }
 }

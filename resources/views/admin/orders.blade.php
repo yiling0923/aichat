@@ -19,12 +19,9 @@
         <p></p><button class="btn primary" type="submit">Add order</button>
     </form>
 
-    <form method="get" class="filters">
-        <label>Status
-            <select name="status" onchange="this.form.submit()"><option value="">All</option>@foreach ($statuses as $s)<option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>@endforeach</select></label>
-        @if ($status)<a class="btn" href="{{ route('orders') }}">Reset</a>@endif
-        <span class="grow"></span>
-        <span class="mute"><b>{{ $orders->total() }}</b> {{ \Illuminate\Support\Str::plural('order', $orders->total()) }}</span>
+    <form method="get" class="bar">
+        <select name="status" class="small"><option value="">Any status</option>@foreach ($statuses as $s)<option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>@endforeach</select>
+        <button class="btn" type="submit">Filter</button>
     </form>
     <table class="table">
         <thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th></tr></thead>

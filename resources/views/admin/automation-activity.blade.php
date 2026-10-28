@@ -5,14 +5,12 @@
     <p><a href="{{ route('automations') }}">&larr; Automations</a></p>
     <h1>Automation activity</h1>
     <p class="mute">Every automatic message, and every one that was skipped with the reason. Survey answers and review links are listed below.</p>
-    <form method="get" class="filters">
-        <label>Automation
-            <select name="key" onchange="this.form.submit()"><option value="">All</option>
-                @foreach ($defs as $k => $d)<option value="{{ $k }}" @selected($key === $k)>{{ $d['title'] }}</option>@endforeach</select></label>
-        <label>Result
-            <select name="status" onchange="this.form.submit()"><option value="">All</option>
-                @foreach (['sent', 'skipped', 'failed'] as $s)<option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>@endforeach</select></label>
-        @if ($key || $status)<a class="btn" href="{{ route('automations.activity') }}">Reset</a>@endif
+    <form method="get" class="bar">
+        <select name="key" class="small"><option value="">All automations</option>
+            @foreach ($defs as $k => $d)<option value="{{ $k }}" @selected($key === $k)>{{ $d['title'] }}</option>@endforeach</select>
+        <select name="status" class="small"><option value="">Any result</option>
+            @foreach (['sent', 'skipped', 'failed'] as $s)<option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>@endforeach</select>
+        <button class="btn" type="submit">Filter</button>
     </form>
     <table class="table">
         <thead><tr><th>When</th><th>Automation</th><th>Customer</th><th>Result</th><th>Reason</th></tr></thead>

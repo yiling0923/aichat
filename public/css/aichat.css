@@ -369,18 +369,3 @@ details.menu summary::-webkit-details-marker { display: none; }
 .dlg .actions { display: flex; gap: 8px; }
 .mf-row input[type=date], .mf-row input[type=time] { border: 1px solid var(--line); border-radius: 9px; padding: 0 9px; font: inherit; font-size: 13px; background: #fff; color: var(--ink); }
 .mf-row input[type=date] { flex: 1.5; }
-
-/* Filter bars on list pages */
-.filters .grow { flex: 1 1 240px; }
-.filters .grow input { width: 100%; }
-.filters > .grow:empty { flex: 1; }
-.filters .seg { margin: 0; }
-.result-line { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin: -2px 2px 12px; font-size: 12.5px; color: var(--mute); }
-.result-line b { color: var(--ink); }
-.fchip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-l); color: var(--accent-d); border-radius: 999px; padding: 3px 6px 3px 11px; font-weight: 600; font-size: 12px; }
-.fchip a { width: 18px; height: 18px; line-height: 17px; text-align: center; border-radius: 50%; color: var(--accent-d); font-size: 15px; }
-.fchip a:hover { background: var(--accent-m); text-decoration: none; }
-.bulkbar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; padding: 10px 14px; margin-bottom: 10px; background: var(--ink); color: #fff; border-radius: var(--radius); font-size: 13px; }
-.bulkbar .mute { color: #b9caca; }
-.bulkbar select { width: auto; height: 30px; }
-.bulkbar .btn { height: 30px; }
