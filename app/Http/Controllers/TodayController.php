@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Conversation;
 use App\Models\Customer;
+use App\Models\Order;
+use App\Models\StaffNotification;
 use App\Models\Task;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -23,9 +25,10 @@ class TodayController extends Controller
         $end = now($tz)->endOfDay()->utc();
 
         $waiting = Conversation::query()->where('channel', '!=', 'preview')->where('status', 'open')->where('mode', 'human')
-            ->orderBy('handover_at')->limit(8)->get();
+            ->orderBy('handover_at')->limit(6)->get();
 
-        $bookings = Booking::query()->with(['service', 'practitioner', 'customer'])->where('status', 'confirmed')
+        // Everything booked today, including visits already finished, so the day reads as a timeline.
+        $bookings = Booking::query()->with(['service', 'practitioner', 'customer'])->whereIn('status', ['confirmed', 'completed', 'no_show'])
             ->whereBetween('starts_at', [$start, $end])->orderBy('starts_at')->get();
 
         $tasks = Task::query()->with('assignee')->whereNull('done_at')
@@ -33,14 +36,42 @@ class TodayController extends Controller
             ->where(fn ($q) => $q->whereNull('assigned_to')->orWhere('assigned_to', $user->id))
             ->orderByRaw('due_at is null')->orderBy('due_at')->limit(8)->get();
 
+        // The week at a glance: bookings per day, Monday to Sunday.
+        $weekStart = now($tz)->startOfWeek();
+        $week = [];
+        $weekBookings = Booking::query()->where('status', '!=', 'cancelled')
+            ->whereBetween('starts_at', [$weekStart->copy()->utc(), $weekStart->copy()->endOfWeek()->utc()])->pluck('starts_at');
+        for ($i = 0; $i < 7; $i++) {
+            $day = $weekStart->copy()->addDays($i);
+            $week[] = ['label' => $day->format('D'), 'date' => $day->format('j'), 'today' => $day->isToday(), 'count' => $weekBookings->filter(fn ($d) => $d->copy()->setTimezone($tz)->isSameDay($day))->count()];
+        }
+
+        $paid = fn ($from, $to) => (float) Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from->copy()->utc(), $to->copy()->utc()])->sum('amount');
+        $now = now($tz);
+        $revenueWeek = $paid($now->copy()->subDays(6)->startOfDay(), $now->copy()->endOfDay());
+        $revenuePrev = $paid($now->copy()->subDays(13)->startOfDay(), $now->copy()->subDays(7)->endOfDay());
+        $leads = Customer::query()->where('created_at', '>=', now()->subDays(7))->count();
+        $leadsPrev = Customer::query()->whereBetween('created_at', [now()->subDays(14), now()->subDays(7)])->count();
+        $plans = app(\App\Billing\Plans::class);
+
         return view('admin.today', [
             'business' => $business,
             'active' => 'today',
             'waiting' => $waiting,
             'bookings' => $bookings,
             'tasks' => $tasks,
-            'newLeads' => Customer::query()->where('created_at', '>=', now()->subDays(7))->count(),
+            'tz' => $tz,
+            'week' => $week,
+            'tomorrow' => Booking::query()->where('status', 'confirmed')->whereBetween('starts_at', [now($tz)->addDay()->startOfDay()->utc(), now($tz)->addDay()->endOfDay()->utc()])->count(),
+            'newLeads' => $leads,
+            'leadsDelta' => $leads - $leadsPrev,
+            'revenueWeek' => $revenueWeek,
+            'revenueDelta' => $revenuePrev > 0 ? (int) round(($revenueWeek - $revenuePrev) / $revenuePrev * 100) : null,
+            'currency' => $business->settings['currency'] ?? 'RM',
             'openChats' => Conversation::query()->where('channel', '!=', 'preview')->where('status', 'open')->count(),
+            'recent' => StaffNotification::query()->where('user_id', $user->id)->orderByDesc('id')->limit(5)->get(),
+            'chatUrl' => route('chat.show', $business->slug),
+            'aiUsage' => $user->role === 'owner' && $plans->limit($business, 'ai') !== null ? ['used' => $plans->used($business, 'ai'), 'limit' => $plans->limit($business, 'ai')] : null,
             'hour' => (int) now($tz)->format('G'),
             'checklist' => $user->role === 'owner' ? $this->checklist($business) : [],
         ]);

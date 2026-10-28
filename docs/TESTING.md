@@ -350,3 +350,11 @@ Then press Ctrl+F5 and look at Today, Schedule, Customers, Reports, Orders, Inbo
 Page bar (AN, step 2): with the sample data, open Customers, Orders, Conversations or the Activity log. At the bottom you see "Showing 1-25 of 133", greyed "Previous" on page 1, "Page 1 of 6" and a "Next" button, centred on a phone.
 
 Schedule colours (section on Schedule): blue = Confirmed (upcoming), green = Done, amber = No-show. The same colours show in Month, Week and the key under the calendar.
+
+## AO. Today page
+
+1. Open Today. Top: greeting, a line saying how many chats need you (or who is next), and quick buttons: Open inbox, Schedule, + Task, Copy chat link.
+2. Five clickable cards: waiting for staff (red when someone needs you), bookings today, open chats, new customers and paid sales, with up and down arrows against the week before.
+3. Left: "Needs a person" with a Reply button for each, then today's bookings as a timeline with Done, Now, Next and No-show tags.
+4. Right: your tasks (tick the circle to finish one, overdue ones are red), a small bar chart of this week, recent activity, and AI use for owners.
+5. With no data (new business) every box shows a friendly message instead of being empty. On a phone it becomes one column.
