@@ -3,14 +3,14 @@
     $values = array_column($days, $key);
     $max = max(1, max($values ?: [1]));
     $nice = $max <= 4 ? $max : (int) (ceil($max / 4) * 4);
-    $w = 640; $h = 150; $padL = 34; $padB = 22; $padT = 10; $n = max(1, count($days));
-    $slot = ($w - $padL) / $n; $bar = max(1.5, min(14, $slot - 2));
+    $w = 560; $h = 190; $padL = 36; $padB = 26; $padT = 12; $n = max(1, count($days));
+    $slot = ($w - $padL) / $n; $bar = max(2, min(18, $slot * 0.7));
 @endphp
 <svg viewBox="0 0 {{ $w }} {{ $h + $padB + $padT }}" class="trend" role="img" aria-label="{{ $title }} per day">
     @foreach ([0, .5, 1] as $g)
         @php $y = $padT + $h - $g * $h; @endphp
         <line x1="{{ $padL }}" x2="{{ $w }}" y1="{{ $y }}" y2="{{ $y }}" class="grid"/>
-        <text x="{{ $padL - 4 }}" y="{{ $y + 3 }}" text-anchor="end" class="axis">{{ round($g * $nice) }}</text>
+        <text x="{{ $padL - 6 }}" y="{{ $y + 3 }}" text-anchor="end" class="axis">{{ round($g * $nice) }}</text>
     @endforeach
     @foreach ($days as $i => $d)
         @php $v = $d[$key]; $bh = $v / $nice * $h; $x = $padL + $i * $slot + ($slot - $bar) / 2; @endphp
@@ -21,6 +21,6 @@
         </g>
     @endforeach
     @foreach ([0, (int) floor(($n - 1) / 2), $n - 1] as $i)
-        @if (isset($days[$i]))<text x="{{ round($padL + $i * $slot + $slot / 2, 1) }}" y="{{ $padT + $h + 16 }}" text-anchor="{{ $i === 0 ? 'start' : ($i === $n - 1 ? 'end' : 'middle') }}" class="axis">{{ \Carbon\Carbon::parse($days[$i]['date'])->format('j M') }}</text>@endif
+        @if (isset($days[$i]))<text x="{{ round($padL + $i * $slot + $slot / 2, 1) }}" y="{{ $padT + $h + 19 }}" text-anchor="{{ $i === 0 ? 'start' : ($i === $n - 1 ? 'end' : 'middle') }}" class="axis">{{ \Carbon\Carbon::parse($days[$i]['date'])->format('j M') }}</text>@endif
     @endforeach
 </svg>

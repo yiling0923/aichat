@@ -400,3 +400,5 @@ Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answe
 5. Press **Save hours and rules** to keep it. A closing time before the opening time is refused with a message.
 
 Reports summary tiles (Reports page): under the four big cards there are seven small tiles: handed over to staff, survey score, no-show rate, cancelled, repeat customers, opted out and AI calls, each with a short note. A coloured top edge shows how it is going (green good, amber so-so, red needs attention) for survey score, no-show rate and cancelled. On a phone they sit two per row.
+
+Report card size (Reports → Overview, Bookings, People, Money): cards are larger and the charts have bigger numbers and dates. On a wide screen the cards sit in two big columns, on a smaller screen in one, and the bars are thicker.

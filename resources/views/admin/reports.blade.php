@@ -84,7 +84,7 @@
     </div>
 
     <section class="rtab" id="tab-overview">
-        <div class="masonry">
+        <div class="masonry wide">
             <div class="card"><h3>Chats started per day</h3><div class="chart">@include('admin._trend', ['days' => $s['daily'], 'key' => 'chats', 'title' => 'chats'])</div></div>
             <div class="card"><h3>Bookings made per day</h3><div class="chart">@include('admin._trend', ['days' => $s['daily'], 'key' => 'bookings', 'title' => 'bookings'])</div></div>
             <div class="card"><h3>Top services</h3>@include('admin._bars', ['rows' => $s['topServices']])</div>
@@ -98,7 +98,7 @@
     </section>
 
     <section class="rtab" id="tab-bookings" hidden>
-        <div class="masonry">
+        <div class="masonry wide">
             <div class="card"><h3>Top services</h3>@include('admin._bars', ['rows' => $s['topServices']])</div>
             <div class="card"><h3>By practitioner</h3>@include('admin._bars', ['rows' => $s['byPractitioner']])</div>
             <div class="card"><h3>Busiest weekdays</h3>@include('admin._bars', ['rows' => $s['byWeekday']])</div>
@@ -108,7 +108,7 @@
     </section>
 
     <section class="rtab" id="tab-people" hidden>
-        <div class="masonry">
+        <div class="masonry wide">
             <div class="card"><h3>Chats by channel</h3>@include('admin._bars', ['rows' => $s['chatsByChannel']])</div>
             <div class="card"><h3>New customers by lead level</h3>@include('admin._bars', ['rows' => $s['leadsByScore']])</div>
             <div class="card"><h3>Most tapped buttons</h3>@include('admin._bars', ['rows' => $s['topTaps']])</div>
@@ -117,7 +117,7 @@
     </section>
 
     <section class="rtab" id="tab-money" hidden>
-        <div class="masonry">
+        <div class="masonry wide">
             <div class="card"><h3>Orders</h3>
                 @forelse ($s['ordersByStatus'] as $o)<ul><li><span>{{ $o['label'] }}</span><span><b>{{ $o['n'] }}</b> <span class="mute">· {{ $money($o['total']) }}</span></span></li></ul>@empty<p class="mute">No orders in this period.</p>@endforelse</div>
             <div class="card"><h3>Broadcasts sent</h3>
