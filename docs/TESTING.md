@@ -303,3 +303,12 @@ Open the chat link (Settings, "Your customer chat link").
 2. In the last 3 days of a trial (or after it ends) a coloured message explains what happens.
 3. Choose Starter (test mode takes no money). The page then shows "Your plan" on Starter, "Upgrade to Growth" on the other, the renewal date, and a row under Payments.
 4. "Cancel renewal" asks first, then shows "Not renewing" and "Works until ...".
+
+## AI. Marketing pages (Broadcasts and Activity log)
+
+1. Marketing has three tabs: Automations, Broadcasts, Activity log.
+2. Broadcasts: three cards (drafts, sent, people reached). Press "New broadcast": a pop-up with name, English and Chinese messages, character counters and "Customer name" / "Business name" buttons that insert {name} and {business}.
+3. Change the tag, lead level or language: the blue line says how many people can receive it, live. A preview bubble shows the message with a sample name.
+4. "Save as draft", then press Send on the draft: a pop-up repeats the number and asks to confirm. After sending, the list shows a coloured bar of sent, skipped and failed.
+5. Open a sent broadcast: filter who got it by Sent, Skipped or Failed. The message shows on the right.
+6. Activity log: filters apply as you pick them, with removable chips and a Reset button.

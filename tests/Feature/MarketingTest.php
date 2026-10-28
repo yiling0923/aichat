@@ -452,7 +452,7 @@ class MarketingTest extends TestCase
 
         $this->actingAs($owner)->get('/admin/automations/activity')->assertOk()->assertSee('Visible Vera')->assertDontSee('Secret Sam');
         // The log table is filtered (no failed messages); the survey list below it is not.
-        $this->actingAs($owner)->get('/admin/automations/activity?status=failed')->assertSee('Nothing yet');
+        $this->actingAs($owner)->get('/admin/automations/activity?status=failed')->assertSee('Nothing matches these filters');
     }
 
     private function consented(string $name, array $attrs = [], ?Business $b = null): array
@@ -472,7 +472,7 @@ class MarketingTest extends TestCase
         $this->actingAs($manager)->post('/admin/broadcasts', ['name' => 'Summer offer', 'message_en' => 'Hi {name}, 10% off this week at {business}!', 'message_zh' => '您好 {name}'])->assertSessionHasNoErrors();
         $id = $this->in(fn () => Broadcast::query()->first()->id);
 
-        $this->actingAs($manager)->get('/admin/broadcasts')->assertSee('2 can receive it');
+        $this->actingAs($manager)->get('/admin/broadcasts')->assertSee('<b>2</b>', false)->assertSee('people can receive it');
         $this->actingAs($manager)->post("/admin/broadcasts/{$id}/send")->assertRedirect();
         $this->actingAs($manager)->post("/admin/broadcasts/{$id}/send");                        // double click
 

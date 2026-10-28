@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Marketing\Broadcasts;
 use App\Models\Broadcast;
 use App\Models\BroadcastRecipient;
+use App\Models\Customer;
 use App\Models\Tag;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +55,18 @@ class BroadcastController extends Controller
         ]);
 
         return back()->with('status', 'Saved as a draft. Check the number of people, then press Send.');
+    }
+
+    /** How many people a draft with these filters would reach, for the live count in the form. */
+    public function audience(Request $request, Broadcasts $service): \Illuminate\Http\JsonResponse
+    {
+        $draft = new Broadcast(['audience' => array_filter([
+            'tag_id' => (int) $request->query('tag_id') ?: null,
+            'score' => in_array($request->query('score'), ['hot', 'warm', 'cold'], true) ? $request->query('score') : null,
+            'language' => in_array($request->query('language'), config('aichat.languages'), true) ? $request->query('language') : null,
+        ])]);
+
+        return response()->json(['count' => min($service->audience($draft)->count(), Broadcasts::LIMIT), 'everyone' => Customer::query()->count()]);
     }
 
     public function show(Request $request, int $id): View

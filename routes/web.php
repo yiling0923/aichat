@@ -171,6 +171,7 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     $b = \App\Http\Controllers\BroadcastController::class;
     Route::get('/broadcasts', [$b, 'index'])->name('broadcasts');
     Route::post('/broadcasts', [$b, 'store']);
+    Route::get('/broadcasts/audience', [$b, 'audience'])->name('broadcasts.audience');
     Route::get('/broadcasts/{id}', [$b, 'show'])->whereNumber('id')->name('broadcasts.show');
     Route::post('/broadcasts/{id}/send', [$b, 'send'])->whereNumber('id');
     Route::post('/broadcasts/{id}/delete', [$b, 'destroy'])->whereNumber('id');
