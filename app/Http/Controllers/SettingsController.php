@@ -76,6 +76,38 @@ class SettingsController extends Controller
         return back()->with('status', 'Settings saved.');
     }
 
+    public function saveAlerts(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'return_minutes' => ['required', 'integer', 'in:0,15,30,60,120,240'],
+            'alert_email' => ['nullable', 'boolean'],
+            'alert_whatsapp' => ['nullable', 'regex:/^\+?[0-9 ()-]{8,20}$/'],
+            'alert_whatsapp_template' => ['nullable', 'regex:/^[a-z0-9_]{0,80}$/'],
+        ], ['alert_whatsapp.regex' => 'Write the WhatsApp number with its country code, for example 60123456789.']);
+
+        $business = $request->user()->business;
+        $settings = (array) $business->settings;
+        $settings['handover_return_minutes'] = (int) $data['return_minutes'];
+        $settings['alert_email'] = (bool) ($data['alert_email'] ?? false);
+        $settings['alert_whatsapp'] = ! empty($data['alert_whatsapp']) ? preg_replace('/\D+/', '', $data['alert_whatsapp']) : null;
+        $settings['alert_whatsapp_template'] = $data['alert_whatsapp_template'] ?: null;
+        $business->update(['settings' => $settings]);
+
+        return back()->with('status', 'Waiting-chat settings saved.');
+    }
+
+    public function testAlerts(Request $request, \App\Services\StaffAlerts $alerts): RedirectResponse
+    {
+        $result = $alerts->test($request->user()->business, $request->user());
+
+        $parts = [$result['email'] ? 'An email was sent to '.$request->user()->email.'.' : 'The email could not be sent.'];
+        if ($result['whatsapp'] !== null) {
+            $parts[] = $result['whatsapp'] === 'sent' ? 'A WhatsApp message was sent.' : 'WhatsApp failed: '.$result['whatsapp'];
+        }
+
+        return back()->with('status', 'Test alert: '.implode(' ', $parts));
+    }
+
     public function storeUser(Request $request): RedirectResponse
     {
         $data = $request->validate([

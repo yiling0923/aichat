@@ -421,3 +421,11 @@ Reports redesign (Reports page): four big cards with a small trend line and a gr
 5. After 30 minutes: owners and managers get an "URGENT" alert.
 6. On Today the waiting time turns red from 10 minutes.
 7. As soon as a team member replies in the Inbox, all reminders stop.
+
+## AW. Email and WhatsApp alerts, and the bot taking the chat back
+
+Settings → Business → **When a customer waits for a person**:
+1. **Give the chat back to the bot after**: choose a time (default Never). Save. Then in the customer chat type `human` and leave it. When the time has passed (run `php artisan aichat:check-handovers` to speed it up) the customer gets "Sorry, our team could not get to you yet, so I am back to help…" and the main menu, and staff get a bell alert "went back to the bot". Reply in the Inbox before that and nothing is taken back.
+2. **Email the owner and managers**: tick it, Save. When a customer has waited 10 minutes the owner and managers get an email, and an URGENT one at 30. With `MAIL_MAILER=log` the email is written to `storage/logs/laravel.log`.
+3. **WhatsApp alert to this number**: needs a connected WhatsApp channel. With an approved template name (use {{1}} for the customer name and {{2}} for the minutes) it works any time; without one WhatsApp only delivers if that number wrote to your business in the last 24 hours.
+4. **Send me a test alert** sends a test email to you (and the WhatsApp message if set) and tells you what happened.

@@ -37,6 +37,28 @@
             <div class="dlg-foot"><button class="btn primary" type="submit">Save</button></div>
         </form>
 
+        <form method="post" action="{{ url('/admin/settings/alerts') }}" class="card" style="margin-top:14px" id="alerts-form">
+            @csrf
+            <h3>When a customer waits for a person</h3>
+            <p class="mute" style="margin-top:2px">The bell already chimes and reminds the team. Add more ways to reach them, and decide what happens if nobody answers.</p>
+            <label class="f" style="margin-top:12px"><span>If nobody answers, give the chat back to the bot after</span>
+                <select name="return_minutes">
+                    @foreach ([0 => 'Never (the chat waits for a person)', 15 => '15 minutes', 30 => '30 minutes', 60 => '1 hour', 120 => '2 hours', 240 => '4 hours'] as $m => $l)<option value="{{ $m }}" @selected((int) ($business->settings['handover_return_minutes'] ?? 0) === $m)>{{ $l }}</option>@endforeach
+                </select>
+                <small class="hint">The customer is told sorry and sees the menu again. Staff still get a bell alert and can take over any time.</small></label>
+            <label class="terms" style="margin-top:6px"><input type="checkbox" name="alert_email" value="1" @checked(! empty($business->settings['alert_email']))><span><b>Email the owner and managers</b> when a customer has waited 10 minutes, and again at 30 minutes (urgent).</span></label>
+            <div class="grid2">
+                <label class="f"><span>WhatsApp alert to this number (optional)</span>
+                    <input type="text" name="alert_whatsapp" value="{{ old('alert_whatsapp', $business->settings['alert_whatsapp'] ?? '') }}" placeholder="60123456789" inputmode="tel">
+                    @error('alert_whatsapp')<small class="field-err">{{ $message }}</small>@enderror</label>
+                <label class="f"><span>Approved WhatsApp template for it (optional)</span>
+                    <input type="text" name="alert_whatsapp_template" value="{{ old('alert_whatsapp_template', $business->settings['alert_whatsapp_template'] ?? '') }}" placeholder="staff_alert" maxlength="80">
+                    @error('alert_whatsapp_template')<small class="field-err">{{ $message }}</small>@enderror</label>
+            </div>
+            <small class="hint">WhatsApp only delivers a message to staff if the number wrote to your business in the last 24 hours, or if you give an approved template (use @{{1}} for the customer name and @{{2}} for the minutes). It needs a connected WhatsApp channel.</small>
+            <div class="dlg-foot"><button class="btn primary" type="submit">Save</button><button class="btn" type="submit" formaction="{{ url('/admin/settings/alerts/test') }}" title="Sends a test email to you, and to the WhatsApp number if set">Send me a test alert</button></div>
+        </form>
+
         <div class="card" style="margin-top:14px">
             <h3>Your customer chat link</h3>
             <div class="copy-row" style="margin-top:10px"><input type="text" readonly value="{{ $chatUrl }}" id="chat-link"><button type="button" class="btn small" data-copy="chat-link">Copy</button><a class="btn small" href="{{ $chatUrl }}" target="_blank">Open</a></div>

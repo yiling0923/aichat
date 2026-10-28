@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\N8nNotifier;
 use App\Services\Notifier;
+use App\Services\StaffAlerts;
 use App\Support\CurrentBusiness;
 use Illuminate\Console\Command;
 
@@ -33,6 +34,11 @@ class CheckHandovers extends Command
         $url = route('inbox', ['c' => $c->id]);
         $urgent = $stage >= 3;
 
+        // Outside the browser (email, WhatsApp) only at 10 minutes and at the urgent 30, so it never turns into spam.
+        if (in_array($stage, [1, 3], true)) {
+            app(StaffAlerts::class)->waiting($business, $c, $minutes, $urgent);
+        }
+
         app(Notifier::class)->notify(
             $business, 'handover',
             ($urgent ? 'URGENT: ' : '').$name.' has waited '.$minutes.' minutes',
@@ -40,6 +46,25 @@ class CheckHandovers extends Command
             $url,
             $urgent ? ['owner', 'manager'] : null,
         );
+    }
+
+    /** Nobody answered for the time the business chose: the bot takes the chat back and shows the menu again. */
+    private function returnToBot(Business $business, Conversation $c, int $minutes, N8nNotifier $n8n): void
+    {
+        $c->giveBackToBot();
+        $c->forceFill(['state' => null])->save();
+        $c->addMessage('out', 'system', 'Nobody answered for '.$minutes.' minutes, so the chat went back to the bot.', null, true);
+        $c->addMessage('out', 'bot', Strings::get('handover_return', $c->language));
+
+        // Show the main menu again so the customer has buttons to tap.
+        try {
+            app(\App\Bot\MenuBot::class)->respond($c, app(\App\Bot\FlowRepository::class)->published($business), 'menu', '__menu');
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        app(Notifier::class)->notify($business, 'handover', Notifier::chatName($c).' went back to the bot', 'Nobody answered for '.$minutes.' minutes. Reply any time to take over again.', route('inbox', ['c' => $c->id]));
+        $n8n->send('handover.returned_to_bot', ['business' => $business->slug, 'conversation_id' => $c->id, 'waiting_minutes' => $minutes]);
     }
 
     public function handle(CurrentBusiness $current, N8nNotifier $n8n): int
@@ -58,13 +83,22 @@ class CheckHandovers extends Command
                         $stage = (int) ($c->state['handover_stage'] ?? 0);
                         $minutes = $c->handover_at->diffInMinutes(now());
 
-                        if ($stage >= count($timeouts) || $minutes < $timeouts[$stage]) {
-                            return;
-                        }
-
                         $answered = Message::query()->where('conversation_id', $c->id)
                             ->where('sender_type', 'staff')->where('is_private', false)
                             ->where('created_at', '>=', $c->handover_at)->exists();
+
+                        // The business can choose to let the bot take the chat back when nobody has answered for long enough.
+                        $returnAfter = (int) (((array) $business->settings)['handover_return_minutes'] ?? 0);
+                        if (! $answered && $returnAfter > 0 && $minutes >= $returnAfter) {
+                            $this->returnToBot($business, $c, (int) $minutes, $n8n);
+                            $count++;
+
+                            return;
+                        }
+
+                        if ($stage >= count($timeouts) || $minutes < $timeouts[$stage]) {
+                            return;
+                        }
 
                         $state = $c->state ?? [];
                         $state['handover_stage'] = $answered ? count($timeouts) : $stage + 1;
