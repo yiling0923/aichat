@@ -56,6 +56,29 @@ class InboxHandoverTest extends TestCase
         $this->assertNotEmpty(array_filter($back->json('messages'), fn ($m) => $m['from'] === 'bot'));
     }
 
+    public function test_resolved_chat_can_be_reopened_and_reopens_when_either_side_writes(): void
+    {
+        $token = $this->postJson('/api/chat/demo/messages', ['text' => 'Hello'])->json('token');
+        $find = fn () => app(CurrentBusiness::class)->runAs($this->business, fn () => Conversation::where('token', $token)->first());
+        $id = $find()->id;
+        $this->actingAs($this->staff);
+
+        // Staff press Reopen.
+        $this->postJson('/admin/api/conversations/'.$id.'/resolve')->assertOk()->assertJsonPath('status', 'resolved');
+        $this->postJson('/admin/api/conversations/'.$id.'/reopen')->assertOk()->assertJsonPath('status', 'open');
+
+        // The customer comes back with another question on the website chat.
+        $this->postJson('/admin/api/conversations/'.$id.'/resolve');
+        $this->assertSame('resolved', $find()->status);
+        $this->postJson('/api/chat/demo/messages', ['text' => 'One more question', 'token' => $token])->assertOk();
+        $this->assertSame('open', $find()->status);
+
+        // Staff answer a resolved chat: it opens again by itself.
+        $this->postJson('/admin/api/conversations/'.$id.'/resolve');
+        $this->postJson('/admin/api/conversations/'.$id.'/reply', ['text' => 'Sorry, one more thing'])->assertOk();
+        $this->assertSame('open', $find()->status);
+    }
+
     public function test_giving_the_chat_back_makes_the_bot_answer_again(): void
     {
         $token = $this->postJson('/api/chat/demo/messages', ['text' => 'Hello'])->json('token');

@@ -143,6 +143,20 @@ class Conversation extends Model
         ])->save();
     }
 
+    /** A resolved chat becomes open again (staff pressed Reopen, or the customer wrote again). */
+    public function reopen(?string $note = null): void
+    {
+        if ($this->status === 'open') {
+            return;
+        }
+
+        $this->forceFill(['status' => 'open'])->save();
+
+        if ($note !== null) {
+            $this->addMessage('out', 'system', $note, null, true);
+        }
+    }
+
     public function giveBackToBot(): void
     {
         $this->forceFill(['mode' => self::MODE_BOT])->save();

@@ -35,6 +35,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/note', [InboxController::class, 'note'])->whereNumber('id');
     Route::post('/api/conversations/{id}/give-back', [InboxController::class, 'giveBack'])->whereNumber('id');
     Route::post('/api/conversations/{id}/resolve', [InboxController::class, 'resolve'])->whereNumber('id');
+    Route::post('/api/conversations/{id}/reopen', [InboxController::class, 'reopen'])->whereNumber('id');
     Route::post('/api/conversations/{id}/ai/{messageId}/send', [InboxController::class, 'aiSend'])->whereNumber(['id', 'messageId']);
     Route::post('/api/conversations/{id}/ai/{messageId}/dismiss', [InboxController::class, 'aiDismiss'])->whereNumber(['id', 'messageId']);
     Route::post('/api/conversations/{id}/summarize', [InboxController::class, 'summarize'])->whereNumber('id');

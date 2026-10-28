@@ -127,6 +127,9 @@ class InboxController extends Controller
             $conversation->handOverToStaff('Staff replied');
         }
 
+        // Writing in a resolved chat means it is not finished after all.
+        $conversation->reopen();
+
         $message = $conversation->addMessage('out', 'staff', $text);
 
         return response()->json(['message' => $message->toChatArray(), 'mode' => $conversation->mode]);
@@ -192,6 +195,14 @@ class InboxController extends Controller
     {
         $conversation = Conversation::query()->findOrFail($id);
         $conversation->forceFill(['status' => 'resolved'])->save();
+
+        return response()->json(['status' => $conversation->status]);
+    }
+
+    public function reopen(int $id): JsonResponse
+    {
+        $conversation = Conversation::query()->findOrFail($id);
+        $conversation->reopen('Staff reopened this chat.');
 
         return response()->json(['status' => $conversation->status]);
     }

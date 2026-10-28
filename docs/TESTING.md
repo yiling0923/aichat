@@ -364,3 +364,10 @@ Schedule colours (section on Schedule): blue = Confirmed (upcoming), green = Don
 1. In the customer chat, type `human`. The bot stops answering on purpose, because a person should reply. A yellow bar now appears above the message box: "A team member will reply here" with a **Back to menu / 返回菜单** button.
 2. Press the button (or type `menu`): the bot answers again and shows the main menu. Staff get a bell alert that the customer went back to the menu.
 3. If staff reply in the Inbox instead, the bar disappears once they give the chat back to the bot.
+
+## AQ. Reopening a resolved chat
+
+1. In the Inbox open a chat and press **Resolve**. It leaves the "Open" list, and the button now says **Reopen**.
+2. Switch the list to "Resolved", open that chat and press **Reopen**: it is open again.
+3. A resolved chat also opens by itself when the customer writes again in the website chat (you get a bell alert "wrote again"), or when you send them a reply.
+4. WhatsApp, Instagram and Messenger chats already reopened when the customer wrote again.

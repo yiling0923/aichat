@@ -150,8 +150,9 @@
     badge.textContent = c.mode === 'human' ? 'You are handling this' : 'Bot is answering';
     badge.className = 'tag ' + (c.mode === 'human' ? 'warn' : 'ok');
     document.getElementById('btn-give-back').style.display = c.mode === 'human' ? '' : 'none';
-    document.getElementById('btn-resolve').textContent = c.status === 'resolved' ? 'Resolved' : 'Resolve';
-    document.getElementById('btn-resolve').disabled = c.status === 'resolved';
+    var rb = document.getElementById('btn-resolve');
+    rb.textContent = c.status === 'resolved' ? 'Reopen' : 'Resolve';
+    rb.classList.toggle('primary', c.status !== 'resolved');
     document.getElementById('thread').classList.remove('hidden');
     document.getElementById('thread-empty').style.display = 'none';
   }
@@ -284,7 +285,8 @@
     });
   });
   document.getElementById('btn-resolve').addEventListener('click', function () {
-    post('/resolve').then(function () { toast('Chat resolved.'); refreshThread(); loadList(); });
+    var resolved = this.textContent === 'Reopen';
+    post(resolved ? '/reopen' : '/resolve').then(function () { toast(resolved ? 'Chat reopened.' : 'Chat resolved.'); refreshThread(); loadList(); });
   });
   document.getElementById('tag-add').addEventListener('change', function () {
     if (this.value) { post('/tag', { tag_id: parseInt(this.value, 10), on: true }).then(refreshInfo); }

@@ -47,6 +47,13 @@ class ChatController extends Controller
             ]);
         }
 
+        if (! $isNew && $conversation->status === 'resolved') {
+            $conversation->reopen('The customer wrote again, so this chat is open again.');
+            if ($conversation->business !== null) {
+                app(\App\Services\Notifier::class)->notify($conversation->business, 'message', \App\Services\Notifier::chatName($conversation).' wrote again', 'A resolved chat is open again.', route('inbox', ['c' => $conversation->id]));
+            }
+        }
+
         $incoming = $conversation->addMessage('in', 'customer', (string) ($data['text'] ?? ''));
         $bot->respond($conversation, $incoming, $data['option_id'] ?? null);
 
