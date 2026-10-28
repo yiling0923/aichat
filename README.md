@@ -3,7 +3,7 @@
 A guided menu bot, staff inbox and booking assistant for WhatsApp, Instagram, Messenger and website chat.
 Built with PHP and Laravel, runs on XAMPP on your own computer. See `docs/` for the plan (PDF) and the page layouts (PDF).
 
-**Where we are: step 4 (real channels).** A customer opens the test chat, picks a language, taps buttons
+**Where we are: step 5 (automations and marketing).** A customer opens the test chat, picks a language, taps buttons
 (prices, hours, location, promotions, book an appointment, talk to staff) and the bot answers. Booking requests are saved
 as customers. Staff answer handed-over chats in the inbox. The owner edits the menu in the **Menu builder**. No AI is used yet.
 Step 2 adds real booking: the customer taps a service, a day and a time, gives a name and phone, and the booking is saved
@@ -67,6 +67,30 @@ Step 2 adds real booking: the customer taps a service, a day and a time, gives a
    The panel on the right lets you try the draft first. Nothing you try there is saved as a lead or handover.
 
 Typed words that always work: `menu` (back to the main menu), `human` or `staff` (talk to a person), `stop` (no promotional messages).
+
+### Automations and marketing (step 5)
+
+Owner or manager, sidebar group **Grow**. Everything is switched off until you turn it on, and every message follows the same rules:
+it only goes to a customer who **agreed to be contacted** (they gave their phone number in the booking chat) and never typed `stop`,
+and on WhatsApp, Messenger and Instagram only inside the **24-hour window** (WhatsApp can use an approved template name you type in the box).
+Skipped messages are recorded with the reason on the **Activity** page.
+
+| Page | What it does |
+|---|---|
+| **Automations** | Five ready-made messages, each with its own wording in English and 中文: **Satisfaction survey** (asks for 1 to 5, a few hours after the visit; a low score creates a task and tells n8n), **Review request** (sends your review link after a 4 or 5), **Rebooking reminder** (customers not back after N days with nothing booked), **No-show recovery** (after you mark a booking No-show), **Hot lead follow-up** (hot customers who never booked) |
+| **Run now (test)** | Sends everything that is due right now, so you can test without waiting. The scheduler does it every 5 minutes |
+| **Activity** | Every automatic message and every skipped one with the reason, plus survey answers and review links |
+| **Broadcasts** | Write a message, choose who (tag, score, language), see how many people can receive it, then **Send now**. Only people who agreed and never sent STOP, at most 500 per broadcast, never twice |
+| **Orders** | A simple list of orders or payments you type in (customer, items, amount, status) |
+| **Reports** | Chats, new customers, bookings, handovers, average wait for a staff reply, top buttons (top questions), survey score, paid orders, broadcasts. Last 7, 30 or 90 days |
+
+**Try it:** make a booking in the test chat, then in a terminal mark it as visited by moving its time into the past
+(`php artisan tinker`, then `DB::table('bookings')->update(['starts_at'=>now()->subHours(4),'ends_at'=>now()->subHours(3)]);`).
+Open **Automations**, switch **Satisfaction survey** on, save, and press **Run now (test)**. The survey appears in that customer's chat with rating buttons.
+Tap a rating, then check **Activity**. Switch **Review request** on with your review link first to see the link sent after a good rating.
+To test a broadcast, give a customer a tag, create a broadcast for that tag, and press **Send now**.
+
+Comment-to-DM (replying to Instagram or Facebook comments by private message) is not included yet.
 
 ### Real channels: WhatsApp, Messenger, Instagram (step 4)
 
@@ -165,6 +189,8 @@ Sign in and you land on **Today**. The left menu:
 | **Customers** | One record per phone number. Filter by score, language, tag. Tick people and add or remove a tag. Open one for details, notes, chats, bookings | everyone |
 | **Tags** | Customer tags and chat tags: create, rename, recolour, merge, delete | owner, manager |
 | **Library** | Saved replies in English and 中文 | everyone reads, owner and manager edit |
+| **Orders**, **Reports** | Simple order records; numbers for the owner | everyone |
+| **Automations**, **Broadcasts** | Automatic messages and opt-in broadcasts | owner, manager |
 | **Templates** | WhatsApp message templates: create, send to Meta, check approval | owner, manager |
 | **Channels**, **Menu builder**, **Booking setup**, **Settings** | Bot menu, services and hours, business name, time zone, accent colour, team accounts | owner |
 
@@ -256,6 +282,7 @@ See `n8n/README.md`. The app works without it.
 |---|---|
 | `app/Bot` | The menu bot: engine, sample menu, validator, business hours, booking steps |
 | `app/Channels` | Meta webhook parsing, sending to WhatsApp, Messenger and Instagram, templates |
+| `app/Marketing` | Automations, survey answers, broadcasts, and the rules for sending to customers |
 | `app/Booking` | Free times, saving and cancelling bookings, Google Calendar |
 | `app/Console` | The handover reminder command |
 | `app/Models` | Business, Customer, Conversation, Message. Every business-owned model is limited to the current business |
@@ -269,4 +296,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 5: automations and marketing (reminder and follow-up templates, satisfaction survey, rebooking, opt-in broadcasts, reports).
+Step 5b: AI mode (optional). The bot understands typed free text and replies automatically, with staff suggestions and approval. Then self-service sign-up and billing (steps 6 to 8).

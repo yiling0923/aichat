@@ -47,4 +47,15 @@ class Customer extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /** May we send this person messages that they did not just ask for? */
+    public function canBeMessaged(): bool
+    {
+        return $this->consented_at !== null && $this->opted_out_at === null;
+    }
 }

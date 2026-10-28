@@ -19,9 +19,16 @@
     <a @class(['on' => $active === 'tasks']) href="{{ route('tasks') }}"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Tasks</a>
     <div class="sec">People</div>
     <a @class(['on' => $active === 'customers']) href="{{ route('customers') }}"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>Customers</a>
+    <a @class(['on' => $active === 'orders']) href="{{ route('orders') }}"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>Orders</a>
     @if (auth()->user()->canManage())
         <a @class(['on' => $active === 'tags']) href="{{ route('tags') }}"><svg viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>Tags</a>
     @endif
+    <div class="sec">Grow</div>
+    @if (auth()->user()->canManage())
+        <a @class(['on' => $active === 'automations']) href="{{ route('automations') }}"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Automations</a>
+        <a @class(['on' => $active === 'broadcasts']) href="{{ route('broadcasts') }}"><svg viewBox="0 0 24 24"><path d="M3 11l18-8v18z"/><path d="M11 17l-1 5"/></svg>Broadcasts</a>
+    @endif
+    <a @class(['on' => $active === 'reports']) href="{{ route('reports') }}"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Reports</a>
     <div class="sec">Set up</div>
     <a @class(['on' => $active === 'library']) href="{{ route('library') }}"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>Library</a>
     @if (auth()->user()->canManage())

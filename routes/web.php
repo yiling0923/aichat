@@ -128,3 +128,27 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 // Meta (WhatsApp, Messenger, Instagram) calls this address. It must be reachable from the internet (see README, Step 4).
 Route::get('/webhook/meta', [\App\Http\Controllers\MetaWebhookController::class, 'verify']);
 Route::post('/webhook/meta', [\App\Http\Controllers\MetaWebhookController::class, 'receive'])->middleware('throttle:meta-webhook');
+
+// Phase 5: automations, broadcasts (owner or manager); orders and reports (everyone).
+Route::middleware('staff')->prefix('admin')->group(function () {
+    $o = \App\Http\Controllers\OrderController::class;
+    Route::get('/orders', [$o, 'index'])->name('orders');
+    Route::post('/orders', [$o, 'store']);
+    Route::post('/orders/{id}', [$o, 'update'])->whereNumber('id');
+    Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('reports');
+});
+
+Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
+    $a = \App\Http\Controllers\AutomationController::class;
+    Route::get('/automations', [$a, 'index'])->name('automations');
+    Route::get('/automations/activity', [$a, 'activity'])->name('automations.activity');
+    Route::post('/automations/run', [$a, 'runNow']);
+    Route::post('/automations/{key}', [$a, 'update'])->where('key', '[a-z_]+');
+
+    $b = \App\Http\Controllers\BroadcastController::class;
+    Route::get('/broadcasts', [$b, 'index'])->name('broadcasts');
+    Route::post('/broadcasts', [$b, 'store']);
+    Route::get('/broadcasts/{id}', [$b, 'show'])->whereNumber('id')->name('broadcasts.show');
+    Route::post('/broadcasts/{id}/send', [$b, 'send'])->whereNumber('id');
+    Route::post('/broadcasts/{id}/delete', [$b, 'destroy'])->whereNumber('id');
+});

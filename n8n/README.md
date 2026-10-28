@@ -10,6 +10,9 @@ Events sent so far (each is a JSON body `{event, data, sent_at}`):
 | `handover.requested` | A chat was passed to staff (includes `open_now`) |
 | `handover.holding` | 5 min with no staff reply: the customer got a "thanks for waiting" message |
 | `customer.message` | A customer wrote in a chat that staff are handling (WhatsApp, Messenger, Instagram). Use it to alert staff |
+| `survey.answered` | A customer rated their visit (`rating`, name, phone) |
+| `survey.low_score` | The rating was 1 or 2. A task was created too. Use it to alert the manager |
+| `broadcast.sent` | A broadcast finished (`sent`, `skipped`, `failed`) |
 | `handover.reminder` | 10 min with no staff reply |
 | `handover.reassign` | 20 min with no staff reply |
 | `handover.owner_alert` | 30 min with no staff reply |

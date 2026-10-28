@@ -2,6 +2,7 @@
 
 namespace App\Bot;
 
+use App\Marketing\Surveys;
 use App\Models\BotEvent;
 use App\Models\Conversation;
 use App\Models\Customer;
@@ -17,7 +18,7 @@ class MenuBot
 {
     private const MAX_CHAIN = 12;
 
-    public function __construct(private LeadService $leads, private HandoverService $handovers, private BookingStep $booking) {}
+    public function __construct(private LeadService $leads, private HandoverService $handovers, private BookingStep $booking, private Surveys $surveys) {}
 
     /**
      * @return list<\App\Models\Message>
@@ -29,6 +30,35 @@ class MenuBot
         $out = [];
         $language = $conversation->language ?? $flow->defaultLanguage();
         $normalized = Text::normalize($text);
+
+        // An open satisfaction survey: a 1 to 5 answer is recorded, anything else just carries on as normal.
+        if (! empty($state['survey'])) {
+            $answer = $this->surveys->answer($conversation, (int) $state['survey'], $text, $optionId, $conversation->language ?? $language);
+            unset($state['survey']);
+
+            if ($answer !== null) {
+                $state['history'] = [];
+
+                return $this->enter($conversation, $flow, $state, $flow->mainNodeId(), array_merge($out, $answer));
+            }
+        }
+
+        // Buttons sent by automatic messages ("Book now") jump straight to booking.
+        if (in_array($optionId, ['__book', '__menu'], true)) {
+            $target = $flow->mainNodeId();
+            if ($optionId === '__book') {
+                foreach ($flow->nodes() as $id => $n) {
+                    if (($n['type'] ?? '') === 'booking') {
+                        $target = (string) $id;
+                        break;
+                    }
+                }
+            }
+            $state['history'] = [];
+            $state['misses'] = 0;
+
+            return $this->enter($conversation, $flow, $state, $target, $out);
+        }
 
         if ($optionId === null && Text::isCommand($normalized, config('aichat.keywords.opt_out'))) {
             $this->optOut($conversation);

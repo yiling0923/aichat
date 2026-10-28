@@ -69,7 +69,18 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 5. Type `stop`: you are marked opted out (shown on **Customers**).
 6. 24-hour window: after 24 hours of silence the Inbox shows a yellow bar; use **Send a template** (create one in **Templates**, wait for approval).
 
-### H. n8n (optional)
+### H. Automations and marketing (owner or manager)
+1. Make a booking in the test chat. Move its time into the past: `php artisan tinker`, then
+   `DB::table('bookings')->update(['starts_at'=>now()->subHours(4),'ends_at'=>now()->subHours(3)]);`
+2. **Automations**: switch **Satisfaction survey** on, **Save**, press **Run now (test)**. The chat gets a message with rating buttons. Press Run now again: nothing is sent twice.
+3. Tap **5 - Excellent**: thanks, then the main menu. **Activity** shows the rating. Repeat with a new booking and tap **1 - Very poor**: a task "Low survey score" appears under **Tasks**.
+4. Switch **Review request** on with a link such as `https://example.com/review`: after a 4 or 5 the link is sent.
+5. In **Bookings** mark a past booking **No-show**, switch **No-show recovery** on, set Wait to 0, Run now: the customer gets a message with **Book now**.
+6. Type `stop` in the chat, then Run now: **Activity** shows the message as skipped (opted out).
+7. **Broadcasts**: give two customers the same tag, create a broadcast for that tag, check "2 can receive it", **Send now**, open it to see the recipients. Pressing Send twice does not send twice.
+8. **Orders**: add an order for a customer, change its status. **Reports**: switch between 7, 30 and 90 days.
+
+### I. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 
 ## 4. Useful commands
@@ -80,6 +91,7 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 | `php artisan schedule:run` | Runs whatever is due now (the Task Scheduler runs this every minute) |
 | `php artisan aichat:check-handovers` | Handover reminders and escalation |
 | `php artisan aichat:send-reminders` | Booking reminders (24 h and 2 h before) |
+| `php artisan aichat:run-automations` | Sends the automatic messages that are due (the scheduler runs it every 5 minutes) |
 | `php artisan aichat:meta-webhook` | Saves the webhook address in Meta |
 | `php artisan config:clear` | Use after every change to `.env` |
 | `php artisan migrate:fresh --seed` | **Wipes all data** and restores the sample data |

@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 // Windows: Task Scheduler runs "php artisan schedule:run" every minute (see README).
 Schedule::command('aichat:check-handovers')->everyMinute()->withoutOverlapping();
 Schedule::command('aichat:send-reminders')->everyMinute()->withoutOverlapping();
+Schedule::command('aichat:run-automations')->everyFiveMinutes()->withoutOverlapping();
