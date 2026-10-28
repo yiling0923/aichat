@@ -117,6 +117,13 @@ For Meta to reach your computer you need a public address, so we use a free tunn
 The temporary token stops working after 24 hours (the bot then cannot answer: the channel shows the problem). For a token that does not expire:
 **business.facebook.com > Business settings > Users > System users > Add**, give it your app and WhatsApp account, and **Generate token** with `whatsapp_business_messaging` and `whatsapp_business_management`. Paste it in **Channels** under "New access token".
 
+#### Easier: one double-click for the tunnel (Windows)
+
+Free tunnel addresses change every time the tunnel restarts. Instead of editing `.env` and Meta by hand each time, add `META_APP_ID=` to `.env`
+(see step 10), then double-click **`tools\start-tunnel.bat`** in the project folder. It starts the tunnel, writes the new address into `.env` as `APP_URL`,
+clears the cache and saves the webhook address in Meta. If the tunnel drops it starts a new one and does it all again. Keep its window open while you test.
+(The same webhook step can be run by hand with `php artisan aichat:meta-webhook`.) This script was not tested on Windows by its author.
+
 #### B. The 24-hour window and templates
 
 WhatsApp, Messenger and Instagram only allow free-form replies for 24 hours after the customer's last message. After that:

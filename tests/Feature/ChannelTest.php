@@ -448,6 +448,20 @@ class ChannelTest extends TestCase
         $this->actingAs($staff)->post('/admin/channels/webhook')->assertForbidden();
     }
 
+    public function test_the_artisan_command_saves_the_webhook_and_reports_problems(): void
+    {
+        config(['services.meta.app_id' => '555', 'app.url' => 'https://new.lhr.life/aichat/public']);
+        $this->meta(['graph.facebook.com/v21.0/555/subscriptions' => Http::response(['success' => true])]);
+
+        $this->artisan('aichat:meta-webhook')->expectsOutputToContain('https://new.lhr.life/aichat/public/webhook/meta')->assertSuccessful();
+
+        $this->meta(['graph.facebook.com/*' => Http::response(['error' => ['message' => 'Callback verification failed']], 400)]);
+        $this->artisan('aichat:meta-webhook')->expectsOutputToContain('Callback verification failed')->assertFailed();
+
+        config(['services.meta.app_id' => '']);
+        $this->artisan('aichat:meta-webhook')->expectsOutputToContain('META_APP_ID')->assertFailed();
+    }
+
     public function test_check_subscribe_and_test_message_buttons(): void
     {
         $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
