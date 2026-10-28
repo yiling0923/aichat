@@ -2,12 +2,12 @@
 @section('title', 'Customers')
 @section('content')
     <h1>Customers</h1>
-    <p class="mute">One record per person (matched by phone number). Open a customer to see their chats, bookings and notes. Lead level: Hot = booked or ready to buy, Warm = interested, Cold = low interest.</p>
+    <p class="mute">One record per person (matched by phone number). Open a customer to see their chats, bookings and notes. Lead level: Ready to book = booked or ready to buy, Interested = left their details, Just browsing = low interest.</p>
     <form method="get" class="bar">
         <input type="search" name="q" value="{{ $search }}" placeholder="Search name, phone or interest">
         <select name="score" class="small">
             <option value="">Any lead level</option>
-            @foreach (['hot', 'warm', 'cold'] as $s)<option value="{{ $s }}" @selected($score === $s)>{{ ucfirst($s) }}</option>@endforeach
+            @foreach (['hot', 'warm', 'cold'] as $s)<option value="{{ $s }}" @selected($score === $s)>{{ config('aichat.lead_levels')[$s] }}</option>@endforeach
         </select>
         <select name="language" class="small">
             <option value="">Any language</option>
@@ -41,7 +41,7 @@
                     <td>{{ $c->interest ?: '-' }}</td>
                     <td>@foreach ($c->tags as $t)<span class="chip" style="background:{{ $t->color }}">{{ $t->name }}</span>@endforeach</td>
                     <td>{{ strtoupper($c->language ?: '-') }}</td>
-                    <td><span title="{{ ['hot' => 'Hot: booked or ready to buy', 'warm' => 'Warm: interested, left their details', 'cold' => 'Cold: low interest'][$c->score] ?? 'Not set' }}" class="tag {{ $c->score === 'hot' ? 'hot' : ($c->score === 'warm' ? 'warn' : '') }}">{{ $c->score ?: '-' }}</span></td>
+                    <td><span title="{{ ['hot' => 'Booked or ready to buy', 'warm' => 'Interested, left their details', 'cold' => 'Low interest'][$c->score] ?? 'Not set' }}" class="tag {{ $c->score === 'hot' ? 'hot' : ($c->score === 'warm' ? 'warn' : '') }}">{{ $c->score ? config('aichat.lead_levels')[$c->score] : '-' }}</span></td>
                     <td>{{ $c->opted_out_at ? 'Opted out' : 'OK' }}</td>
                     <td>{{ $c->created_at?->format('d M Y') }}</td>
                 </tr>

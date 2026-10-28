@@ -421,7 +421,7 @@ class MarketingTest extends TestCase
 
         $this->actingAs($staff)->get('/admin/automations')->assertForbidden();
         $this->actingAs($staff)->post('/admin/automations/survey', ['enabled' => 1, 'message_en' => 'x'])->assertForbidden();
-        $this->actingAs($manager)->get('/admin/automations')->assertOk()->assertSee('Satisfaction survey')->assertSee('Hot lead follow-up');
+        $this->actingAs($manager)->get('/admin/automations')->assertOk()->assertSee('Satisfaction survey')->assertSee('Follow-up for people ready to book');
 
         $this->actingAs($manager)->post('/admin/automations/survey', ['enabled' => 1, 'delay_hours' => 5, 'message_en' => 'Rate us {name}', 'message_zh' => '请评分'])->assertSessionHasNoErrors();
         $this->in(function () {

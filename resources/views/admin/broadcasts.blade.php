@@ -19,7 +19,7 @@
         <div class="bar">
             <span class="mute">Send to:</span>
             <select name="tag_id" class="small"><option value="">Any tag</option>@foreach ($tags as $t)<option value="{{ $t->id }}">{{ $t->name }}</option>@endforeach</select>
-            <select name="score" class="small"><option value="">Any lead level</option>@foreach (['hot', 'warm', 'cold'] as $s)<option value="{{ $s }}">{{ ucfirst($s) }}</option>@endforeach</select>
+            <select name="score" class="small"><option value="">Any lead level</option>@foreach (['hot', 'warm', 'cold'] as $s)<option value="{{ $s }}">{{ config('aichat.lead_levels')[$s] }}</option>@endforeach</select>
             <select name="language" class="small"><option value="">Any language</option>@foreach (config('aichat.languages') as $l)<option value="{{ $l }}">{{ strtoupper($l) }}</option>@endforeach</select>
             <button class="btn primary" type="submit">Save draft</button>
         </div>

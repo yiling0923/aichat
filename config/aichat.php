@@ -13,6 +13,9 @@ return [
         'text' => 1024,
     ],
 
+    // How the lead level is shown to staff. The saved values stay hot, warm and cold; change the words here.
+    'lead_levels' => ['hot' => 'Ready to book', 'warm' => 'Interested', 'cold' => 'Just browsing'],
+
     // Typed words the bot understands in any step (lower case, compared after cleaning).
     'keywords' => [
         'menu' => ['menu', 'main menu', 'start', 'start over', '0', '菜单', '主菜单'],

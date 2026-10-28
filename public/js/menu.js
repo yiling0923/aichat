@@ -95,7 +95,7 @@
       box.appendChild(field('Collects', select(meta.fields, n.field, function (f) { return FIELD[f] || f; }, function (v) { n.field = v; if (v === 'phone') { n.validate = 'phone'; } else { delete n.validate; } }, 'Choose...')));
     }
     if (n.type === 'save_lead') {
-      box.appendChild(field('Lead score', select(['hot', 'warm', 'cold'], n.score || 'warm', null, function (v) { n.score = v; })));
+      box.appendChild(field('Lead level', select(['hot', 'warm', 'cold'], n.score || 'warm', function (v) { return { hot: 'Ready to book', warm: 'Interested', cold: 'Just browsing' }[v]; }, function (v) { n.score = v; })));
       var cb = el('input', { type: 'checkbox' });
       cb.checked = n.notify !== false;
       cb.addEventListener('change', function () { n.notify = cb.checked; });

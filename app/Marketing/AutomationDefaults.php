@@ -56,8 +56,8 @@ class AutomationDefaults
                 'settings' => [],
             ],
             'hot_lead' => [
-                'title' => 'Hot lead follow-up',
-                'help' => 'Follows up hot leads (customers ready to buy) who never booked, after the delay.',
+                'title' => 'Follow-up for people ready to book',
+                'help' => 'Follows up customers marked "Ready to book" who never booked, after the delay.',
                 'delay_hours' => 24,
                 'message' => [
                     'en' => 'Hi {name}, thanks for your interest in {service}. Shall we find you a time?',
