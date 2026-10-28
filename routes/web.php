@@ -91,6 +91,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
 });
 
 Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
+    Route::get('/manage', [\App\Http\Controllers\ManageController::class, 'index'])->name('manage');
     Route::get('/customers/{id}/export', [\App\Http\Controllers\CustomerController::class, 'export'])->whereNumber('id');
     Route::post('/customers/{id}/erase', [\App\Http\Controllers\CustomerController::class, 'erase'])->whereNumber('id');
 
@@ -150,6 +151,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/orders', [$o, 'store']);
     Route::post('/orders/{id}', [$o, 'update'])->whereNumber('id');
     Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('reports');
+    Route::get('/reports/export', [\App\Http\Controllers\ReportsController::class, 'export'])->name('reports.export');
 });
 
 Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {

@@ -1,6 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Broadcasts')
 @section('content')
+    @include('admin._marketing_tabs', ['tab' => 'broadcasts'])
     <h1>Broadcasts</h1>
     <p class="mute">Send one message to many customers. Only customers who agreed to be contacted and never sent STOP can receive it. At most {{ $limit }} people per broadcast.</p>
 

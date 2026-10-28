@@ -14,7 +14,7 @@
     <main class="inbox" id="inbox" data-base="{{ url('/admin/api') }}">
         <section class="list">
             <div class="list-head">
-                Conversations
+                <span>Inbox <a class="mini-link" href="{{ route('conversations') }}">Search all chats</a></span>
                 <select class="small" id="status-filter" aria-label="Filter">
                     <option value="open">Open</option>
                     <option value="resolved">Resolved</option>

@@ -13,7 +13,7 @@ class AdminPagesSmokeTest extends TestCase
     use RefreshDatabase;
 
     private const OWNER_PAGES = ['', 'today', 'conversations', 'schedule', 'tasks', 'customers', 'orders', 'tags', 'automations', 'automations/activity',
-        'broadcasts', 'reports', 'library', 'ai', 'templates', 'setup', 'billing', 'channels', 'menu', 'booking-setup', 'settings'];
+        'broadcasts', 'reports', 'reports/export', 'manage', 'library', 'ai', 'templates', 'setup', 'billing', 'channels', 'menu', 'booking-setup', 'settings'];
 
     public function test_every_owner_page_opens_for_an_internal_business_and_a_trial_business(): void
     {
@@ -37,7 +37,7 @@ class AdminPagesSmokeTest extends TestCase
         foreach (['', 'today', 'conversations', 'schedule', 'tasks', 'customers', 'orders', 'reports', 'library'] as $page) {
             $this->get('/admin/'.$page)->assertOk();
         }
-        foreach (['tags', 'automations', 'broadcasts', 'ai', 'templates', 'setup', 'billing', 'channels', 'menu', 'booking-setup', 'settings'] as $page) {
+        foreach (['manage', 'tags', 'automations', 'broadcasts', 'ai', 'templates', 'setup', 'billing', 'channels', 'menu', 'booking-setup', 'settings'] as $page) {
             $this->get('/admin/'.$page)->assertForbidden();
         }
     }

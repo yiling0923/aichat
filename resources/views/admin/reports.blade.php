@@ -1,54 +1,110 @@
 @extends('admin.layout')
 @section('title', 'Reports')
 @section('content')
-    <div class="bar spread">
-        <div><h1>Reports</h1><p class="mute">The last {{ $days }} days.</p></div>
-        <div class="bar">
-            @foreach ([7, 30, 90] as $d)<a class="btn {{ $days === $d ? 'primary' : '' }}" href="{{ route('reports', ['days' => $d]) }}">{{ $d }} days</a>@endforeach
-        </div>
+    @php
+        $kpi = $s['kpi'];
+        $money = fn ($v) => number_format($v, 2);
+        $tile = function (string $label, string $value, ?int $delta = null, ?string $hint = null) {
+            return compact('label', 'value', 'delta', 'hint');
+        };
+    @endphp
+    <div class="page-head">
+        <div><h1>Reports</h1><p class="mute">{{ $r->label }}, {{ $r->from->format('j M') }} to {{ $r->to->format('j M Y') }}@if ($r->filtered()) · filtered @endif</p></div>
+        <details class="menu">
+            <summary class="btn">Export CSV</summary>
+            <div class="menu-body">
+                @foreach ($exports as $key => $name)
+                    <a href="{{ route('reports.export', ['section' => $key] + $query) }}">{{ $name }}</a>
+                @endforeach
+                <small class="mute">Uses the period and filters you chose.</small>
+            </div>
+        </details>
     </div>
 
-    <div class="grid3">
-        <div class="stat"><b>{{ $chatsTotal }}</b><span>chats started</span></div>
-        <div class="stat"><b>{{ $newCustomers }}</b><span>new customers</span></div>
-        <div class="stat"><b>{{ $bookingsByStatus->sum() }}</b><span>bookings made</span></div>
-        <div class="stat"><b>{{ $handovers }}</b><span>handed over to staff</span></div>
-        <div class="stat"><b>{{ $avgWait === null ? '-' : $avgWait.' min' }}</b><span>average wait for a staff reply</span></div>
-        <div class="stat"><b>{{ $surveyAvg === null ? '-' : number_format($surveyAvg, 1).' / 5' }}</b><span>survey score ({{ $surveyCount }} answers)</span></div>
-        <div class="stat"><b>{{ number_format($revenue, 2) }}</b><span>paid orders</span></div>
+    <form method="get" action="{{ route('reports') }}" class="filters" id="filters">
+        <label>Period
+            <select name="period" id="period">@foreach ($periods as $k => $name)<option value="{{ $k }}" @selected($r->period === (string) $k)>{{ $name }}</option>@endforeach</select></label>
+        <span id="custom-dates" @if ($r->period !== 'custom') hidden @endif>
+            <label>From <input type="date" name="from" value="{{ request('from', $r->from->format('Y-m-d')) }}"></label>
+            <label>To <input type="date" name="to" value="{{ request('to', $r->to->format('Y-m-d')) }}"></label>
+        </span>
+        <label>Channel
+            <select name="channel"><option value="">All channels</option>@foreach ($channels as $k => $name)<option value="{{ $k }}" @selected($r->channel === $k)>{{ $name }}</option>@endforeach</select></label>
+        <label>Service
+            <select name="service"><option value="">All services</option>@foreach ($services as $svc)<option value="{{ $svc->id }}" @selected($r->serviceId === $svc->id)>{{ $svc->label('en') }}</option>@endforeach</select></label>
+        <label>Practitioner
+            <select name="practitioner"><option value="">Everyone</option>@foreach ($practitioners as $p)<option value="{{ $p->id }}" @selected($r->practitionerId === $p->id)>{{ $p->name }}</option>@endforeach</select></label>
+        <button class="btn primary" type="submit">Apply</button>
+        @if ($r->filtered() || $r->period !== '30')<a class="btn" href="{{ route('reports') }}">Reset</a>@endif
+    </form>
+    @if ($r->channel || $r->serviceId || $r->practitionerId)
+        <p class="mute" style="font-size:12px;margin:-4px 0 12px">Channel applies to chats and bookings. Service and practitioner apply to bookings only. Customers, orders and surveys are always for the whole business.</p>
+    @endif
+
+    <div class="kpis">
+        @foreach ([
+            ['Chats started', $kpi['chats']['value'], $kpi['chats']['delta'], null],
+            ['New customers', $kpi['customers']['value'], $kpi['customers']['delta'], null],
+            ['Bookings made', $kpi['bookings']['value'], $kpi['bookings']['delta'], null],
+            ['Handed over to staff', $kpi['handovers']['value'], $kpi['handovers']['delta'], $s['avgWait'] === null ? null : 'avg wait '.$s['avgWait'].' min'],
+            ['Paid orders', $money($kpi['revenue']['value']), $kpi['revenue']['delta'], $s['orderCount'].' orders in total'],
+            ['Survey score', $s['surveyAvg'] === null ? '-' : number_format($s['surveyAvg'], 1).' / 5', null, $s['surveyCount'].' answers'],
+            ['No-show rate', $s['noShowRate'] === null ? '-' : $s['noShowRate'].'%', null, 'of visits that happened'],
+            ['Cancelled', $s['cancelRate'] === null ? '-' : $s['cancelRate'].'%', null, 'of bookings made'],
+        ] as [$label, $value, $delta, $hint])
+            <div class="kpi">
+                <span class="kpi-l">{{ $label }}</span>
+                <b>{{ $value }}</b>
+                <span class="kpi-s">
+                    @if ($delta !== null)<span class="delta">{{ $delta >= 0 ? '▲' : '▼' }} {{ abs($delta) }}%</span> vs previous period @elseif ($hint) {{ $hint }} @else &nbsp; @endif
+                </span>
+            </div>
+        @endforeach
     </div>
 
     <div class="cols">
-        @php
-            $bars = [
-                ['Chats by channel', $byChannel->map(fn ($n, $k) => ['label' => ucfirst($k), 'n' => $n])->values()],
-                ['New customers by score', collect($leadsByScore)->map(fn ($n, $k) => ['label' => $k ?: 'no score', 'n' => $n])->values()],
-                ['Bookings by status', collect($bookingsByStatus)->map(fn ($n, $k) => ['label' => str_replace('_', ' ', $k), 'n' => $n])->values()],
-                ['Top booked services', $topServices],
-                ['Most tapped buttons (top questions)', $topTaps],
-            ];
-        @endphp
-        @foreach ($bars as [$title, $rows])
-            @php $max = max(1, collect($rows)->max('n') ?? 1); @endphp
-            <div class="card">
-                <h3>{{ $title }}</h3>
-                @forelse ($rows as $r)
-                    <div style="margin:8px 0">
-                        <div style="display:flex;justify-content:space-between;font-size:13px"><span>{{ $r['label'] }}</span><b>{{ $r['n'] }}</b></div>
-                        <div style="background:var(--accent-l);border-radius:6px;height:8px"><div style="background:var(--accent);height:8px;border-radius:6px;width:{{ round($r['n'] / $max * 100) }}%"></div></div>
-                    </div>
-                @empty
-                    <p class="mute">No data yet.</p>
-                @endforelse
-            </div>
-        @endforeach
-        <div class="card">
-            <h3>Broadcasts sent</h3>
-            @forelse ($broadcasts as $b)
-                <ul><li><a href="{{ route('broadcasts.show', $b->id) }}">{{ $b->name }}</a><span class="mute">{{ $b->sent_count }} sent, {{ $b->skipped_count }} skipped</span></li></ul>
-            @empty
-                <p class="mute">None in this period.</p>
-            @endforelse
-        </div>
+        <div class="card"><h3>Chats started per day</h3><div class="chart">@include('admin._trend', ['days' => $s['daily'], 'key' => 'chats', 'title' => 'chats'])</div></div>
+        <div class="card"><h3>Bookings made per day</h3><div class="chart">@include('admin._trend', ['days' => $s['daily'], 'key' => 'bookings', 'title' => 'bookings'])</div></div>
+    </div>
+    <details class="numbers"><summary>Show the daily numbers as a table</summary>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Chats</th><th>New customers</th><th>Bookings</th></tr></thead><tbody>
+            @foreach ($s['daily'] as $d)<tr><td>{{ \Carbon\Carbon::parse($d['date'])->format('D j M Y') }}</td><td>{{ $d['chats'] }}</td><td>{{ $d['customers'] }}</td><td>{{ $d['bookings'] }}</td></tr>@endforeach
+        </tbody></table></div>
+    </details>
+
+    <h2>Bookings</h2>
+    <div class="cols">
+        <div class="card"><h3>Top services</h3>@include('admin._bars', ['rows' => $s['topServices']])</div>
+        <div class="card"><h3>By practitioner</h3>@include('admin._bars', ['rows' => $s['byPractitioner']])</div>
+        <div class="card"><h3>Busiest weekdays</h3>@include('admin._bars', ['rows' => $s['byWeekday']])</div>
+        <div class="card"><h3>Busiest hours</h3>@include('admin._bars', ['rows' => $s['byHour']])</div>
+        <div class="card"><h3>Booking status</h3>@include('admin._bars', ['rows' => $s['bookingStatus']])
+            <p class="mute" style="margin-top:10px">{{ $s['repeatCustomers'] }} customer(s) booked more than once in this period.</p></div>
+    </div>
+
+    <h2>Customers and chats</h2>
+    <div class="cols">
+        <div class="card"><h3>Chats by channel</h3>@include('admin._bars', ['rows' => $s['chatsByChannel']])</div>
+        <div class="card"><h3>New customers by score</h3>@include('admin._bars', ['rows' => $s['leadsByScore']])
+            <p class="mute" style="margin-top:10px">{{ $s['optedOut'] }} opted out of promotions in this period.</p></div>
+        <div class="card"><h3>Most tapped buttons</h3>@include('admin._bars', ['rows' => $s['topTaps']])</div>
+        <div class="card"><h3>Survey ratings</h3>@include('admin._bars', ['rows' => $s['ratings']])</div>
+    </div>
+
+    <h2>Money and marketing</h2>
+    <div class="cols">
+        <div class="card"><h3>Orders</h3>
+            @forelse ($s['ordersByStatus'] as $o)<ul><li><span>{{ $o['label'] }}</span><span><b>{{ $o['n'] }}</b> <span class="mute">· {{ $money($o['total']) }}</span></span></li></ul>@empty<p class="mute">No orders in this period.</p>@endforelse</div>
+        <div class="card"><h3>Broadcasts sent</h3>
+            @forelse ($s['broadcasts'] as $b)<ul><li><a href="{{ route('broadcasts.show', $b->id) }}">{{ $b->name }}</a><span class="mute">{{ $b->sent_count }} sent, {{ $b->skipped_count }} skipped</span></li></ul>@empty<p class="mute">None in this period.</p>@endforelse</div>
+        <div class="card"><h3>AI</h3><p><b style="font-size:22px">{{ $s['aiCalls'] }}</b> <span class="mute">AI calls in this period</span></p><p class="mute" style="margin-top:6px"><a href="{{ route('ai') }}">Open AI assistant</a></p></div>
     </div>
 @endsection
+@push('scripts')
+<script>
+    (function () {
+        var p = document.getElementById('period'), c = document.getElementById('custom-dates');
+        p.addEventListener('change', function () { c.hidden = p.value !== 'custom'; if (p.value !== 'custom') { document.getElementById('filters').submit(); } });
+    })();
+</script>
+@endpush

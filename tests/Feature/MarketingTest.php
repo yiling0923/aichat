@@ -583,7 +583,7 @@ class MarketingTest extends TestCase
         $this->customer(['name' => 'Elsewhere'], $this->other);
 
         $r = $this->actingAs($staff)->get('/admin/reports')->assertOk();
-        $r->assertSee('chats started')->assertSee('4.0 / 5')->assertSee('200.00')->assertSee('Facial')->assertSee('Prices');
+        $r->assertSee('Chats started')->assertSee('4.0 / 5')->assertSee('200.00')->assertSee('Facial')->assertSee('Prices');
         $this->actingAs($staff)->get('/admin/reports?days=7')->assertOk()->assertSee('The last 7 days');
         $this->actingAs($staff)->get('/admin/reports?days=999')->assertOk()->assertSee('The last 30 days');
     }

@@ -107,6 +107,11 @@ It uses Claude (model `claude-haiku-5-5`, set with `AI_MODEL`) through Anthropic
 **Try it for free:** set `AI_PROVIDER=fake`, run `php artisan config:clear`, open **AI assistant**, choose **Auto**, Save, and in the test chat type `what is the pricing for a facial` or `what time are you around`. Try `I want a refund` to see the hand-over.
 Words the menu already knows (price, hours, book and so on) still go to the menu; the AI handles the rest.
 
+### Simpler menu and better reports
+
+- The side menu is short: **Today, Inbox, Schedule, Customers, Tasks, Orders, Marketing, Reports, Settings**. Everything you set up once (menu builder, booking setup, channels, AI, templates, saved replies, tags, business and team, plan and billing) is on the **Settings** page as cards. **Marketing** has tabs: Automations, Broadcasts, Activity log. "Search all chats" is a link in the Inbox.
+- **Reports:** filter by period (7, 30, 90 days, this month, last month, custom dates), channel, service and practitioner. Cards compare with the previous period. Charts for chats and bookings per day, busiest weekdays and hours, bookings by service and practitioner, no-show and cancellation rate, repeat customers, survey ratings, orders, AI use. **Export CSV** gives summary, day by day, bookings, new customers, orders and survey answers for the chosen period and filters (opens in Excel with Chinese names intact; names that start with `=` are made safe).
+
 ### Many businesses and self-service (step 6)
 
 Anyone can now open `/signup`, create a business and get a **14-day free trial** (set in `config/plans.php`, together with the plans, prices and limits).

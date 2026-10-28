@@ -1,6 +1,7 @@
 @extends('admin.layout')
 @section('title', $broadcast->name)
 @section('content')
+    @include('admin._marketing_tabs', ['tab' => 'broadcasts'])
     <p><a href="{{ route('broadcasts') }}">&larr; Broadcasts</a></p>
     <h1>{{ $broadcast->name }}</h1>
     <p class="mute">{{ $broadcast->sent_at?->copy()->setTimezone($business->timezone)->format('d M Y H:i') }}</p>

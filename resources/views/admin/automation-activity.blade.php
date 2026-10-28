@@ -1,6 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Automation activity')
 @section('content')
+    @include('admin._marketing_tabs', ['tab' => 'activity'])
     <p><a href="{{ route('automations') }}">&larr; Automations</a></p>
     <h1>Automation activity</h1>
     <p class="mute">Every automatic message, and every one that was skipped with the reason. Survey answers and review links are listed below.</p>

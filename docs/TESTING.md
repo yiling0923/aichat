@@ -109,6 +109,14 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 6. **Backup:** `php artisan aichat:backup` writes a file in `storage\app\backups` (needs `mysqldump` from XAMPP in your PATH: `C:\xampp\mysql\bin`).
 7. **Stripe** is not testable until you have a Stripe test account (`docs/GO-LIVE.md` section 5). The automated tests already check the signature, the plan changes and the payment records.
 
+### M. Reports and the simpler menu
+1. The left menu has 9 items. **Settings** opens cards for everything else; **Marketing** shows three tabs.
+2. **Reports:** change **Period** to 7 days, this month, last month and **Custom dates** (two date boxes appear, then press Apply). Numbers and charts change.
+3. Choose a **Channel** (for example WhatsApp) and press Apply: chats and bookings narrow down; a grey note explains what each filter affects. **Reset** clears everything.
+4. Hover a bar in the daily charts: a tooltip shows the day and the number. Open "Show the daily numbers as a table".
+5. **Export CSV** (top right) > **Bookings (detail)**: a file downloads. Open it in Excel: the columns are Booked on, Visit, Customer, Phone, Service, Practitioner, Status. Try the other files too.
+6. With little data the page still works: a new business shows zeros and "No data in this period".
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

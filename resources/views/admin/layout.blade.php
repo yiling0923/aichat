@@ -12,6 +12,9 @@
     @include('admin._side', ['active' => $active])
     <main class="page">
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
+        @if (in_array($active, ['library', 'tags', 'ai', 'templates', 'channels', 'menu', 'setup', 'settings', 'billing', 'setup-guide']) && auth()->user()->canManage())
+            <a class="crumb" href="{{ route('manage') }}">&larr; Settings</a>
+        @endif
         @php($planState = app(\App\Billing\Plans::class)->state($business))
         @if (in_array($planState, ['trial_expired', 'past_due', 'canceled'], true))
             <div class="note err">Your plan is not active, so the AI is paused. Messages still reach your inbox. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Plan &amp; billing</a>@endif</div>

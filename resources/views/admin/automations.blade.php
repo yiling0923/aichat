@@ -1,6 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Automations')
 @section('content')
+    @include('admin._marketing_tabs', ['tab' => 'automations'])
     <div class="bar spread">
         <div>
             <h1>Automations</h1>

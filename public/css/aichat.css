@@ -243,3 +243,51 @@ mark { background: #fff1a8; border-radius: 3px; padding: 0 1px; }
 
 .m.ai-card { align-self: stretch; max-width: none; background: #f3f0ff; border: 1px dashed #b7a6f6; color: #3b2a7a; font-size: 13px; box-shadow: none; border-radius: 10px; }
 .m.ai-card b { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* Reports and shared page pieces */
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--mute); }
+.filters select, .filters input { height: 34px; width: auto; min-width: 130px; }
+.filters #custom-dates { display: contents; }
+.filters #custom-dates[hidden] { display: none; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 44%), 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.kpi-l { font-size: 12px; color: var(--mute); font-weight: 600; }
+.kpi b { display: block; font-size: 26px; letter-spacing: -.02em; line-height: 1.2; margin: 2px 0; }
+.kpi-s { font-size: 11.5px; color: var(--mute); }
+.delta { font-weight: 700; color: var(--ink); }
+.hbar { margin: 9px 0; }
+.hbar-top { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+.hbar-track { background: var(--line-s); border-radius: 4px; height: 8px; margin-top: 3px; overflow: hidden; }
+.hbar-fill { background: var(--accent); height: 8px; border-radius: 0 4px 4px 0; min-width: 2px; }
+.chart { margin-top: 8px; }
+.trend { width: 100%; height: auto; display: block; }
+.trend .grid { stroke: var(--line); stroke-width: 1; }
+.trend .axis { fill: var(--mute); font-size: 12px; }
+.trend .fill { fill: var(--accent); }
+.trend .tbar:hover .fill { fill: var(--accent-d); }
+.trend .tbar:hover rect:first-child { fill: var(--accent-l); }
+details.numbers { margin: 8px 0 0; }
+details.numbers summary { cursor: pointer; font-size: 12.5px; color: var(--mute); margin-bottom: 8px; }
+.table-wrap { max-height: 320px; overflow: auto; border-radius: var(--radius); }
+details.menu { position: relative; }
+details.menu summary { list-style: none; }
+details.menu summary::-webkit-details-marker { display: none; }
+.menu-body { position: absolute; right: 0; top: 40px; z-index: 5; min-width: 230px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(16, 40, 40, .12); padding: 6px; display: flex; flex-direction: column; }
+.menu-body a { padding: 8px 10px; border-radius: 8px; color: var(--ink); font-size: 13px; }
+.menu-body a:hover { background: var(--accent-l); text-decoration: none; }
+.menu-body small { padding: 6px 10px 4px; }
+
+/* Tabs, tiles, breadcrumb */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.tabs a { padding: 8px 14px; font-size: 13.5px; font-weight: 600; color: var(--mute); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs a:hover { color: var(--ink); text-decoration: none; }
+.tabs a.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.tile { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; color: var(--ink); box-shadow: var(--shadow); transition: border-color .12s, transform .12s; }
+.tile:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-1px); }
+.tile b { font-size: 14.5px; }
+.tile span { font-size: 12.5px; color: var(--mute); line-height: 1.4; }
+.crumb { display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--mute); margin-bottom: 8px; }
+.mini-link { font-size: 11px; font-weight: 500; margin-left: 6px; }
