@@ -1091,12 +1091,20 @@ html { scroll-behavior: smooth; }
 .human-bar button:hover { background: #fff2cc; }
 #od-summary { grid-column: 1 / -1; font-size: 13.5px; }
 
-/* Quick set for opening hours */
-.hours-quick { background: var(--accent-l); border: 1px solid var(--accent-m); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; display: grid; gap: 8px; }
-.hours-quick > b { font-size: 13px; }
-.hq-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.hq-row input[type=time] { width: auto; }
-.hq-days { display: flex; flex-wrap: wrap; gap: 4px 12px; }
-.hq-days .chk { font-size: 13px; display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
-.hq-quick a { color: var(--accent-d); font-weight: 600; }
-tr.hq-flash td { background: #fff7cc; transition: background .6s; }
+/* Opening hours: day chips, one set of times, a plain-language summary */
+.wk { display: grid; gap: 10px; }
+.wk-label { font-size: 12px; font-weight: 600; color: var(--mute); }
+.wk-days { display: flex; flex-wrap: wrap; gap: 8px; }
+.wk-day { min-width: 56px; padding: 9px 0; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--mute); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .12s; }
+.wk-day:hover { border-color: var(--accent); color: var(--ink); }
+.wk-day.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 6px rgba(15, 118, 110, .25); }
+.wk-times { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wk-times label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mute); font-weight: 600; }
+.wk-times input[type=time] { width: auto; min-width: 130px; }
+.wk-arrow { color: var(--faint); }
+.wk-sum { background: var(--accent-l); color: var(--accent-d); border-radius: 10px; padding: 10px 14px; font-size: 13.5px; font-weight: 600; line-height: 1.5; min-height: 20px; }
+.wk-adv { font-size: 13px; }
+.wk-adv summary { cursor: pointer; color: var(--accent-d); font-weight: 600; padding: 4px 0; list-style: none; }
+.wk-adv summary::before { content: "+ "; }
+.wk-adv[open] summary::before { content: "\2212  "; }
+.wk-adv .table { margin-top: 8px; }

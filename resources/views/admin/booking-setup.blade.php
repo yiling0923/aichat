@@ -8,28 +8,30 @@
         <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split">
             @csrf
             <div>
-            <div class="hours-quick" id="hours-quick">
-                <b>Same hours on several days?</b>
-                <div class="hq-row"><input type="time" id="hq-open" value="{{ $hours['mon'][0] ?? '09:00' }}" aria-label="Opens"> <span class="mute">to</span> <input type="time" id="hq-close" value="{{ $hours['mon'][1] ?? '18:00' }}" aria-label="Closes"></div>
-                <div class="hq-days">@foreach ($days as $d)<label class="chk"><input type="checkbox" value="{{ $d }}" @checked(in_array($d, ['mon', 'tue', 'wed', 'thu', 'fri']))> {{ ucfirst($d) }}</label>@endforeach</div>
-                <div class="hq-row">
-                    <button type="button" class="btn small primary" id="hq-apply">Set ticked days</button>
-                    <button type="button" class="btn small" id="hq-close-days">Close ticked days</button>
-                    <span class="mute hq-quick">Quick pick: <a href="#" data-pick="mon-fri">Mon to Fri</a> · <a href="#" data-pick="mon-sat">Mon to Sat</a> · <a href="#" data-pick="all">Every day</a></span>
+            <div class="wk" id="wk">
+                <div class="wk-label">Open days</div>
+                <div class="wk-days" id="wk-days">@foreach ($days as $d)<button type="button" class="wk-day" data-day="{{ $d }}" aria-pressed="false">{{ ucfirst($d) }}</button>@endforeach</div>
+                <div class="wk-label">Hours on open days</div>
+                <div class="wk-times">
+                    <label>Opens <input type="time" id="wk-open" value="{{ $hours['mon'][0] ?? '09:00' }}"></label>
+                    <span class="wk-arrow">&rarr;</span>
+                    <label>Closes <input type="time" id="wk-close" value="{{ $hours['mon'][1] ?? '18:00' }}"></label>
                 </div>
-                <small class="mute" id="hq-msg">Then press "Save hours and rules" to keep it.</small>
+                <div class="wk-sum" id="wk-sum" aria-live="polite"></div>
+                <details class="wk-adv" id="wk-adv">
+                    <summary>One day is different? Set each day separately</summary>
+                    <table class="table small-table" id="hours-table">
+                        <thead><tr><th>Day</th><th>Opens</th><th>Closes</th></tr></thead>
+                        @foreach ($days as $d)
+                            <tr>
+                                <td>{{ strtoupper($d) }}</td>
+                                <td><input type="time" name="hours[{{ $d }}][open]" value="{{ $hours[$d][0] ?? '' }}"></td>
+                                <td><input type="time" name="hours[{{ $d }}][close]" value="{{ $hours[$d][1] ?? '' }}"></td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </details>
             </div>
-            <table class="table small-table" id="hours-table">
-                <thead><tr><th>Day</th><th>Opens</th><th>Closes</th></tr></thead>
-                @foreach ($days as $d)
-                    <tr>
-                        <td>{{ strtoupper($d) }}</td>
-                        <td><input type="time" name="hours[{{ $d }}][open]" value="{{ $hours[$d][0] ?? '' }}"></td>
-                        <td><input type="time" name="hours[{{ $d }}][close]" value="{{ $hours[$d][1] ?? '' }}"></td>
-                    </tr>
-                @endforeach
-            </table>
-            <p class="mute small-note">Leave a day empty to close it.</p>
             </div>
             <div>
             <div class="grid2">
@@ -101,33 +103,47 @@
 @push('scripts')
 <script>
 (function () {
-  var box = document.getElementById('hours-quick'); if (!box) { return; }
-  var open = document.getElementById('hq-open'), close = document.getElementById('hq-close'), msg = document.getElementById('hq-msg');
-  var checks = box.querySelectorAll('.hq-days input');
-  function ticked() { return Array.prototype.filter.call(checks, function (c) { return c.checked; }).map(function (c) { return c.value; }); }
-  function setDay(d, o, c) {
-    var a = document.querySelector('input[name="hours[' + d + '][open]"]'), b = document.querySelector('input[name="hours[' + d + '][close]"]');
-    a.value = o; b.value = c; a.closest('tr').classList.add('hq-flash'); setTimeout(function () { a.closest('tr').classList.remove('hq-flash'); }, 1200);
+  var wk = document.getElementById('wk'); if (!wk) { return; }
+  var days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], names = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
+  var open = document.getElementById('wk-open'), close = document.getElementById('wk-close'), sum = document.getElementById('wk-sum');
+  function inp(d, k) { return document.querySelector('input[name="hours[' + d + '][' + k + ']"]'); }
+  function hrs(d) { var o = inp(d, 'open').value, c = inp(d, 'close').value; return o && c ? o + ' to ' + c : ''; }
+  function isOpen(d) { return hrs(d) !== ''; }
+  function setDay(d, o, c) { inp(d, 'open').value = o; inp(d, 'close').value = c; }
+  function t12(t) { var p = t.split(':'), h = parseInt(p[0], 10); return ((h + 11) % 12 + 1) + (p[1] === '00' ? '' : ':' + p[1]) + (h < 12 ? 'am' : 'pm'); }
+  function span(from, to) { return from === to ? names[days[from]] : names[days[from]] + ' to ' + names[days[to]]; }
+
+  // Plain-language summary: groups neighbouring days that share the same hours, so an odd day stands out.
+  function render() {
+    days.forEach(function (d) { var b = wk.querySelector('.wk-day[data-day="' + d + '"]'); b.classList.toggle('on', isOpen(d)); b.setAttribute('aria-pressed', isOpen(d)); });
+    var parts = [], i = 0;
+    while (i < 7) {
+      var key = isOpen(days[i]) ? hrs(days[i]) : 'closed', j = i;
+      while (j + 1 < 7 && (isOpen(days[j + 1]) ? hrs(days[j + 1]) : 'closed') === key) { j++; }
+      parts.push(key === 'closed' ? span(i, j) + ' closed' : span(i, j) + ' ' + t12(key.split(' to ')[0]) + ' to ' + t12(key.split(' to ')[1]));
+      i = j + 1;
+    }
+    sum.textContent = parts.join('  ·  ');
+    var openDays = days.filter(isOpen), same = openDays.every(function (d) { return hrs(d) === hrs(openDays[0]); });
+    if (openDays.length && same) { open.value = inp(openDays[0], 'open').value; close.value = inp(openDays[0], 'close').value; }
+    if (!same) { document.getElementById('wk-adv').open = true; }
   }
-  document.getElementById('hq-apply').addEventListener('click', function () {
-    var days = ticked();
-    if (!days.length) { msg.textContent = 'Tick at least one day first.'; return; }
-    if (!open.value || !close.value || open.value >= close.value) { msg.textContent = 'Opening time must be before closing time.'; return; }
-    days.forEach(function (d) { setDay(d, open.value, close.value); });
-    msg.textContent = 'Set ' + days.length + ' day' + (days.length === 1 ? '' : 's') + '. Now press "Save hours and rules" to keep it.';
-  });
-  document.getElementById('hq-close-days').addEventListener('click', function () {
-    var days = ticked(); if (!days.length) { msg.textContent = 'Tick at least one day first.'; return; }
-    days.forEach(function (d) { setDay(d, '', ''); });
-    msg.textContent = 'Closed ' + days.length + ' day' + (days.length === 1 ? '' : 's') + '. Press "Save hours and rules" to keep it.';
-  });
-  box.querySelectorAll('[data-pick]').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      e.preventDefault();
-      var on = { 'mon-fri': ['mon', 'tue', 'wed', 'thu', 'fri'], 'mon-sat': ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'], 'all': ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] }[a.dataset.pick];
-      checks.forEach(function (c) { c.checked = on.indexOf(c.value) > -1; });
+
+  wk.querySelectorAll('.wk-day').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = b.dataset.day;
+      if (isOpen(d)) { setDay(d, '', ''); } else { setDay(d, open.value || '09:00', close.value || '18:00'); }
+      render();
     });
   });
+  function applyCommon() {
+    if (!open.value || !close.value || open.value >= close.value) { sum.textContent = 'Opening time must be before closing time.'; return; }
+    days.filter(isOpen).forEach(function (d) { setDay(d, open.value, close.value); });
+    render();
+  }
+  open.addEventListener('change', applyCommon); close.addEventListener('change', applyCommon);
+  wk.querySelectorAll('#hours-table input').forEach(function (i) { i.addEventListener('change', render); });
+  render();
 })();
 </script>
 <script>

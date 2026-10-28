@@ -391,9 +391,10 @@ Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answe
 4. The customer's page shows "RM ... unpaid" under Spent while an order is waiting.
 5. No order and no pop-up for free services (price 0), no-shows, or a second press of Done.
 
-## AT. Quick set for opening hours
+## AT. Opening hours (day buttons)
 
-1. Settings → Booking setup. Above the day table is a blue box "Same hours on several days?".
-2. Pick the opening and closing time, tick the days (or use the quick picks: Mon to Fri, Mon to Sat, Every day) and press **Set ticked days**. The rows fill in and flash yellow.
-3. **Close ticked days** empties the ticked days (closed). You can still change any single day by hand.
-4. Press **Save hours and rules** to keep it. A closing time earlier than the opening time is refused with a message.
+1. Settings → Booking setup. **Open days** are seven buttons: green means open. Tap a day to open or close it.
+2. Under **Hours on open days** pick one opening and closing time: every open day gets those hours straight away.
+3. The blue line sums it up in words, for example "Mon to Fri 10am to 7pm · Sat 10am to 5pm · Sun closed".
+4. One day different (Saturday closes earlier)? Press "One day is different? Set each day separately" and change just that day. The summary shows the odd day.
+5. Press **Save hours and rules** to keep it. A closing time before the opening time is refused with a message.
