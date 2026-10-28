@@ -11,10 +11,15 @@
             <select name="assigned_to"><option value="">Anyone</option>@foreach ($team as $u)<option value="{{ $u->id }}">{{ $u->name }}</option>@endforeach</select></label>
         <button class="btn primary" type="submit">Add task</button>
     </form>
-    <div class="bar">
-        <a class="btn {{ $show === 'open' ? 'primary' : '' }}" href="{{ route('tasks', ['mine' => $mine ? 1 : 0]) }}">Open</a>
-        <a class="btn {{ $show === 'done' ? 'primary' : '' }}" href="{{ route('tasks', ['show' => 'done', 'mine' => $mine ? 1 : 0]) }}">Done</a>
-        <a class="btn {{ $mine ? 'primary' : '' }}" href="{{ route('tasks', ['show' => $show, 'mine' => $mine ? 0 : 1]) }}">Only mine</a>
+    <div class="filters">
+        <div class="seg">
+            <a @class(['on' => $show === 'open']) href="{{ route('tasks', ['mine' => $mine ? 1 : 0]) }}">Open</a>
+            <a @class(['on' => $show === 'done']) href="{{ route('tasks', ['show' => 'done', 'mine' => $mine ? 1 : 0]) }}">Done</a>
+        </div>
+        <div class="seg">
+            <a @class(['on' => ! $mine]) href="{{ route('tasks', ['show' => $show, 'mine' => 0]) }}">Everyone</a>
+            <a @class(['on' => $mine]) href="{{ route('tasks', ['show' => $show, 'mine' => 1]) }}">Only mine</a>
+        </div>
     </div>
     <table class="table">
         <thead><tr><th></th><th>Task</th><th>Customer</th><th>Assigned</th><th>Due</th><th></th></tr></thead>
