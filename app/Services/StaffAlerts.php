@@ -9,7 +9,6 @@ use App\Models\Channel;
 use App\Models\Conversation;
 use App\Models\MessageTemplate;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -45,7 +44,7 @@ class StaffAlerts
             Mail::to($user->email)->send(new WaitingChatMail($business, 'Test customer', 12, false, route('inbox'), 'This is only a test.'));
             $result['email'] = true;
         } catch (Throwable $e) {
-            report($e);
+            $this->quietly($e);
         }
 
         if (! empty($business->settings['alert_whatsapp'])) {
@@ -53,6 +52,16 @@ class StaffAlerts
         }
 
         return $result;
+    }
+
+    /** Writing to the log can itself fail (for example a locked laravel.log on Windows): an alert problem must never break the page. */
+    private function quietly(Throwable $e): void
+    {
+        try {
+            report($e);
+        } catch (Throwable) {
+            // nothing more can be done
+        }
     }
 
     private function email(Business $business, string $name, int $minutes, bool $urgent, string $url, ?string $reason): void
@@ -63,7 +72,7 @@ class StaffAlerts
             try {
                 Mail::to($address)->send(new WaitingChatMail($business, $name, $minutes, $urgent, $url, $reason));
             } catch (Throwable $e) {
-                report($e);
+                $this->quietly($e);
             }
         }
     }
@@ -100,7 +109,7 @@ class StaffAlerts
 
             return null;
         } catch (Throwable $e) {
-            Log::warning('Staff WhatsApp alert failed', ['error' => $e->getMessage()]);
+            $this->quietly($e);
 
             return mb_substr($e->getMessage(), 0, 200);
         }

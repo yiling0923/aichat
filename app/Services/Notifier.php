@@ -41,7 +41,11 @@ class Notifier
                     'body' => $body === null ? null : Str::limit($body, 140), 'url' => $url]);
             }
         } catch (Throwable $e) {
-            report($e);
+            try {
+                report($e);
+            } catch (Throwable) {
+                // the log itself may be locked; a notification problem must never break a chat
+            }
         }
     }
 

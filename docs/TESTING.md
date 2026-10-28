@@ -429,3 +429,13 @@ Settings → Business → **When a customer waits for a person**:
 2. **Email the owner and managers**: tick it, Save. When a customer has waited 10 minutes the owner and managers get an email, and an URGENT one at 30. With `MAIL_MAILER=log` the email is written to `storage/logs/laravel.log`.
 3. **WhatsApp alert to this number**: needs a connected WhatsApp channel. With an approved template name (use {{1}} for the customer name and {{2}} for the minutes) it works any time; without one WhatsApp only delivers if that number wrote to your business in the last 24 hours.
 4. **Send me a test alert** sends a test email to you (and the WhatsApp message if set) and tells you what happened.
+
+## Troubleshooting: "laravel.log could not be opened in append mode: Permission denied" (Windows)
+
+Windows is stopping the app from writing its log file. Usually the file was created by a different Windows user (for example the Task Scheduler job) than the one running the web server.
+1. Stop `php artisan serve` (Ctrl+C) and close any other terminal running the app.
+2. Delete `storage\logs\laravel.log` (the app makes a new one).
+3. Open Command Prompt **as Administrator** and run (change the path if yours differs):
+   `icacls "C:\xampp\htdocs\aichat\storage" /grant Users:(OI)(CI)F /T`
+4. Start the app again. If the Task Scheduler job runs as another user, run it as your own Windows user too.
+Alerts and notifications no longer crash a page when this happens, but nothing can be written to the log (including test emails when `MAIL_MAILER=log`) until it is fixed.
