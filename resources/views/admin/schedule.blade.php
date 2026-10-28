@@ -111,7 +111,7 @@
     @endif
 
     @if ($view !== 'list')
-        <p class="legend">@if ($view === 'month')<small class="mute">Drag a booking to another day to move it.</small>@else<small class="mute">Drag a booking to another time or day to move it.</small>@endif <span class="chip st-confirmed">Confirmed</span> <span class="chip st-completed">Done</span> <span class="chip st-no_show">No-show</span> <small class="mute">Click a booking to see details, mark it done or cancel it. Cancelled bookings are hidden here (see List).</small></p>
+        <p class="legend"><span class="chip st-confirmed">Confirmed</span> <span class="chip st-completed">Done</span> <span class="chip st-no_show">No-show</span> <small class="mute hint-line">Click a booking for details. Drag it to {{ $view === 'month' ? 'another day' : 'another time or day' }} to move it. Cancelled ones are in List.</small></p>
         @if ($bookings->isEmpty())<p class="mute" style="margin-top:12px">No bookings in this {{ $view }}.</p>@endif
         @foreach ($bookings as $b)
             <template id="b-{{ $b->id }}">@include('admin._booking_detail', ['b' => $b, 'tz' => $tz])</template>

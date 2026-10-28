@@ -348,3 +348,5 @@ For testing only. In your project folder run:
 Then press Ctrl+F5 and look at Today, Schedule, Customers, Reports, Orders, Inbox and Marketing.
 
 Page bar (AN, step 2): with the sample data, open Customers, Orders, Conversations or the Activity log. At the bottom you see "Showing 1-25 of 133", greyed "Previous" on page 1, "Page 1 of 6" and a "Next" button, centred on a phone.
+
+Schedule colours (section on Schedule): blue = Confirmed (upcoming), green = Done, amber = No-show. The same colours show in Month, Week and the key under the calendar.

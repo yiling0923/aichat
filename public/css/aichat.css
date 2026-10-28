@@ -325,8 +325,18 @@ details.menu summary::-webkit-details-marker { display: none; }
 .month .chip, .legend .chip, .ev { font: inherit; text-align: left; cursor: pointer; border: 0; border-left: 3px solid var(--accent); background: var(--accent-l); color: var(--ink); border-radius: 6px; }
 .month .chip, .legend .chip { font-size: 11.5px; padding: 2px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 .month .chip:hover, .ev:hover { background: var(--accent-m); }
+.st-confirmed { border-left-color: #2563eb; background: #e8f0fe; }
 .st-completed { border-left-color: var(--green); background: var(--greens); }
 .st-no_show { border-left-color: var(--amber); background: var(--ambers); }
+/* The status colours must win over the shared chip styles in every view (month, week and the legend). */
+.month .chip.st-confirmed, .legend .chip.st-confirmed, .ev.st-confirmed { border-left-color: #2563eb; background: #e8f0fe; }
+.month .chip.st-completed, .legend .chip.st-completed, .ev.st-completed { border-left-color: var(--green); background: var(--greens); }
+.month .chip.st-no_show, .legend .chip.st-no_show, .ev.st-no_show { border-left-color: var(--amber); background: var(--ambers); }
+.month .chip.st-confirmed:hover, .ev.st-confirmed:hover { background: #d3e3fd; }
+.month .chip.st-completed:hover, .ev.st-completed:hover { background: #c9f0d6; }
+.month .chip.st-no_show:hover, .ev.st-no_show:hover { background: #fde9b8; }
+.legend { gap: 10px; }
+.legend .hint-line { margin-left: auto; }
 .more { font-size: 11px; color: var(--mute); padding-left: 4px; }
 .week-scroll { overflow-x: auto; }
 .week { display: grid; grid-template-columns: 52px repeat(7, minmax(110px, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 860px; }
