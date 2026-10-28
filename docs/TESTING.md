@@ -170,6 +170,12 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 3. **Edit** opens a pop-up: rename, pick a colour (dots or the colour box), **Merge into another tag**, or **Delete tag**. Text on light colours turns dark so it stays readable.
 4. Customers list and Inbox still show the tags as coloured chips.
 
+### U. Message templates
+1. **Settings > Message templates** (needs a WhatsApp number on Channels). Cards show each template as a green WhatsApp bubble with the changing parts highlighted, its status in plain words (Approved: ready to use, Waiting for Meta, or a problem with Meta's reason), language, type, number and **Used by:** (booking reminders or an automation that uses it).
+2. Filter with **All / Approved / Waiting / Problem**. **Refresh status** asks Meta for the latest.
+3. **New template** (or a card under **Start from an example**): choose number, language, name (it fixes spaces and capitals for you), type, and write the message. The **1 · name, 2 · service, 3 · date and time** buttons add the changing parts; "How it will look" shows it with sample values. **Send to Meta for review** submits it.
+4. **Remove** only removes it from this list; it stays in Meta until you delete it there.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

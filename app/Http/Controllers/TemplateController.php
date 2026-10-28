@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Channels\Templates;
+use App\Models\Automation;
 use App\Models\Channel;
 use App\Models\Conversation;
 use App\Models\MessageTemplate;
@@ -25,7 +26,26 @@ class TemplateController extends Controller
             'active' => 'templates',
             'channels' => Channel::query()->where('type', 'whatsapp')->get(),
             'templates' => MessageTemplate::query()->with('channel')->orderBy('name')->get(),
+            'usage' => $this->usage(),
         ]);
+    }
+
+    /** Where each template name is used, so owners know what depends on it. @return array<string, list<string>> */
+    private function usage(): array
+    {
+        $use = [];
+
+        foreach (Channel::query()->where('type', 'whatsapp')->get() as $channel) {
+            if ($name = ($channel->settings['reminder_template'] ?? null)) {
+                $use[$name][] = 'Booking reminders ('.$channel->name.')';
+            }
+        }
+
+        foreach (Automation::query()->whereNotNull('template_name')->where('template_name', '!=', '')->get() as $a) {
+            $use[$a->template_name][] = (\App\Marketing\AutomationDefaults::all()[$a->key]['title'] ?? $a->key).($a->enabled ? '' : ' (off)');
+        }
+
+        return $use;
     }
 
     public function store(Request $request, Templates $templates): RedirectResponse

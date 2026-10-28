@@ -572,3 +572,17 @@ body.lp { height: auto; background: var(--surface); }
 .tag-panel[hidden] { display: none; }
 .tag-row .chip { flex: none; width: auto; margin: 0; }
 .tag-row .tag-uses { flex: 1; white-space: nowrap; }
+
+/* Templates page */
+.tpl { padding: 14px 16px; }
+.tpl-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.wa-bubble { background: #dcf8c6; border-radius: 4px 12px 12px 12px; padding: 10px 13px; font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; color: #15292a; max-width: 100%; word-wrap: break-word; }
+.wa-bubble .ph { background: rgba(15, 118, 110, .18); color: var(--accent-d); border-radius: 5px; padding: 0 5px; font-weight: 600; }
+.tpl-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--mute); }
+.tpl-meta span + span::before { content: "·"; margin-right: 10px; color: var(--faint); }
+.tpl-help { font-size: 12px; margin-top: 6px; }
+.tpl-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line-s); font-size: 12px; }
+.tpl-used { color: var(--accent-d); font-weight: 600; }
+.tpl[hidden] { display: none; }
+.tile.ex { text-align: left; font: inherit; cursor: pointer; }
+.wa-bubble { font-weight: 400; }
