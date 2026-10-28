@@ -18,7 +18,9 @@ class ChannelController extends Controller
 {
     public function index(Request $request): View
     {
-        $url = url('/webhook/meta');
+        // Built from APP_URL (the public tunnel address), not from the address you are browsing on,
+        // so it is right even when you manage the app from http://localhost.
+        $url = rtrim((string) config('app.url'), '/').'/webhook/meta';
 
         return view('admin.channels', [
             'business' => $request->user()->business,

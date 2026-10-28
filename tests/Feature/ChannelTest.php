@@ -408,6 +408,16 @@ class ChannelTest extends TestCase
         $this->actingAs($otherOwner)->post("/admin/channels/{$this->wa->id}/delete")->assertNotFound();
     }
 
+    public function test_the_callback_url_comes_from_app_url_not_the_address_in_the_browser(): void
+    {
+        config(['app.url' => 'https://abc123.lhr.life/aichat/public/']);
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+
+        $this->actingAs($owner)->get('http://localhost/admin/channels')->assertOk()
+            ->assertSee('https://abc123.lhr.life/aichat/public/webhook/meta', false)
+            ->assertDontSee('This address only works on your own computer');
+    }
+
     public function test_check_subscribe_and_test_message_buttons(): void
     {
         $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
