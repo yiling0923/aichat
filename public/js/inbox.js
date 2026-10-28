@@ -10,6 +10,8 @@
   var textEl = document.getElementById('reply-text');
   var statusSel = document.getElementById('status-filter');
   var current = null;
+  var curLang = null, curName = '';
+  var businessName = root.dataset.business || '';
   var seen = {};
   var lastId = 0;
 
@@ -195,6 +197,8 @@
     if (!current) { return; }
     api('/conversations/' + current + '?after=' + lastId).then(function (data) {
       if (!data.conversation) { return; }
+      curLang = data.conversation.language || null;
+      curName = (data.conversation.customer && data.conversation.customer.name) || (/^Visitor \d+$/.test(data.conversation.name) ? '' : data.conversation.name);
       showMeta(data.conversation);
       var key = JSON.stringify([data.conversation.ai_mood, data.conversation.ai_intent, data.conversation.tags, data.conversation.assigned_to, data.conversation.customer, data.conversation.window_open, current]);
       if (force || key !== lastInfoKey) { lastInfoKey = key; renderInfo(data); }
@@ -255,15 +259,24 @@
 
   var qr = document.getElementById('qr');
   api('/quick-replies').then(function (d) {
+    var groups = {};
     (d.replies || []).forEach(function (r) {
+      var g = r.category || 'Other';
+      if (!groups[g]) { groups[g] = document.createElement('optgroup'); groups[g].label = g; qr.appendChild(groups[g]); }
       var o = new Option(r.title, r.id);
       o.dataset.en = r.body.en || ''; o.dataset.zh = r.body.zh || '';
-      qr.appendChild(o);
+      groups[g].appendChild(o);
     });
   });
+  // The reply is inserted in the customer's language (when written), and {name} and {business} are filled in.
   qr.addEventListener('change', function () {
     var o = qr.options[qr.selectedIndex];
-    if (o && o.value) { textEl.value = (textEl.value ? textEl.value + '\n' : '') + (o.dataset.en || o.dataset.zh); textEl.focus(); }
+    if (o && o.value) {
+      var text = (curLang === 'zh' ? (o.dataset.zh || o.dataset.en) : (o.dataset.en || o.dataset.zh));
+      text = (curName ? text.replace(/\{name\}/g, curName) : text.replace(/\{name\}\s*/g, curLang === 'zh' ? '' : 'there ').replace(/there ([,.!?])/g, 'there$1').replace(/there\s*$/, 'there')).replace(/\{business\}/g, businessName);
+      textEl.value = (textEl.value ? textEl.value + '\n' : '') + text;
+      textEl.focus();
+    }
     qr.value = '';
   });
 

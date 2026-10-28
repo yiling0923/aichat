@@ -78,6 +78,7 @@ class InboxController extends Controller
                 'id' => $conversation->id,
                 'name' => $conversation->contact_name ?: 'Visitor '.$conversation->id,
                 'channel' => $conversation->channel,
+                'language' => $conversation->language ?? $conversation->customer?->language,
                 'mode' => $conversation->mode,
                 'status' => $conversation->status,
                 'handover_reason' => $conversation->handover_reason,

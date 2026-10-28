@@ -11,7 +11,7 @@
 <div class="shell">
     @include('admin._side', ['active' => 'inbox'])
 
-    <main class="inbox" id="inbox" data-base="{{ url('/admin/api') }}">
+    <main class="inbox" id="inbox" data-base="{{ url('/admin/api') }}" data-business="{{ $business->name }}">
         <section class="list">
             <div class="list-head">
                 <span>Inbox <a class="mini-link" href="{{ route('conversations') }}">Search all chats</a></span>

@@ -150,6 +150,12 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 4. Each connected account has a coloured dot (green working, amber off, red problem), **Check connection**, **Subscribe to messages**, a folded **Settings** area (name, token, on/off, reminder template, Remove) and, for WhatsApp, **Send me a test message**.
 5. **Meta app connection** (bottom, folded unless something is missing): four checks (public address, app ID, app secret, verify token) with what to do for each, Copy buttons, and **Save these in Meta for me**.
 
+### R. Saved replies
+1. **Settings > Saved replies**: cards with a group tag, the English and Chinese text, **Copy English** and (owner or manager) **Edit**. Use the search box and the group buttons (All, Greeting, Prices ...) to filter.
+2. **New reply**: a pop-up asks for title, group (pick or type), English and optional Chinese. The `{name}` and `{business}` buttons add placeholders. **Edit** opens the same pop-up with a **Delete** button.
+3. Staff accounts see the cards and **Copy English** but no New reply or Edit.
+4. In the **Inbox**, "Insert a saved reply" now groups the list. The text goes in the customer's language (Chinese if they chose 中文) and `{name}` becomes their name (or "there" when unknown), `{business}` your business name.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

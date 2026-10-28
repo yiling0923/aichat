@@ -9,7 +9,7 @@ class QuickReply extends Model
 {
     use BelongsToBusiness;
 
-    protected $fillable = ['title', 'body', 'sort'];
+    protected $fillable = ['title', 'category', 'body', 'sort'];
 
     protected function casts(): array
     {

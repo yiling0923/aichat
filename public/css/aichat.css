@@ -517,3 +517,14 @@ body.lp { height: auto; background: var(--surface); }
 .ci { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--greens); color: var(--green); }
 .checks li.bad .ci { background: var(--reds); color: var(--red); }
 #meta-setup { margin-top: 22px; }
+
+/* Saved replies */
+.reply { padding: 14px 16px; }
+.reply-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.reply-text { font-size: 13px; color: var(--ink); line-height: 1.5; margin: 4px 0; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.reply-text .lang { display: inline-block; font-size: 10px; font-weight: 700; color: var(--accent-d); background: var(--accent-l); border-radius: 4px; padding: 0 5px; margin-right: 6px; vertical-align: 1px; }
+.reply-actions { display: flex; gap: 8px; margin-top: 10px; }
+.reply[hidden] { display: none; }
+.dlg.wide { width: min(560px, 94vw); }
+.dlg textarea { width: 100%; }
+.page-head > div:first-child { flex: 1 1 360px; }
