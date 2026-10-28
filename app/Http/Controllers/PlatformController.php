@@ -6,6 +6,7 @@ use App\Billing\Plans;
 use App\Models\AiUsage;
 use App\Models\Business;
 use App\Models\Conversation;
+use App\Models\Invite;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -45,7 +46,17 @@ class PlatformController extends Controller
                 'ai' => (int) $ai->sum(),
             ],
             'currency' => config('plans.currency'),
+            'inviteOnly' => config('plans.signup_mode') === 'invite',
+            'invites' => Invite::query()->orderByDesc('id')->limit(30)->get(),
         ]);
+    }
+
+    public function invite(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['email' => ['nullable', 'email', 'max:150'], 'note' => ['nullable', 'string', 'max:120']]);
+        $invite = Invite::generate($data['email'] ?? null, $data['note'] ?? null);
+
+        return back()->with('status', 'Invitation code: '.$invite->code.' (send them '.url('/signup?invite='.$invite->code).')');
     }
 
     public function pause(Request $request, int $id): RedirectResponse

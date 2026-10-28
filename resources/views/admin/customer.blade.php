@@ -6,6 +6,12 @@
     <p class="mute">{{ $customer->phone }} · customer since {{ $customer->created_at->format('d M Y') }}
         @if ($customer->opted_out_at) · <span class="tag warn">opted out of promotions</span>@endif</p>
 
+    @if (auth()->user()->canManage())
+        <p>
+            <a class="btn small" href="{{ url('/admin/customers/'.$customer->id.'/export') }}">Download their data</a>
+            <form method="post" action="{{ url('/admin/customers/'.$customer->id.'/erase') }}" style="display:inline" onsubmit="return confirm('Delete this customer and all their chats for good? This cannot be undone.')">@csrf<button class="btn small danger" type="submit">Delete their data</button></form>
+        </p>
+    @endif
     <div class="cols">
         <form method="post" action="{{ url('/admin/customers/'.$customer->id) }}" class="card">
             @csrf

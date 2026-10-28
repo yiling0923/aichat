@@ -11,10 +11,13 @@
     <div class="card">
         <div class="brand-row"><span class="logo">A</span> AI Messaging Sales Assistant</div>
         <h1>Start your free trial</h1>
-        <p class="mute" style="margin-bottom:14px">{{ config('plans.trial_days') }} days free. No card needed.</p>
+        <p class="mute" style="margin-bottom:14px">{{ $inviteOnly ? 'Private beta: you need an invitation code.' : config('plans.trial_days').' days free. No card needed.' }}</p>
         @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
         <form method="post" action="{{ route('signup') }}">
             @csrf
+            @if ($inviteOnly)
+                <div class="field"><label for="invite">Invitation code</label><input id="invite" name="invite" value="{{ old('invite', $invite) }}" required></div>
+            @endif
             <div class="field"><label for="business_name">Business name</label><input id="business_name" name="business_name" value="{{ old('business_name') }}" required autofocus></div>
             <div class="field"><label for="name">Your name</label><input id="name" name="name" value="{{ old('name') }}" required></div>
             <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ old('email') }}" required></div>

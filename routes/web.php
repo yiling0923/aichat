@@ -91,6 +91,9 @@ Route::middleware('staff')->prefix('admin')->group(function () {
 });
 
 Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
+    Route::get('/customers/{id}/export', [\App\Http\Controllers\CustomerController::class, 'export'])->whereNumber('id');
+    Route::post('/customers/{id}/erase', [\App\Http\Controllers\CustomerController::class, 'erase'])->whereNumber('id');
+
     $t = \App\Http\Controllers\TagController::class;
     Route::get('/tags', [$t, 'index'])->name('tags');
     Route::post('/tags', [$t, 'store']);
@@ -190,6 +193,19 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 Route::middleware(['auth', 'platform'])->prefix('platform')->group(function () {
     $p = \App\Http\Controllers\PlatformController::class;
     Route::get('/', [$p, 'index'])->name('platform.index');
+    Route::post('/invites', [$p, 'invite']);
     Route::post('/businesses/{id}/pause', [$p, 'pause'])->whereNumber('id');
     Route::post('/businesses/{id}/resume', [$p, 'resume'])->whereNumber('id');
+});
+
+// Phase 7: monitoring, password reset.
+Route::post('/webhook/stripe', \App\Http\Controllers\StripeWebhookController::class)->middleware('throttle:meta-webhook');
+Route::get('/health', \App\Http\Controllers\HealthController::class)->middleware('throttle:60,1');
+
+Route::middleware('guest')->group(function () {
+    $r = \App\Http\Controllers\PasswordResetController::class;
+    Route::get('/forgot-password', [$r, 'request'])->name('password.request');
+    Route::post('/forgot-password', [$r, 'email'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/reset-password/{token}', [$r, 'form'])->name('password.reset');
+    Route::post('/reset-password', [$r, 'update'])->middleware('throttle:10,1')->name('password.update');
 });

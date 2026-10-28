@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'manager' => \App\Http\Middleware\EnsureManager::class,
         ]);
 
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // ngrok (and later a real server) sits in front of the app.
         $middleware->trustProxies(at: '*');
 

@@ -45,6 +45,23 @@
         @endforeach
         </tbody>
     </table>
+    <h2 style="margin-top:24px">Invitations @if ($inviteOnly)<span class="tag warn">invite-only beta is ON</span>@else<span class="tag">sign-up is open (SIGNUP_MODE=open)</span>@endif</h2>
+    <form method="post" action="{{ url('/platform/invites') }}" class="card row">
+        @csrf
+        <label class="f"><span>Only for this email (optional)</span><input type="email" name="email"></label>
+        <label class="f"><span>Note (optional)</span><input type="text" name="note" placeholder="Who is it for?"></label>
+        <button class="btn primary" type="submit">Make a code</button>
+    </form>
+    <table class="table" style="margin-top:12px">
+        <thead><tr><th>Code</th><th>Email</th><th>Note</th><th>Status</th></tr></thead>
+        <tbody>
+        @forelse ($invites as $i)
+            <tr><td><code>{{ $i->code }}</code></td><td>{{ $i->email ?? 'anyone' }}</td><td>{{ $i->note }}</td><td>{!! $i->used_at ? '<span class="tag ok">used '.$i->used_at->format('j M').'</span>' : '<span class="tag warn">unused</span>' !!}</td></tr>
+        @empty
+            <tr><td colspan="4" class="mute empty">No invitations yet.</td></tr>
+        @endforelse
+        </tbody>
+    </table>
 </main>
 </body>
 </html>

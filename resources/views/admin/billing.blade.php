@@ -4,6 +4,7 @@
     <h1>Plan &amp; billing</h1>
     @if ($testMode)<div class="note warn">Test mode: no real money is taken. Payments are pretend until a payment provider is connected at go-live.</div>@endif
 
+    @if ($justPaid)<div class="note ok">Thank you! Your payment is being confirmed. This page updates in a few seconds.</div>@endif
     <div class="card">
         <b>{{ config('plans.plans.'.($business->plan ?? 'trial').'.name', 'Internal') }}</b>
         @switch ($state)

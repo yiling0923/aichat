@@ -5,7 +5,8 @@
 return [
     'currency' => 'USD',
     'trial_days' => 14,
-    'provider' => env('BILLING_PROVIDER', 'local'),   // local = test mode, nobody is charged
+    'signup_mode' => env('SIGNUP_MODE', 'open'),       // open, or invite (invite-only beta: a code from the platform console is needed)
+    'provider' => env('BILLING_PROVIDER', 'local'),   // local (test mode) or stripe
 
     'plans' => [
         'trial' => [

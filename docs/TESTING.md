@@ -1,4 +1,4 @@
-# How to run and test everything (steps 0 to 6)
+# How to run and test everything (steps 0 to 7)
 
 Use the sample business "Lumiere Aesthetic Clinic (sample)". Sample logins: `owner@example.com` / `password` (everything), `staff@example.com` / `password` (inbox, schedule, customers, tasks) and `platform@example.com` / `password` (the `/platform` console).
 
@@ -100,6 +100,15 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 7. Sign out, sign in as `platform@example.com` / `password`: you land on `/platform`. See both businesses and the totals. **Pause** yours: its test chat shows 404 and its staff cannot enter. **Resume** brings it back.
 8. Two businesses stay apart: sign in as `owner@example.com` (sample clinic) and check Customers shows none of the new business's people.
 
+### L. Beta readiness (step 7)
+1. **Forgot password:** sign out, **Sign in > Forgot password?**, enter `owner@example.com`. Open `storage\logs\laravel.log`, copy the `reset-password/...` link from the bottom, choose a new password, sign in. (Set it back to `password` the same way.)
+2. **Invite-only:** in `.env` set `SIGNUP_MODE=invite`, `php artisan config:clear`. Open `/signup`: it asks for an invitation code and a made-up code is refused. Sign in as `platform@example.com`, **Invitations > Make a code**, open the link it shows, sign up: it works once. Using the same code again is refused. Set `SIGNUP_MODE=open` afterwards.
+3. **Customer privacy:** as owner open a customer with chats, press **Download their data** (a file opens with their chats). Press **Delete their data**: the customer, their chats and future bookings (cancelled) are gone. Staff accounts do not see these buttons.
+4. **Health:** open `http://localhost/aichat/public/health`. With the Task Scheduler running it shows `"ok":true`; if the scheduler is not running it shows 503 (that is the point).
+5. **Checker:** `php artisan aichat:preflight` prints PASS, WARN or FAIL per setting. On your PC many FAIL (it is not a production server): that is expected.
+6. **Backup:** `php artisan aichat:backup` writes a file in `storage\app\backups` (needs `mysqldump` from XAMPP in your PATH: `C:\xampp\mysql\bin`).
+7. **Stripe** is not testable until you have a Stripe test account (`docs/GO-LIVE.md` section 5). The automated tests already check the signature, the plan changes and the payment records.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 
@@ -114,6 +123,8 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 | `php artisan aichat:run-automations` | Sends the automatic messages that are due (the scheduler runs it every 5 minutes) |
 | `php artisan aichat:renew-subscriptions` | Takes the next monthly payment for paid plans (scheduled daily; test mode takes no real money) |
 | `php artisan aichat:make-platform-owner you@example.com` | Creates the login for the `/platform` console |
+| `php artisan aichat:backup` | Saves a compressed copy of the database (scheduled daily at 02:30) |
+| `php artisan aichat:preflight` | Checks a server's settings before real customers |
 | `php artisan aichat:meta-webhook` | Saves the webhook address in Meta |
 | `php artisan config:clear` | Use after every change to `.env` |
 | `php artisan migrate:fresh --seed` | **Wipes all data** and restores the sample data |

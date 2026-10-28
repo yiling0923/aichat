@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\VerifyEmailMail;
 use App\Models\BotFlow;
+use App\Models\Invite;
 use App\Models\Business;
 use App\Models\User;
 use App\Setup\SetupApplier;
@@ -18,9 +19,14 @@ use Illuminate\Support\Str;
 /** Self-service sign-up: a new business, its owner, a free trial, and an email to confirm. */
 class SignupController extends Controller
 {
-    public function show(): View
+    public function show(Request $request): View
     {
-        return view('signup.form');
+        return view('signup.form', ['inviteOnly' => $this->inviteOnly(), 'invite' => $request->query('invite')]);
+    }
+
+    private function inviteOnly(): bool
+    {
+        return config('plans.signup_mode') === 'invite';
     }
 
     public function store(Request $request): RedirectResponse
@@ -28,6 +34,16 @@ class SignupController extends Controller
         // A hidden field only bots fill in: pretend it worked.
         if ($request->filled('website')) {
             return redirect()->route('verification.notice');
+        }
+
+        $invite = null;
+        if ($this->inviteOnly()) {
+            $code = Str::upper(trim((string) $request->input('invite')));
+            $invite = $code === '' ? null : Invite::query()->where('code', $code)->whereNull('used_at')->first();
+
+            if ($invite === null || ($invite->email !== null && $invite->email !== Str::lower((string) $request->input('email')))) {
+                return back()->withErrors(['invite' => 'This sign-up is by invitation. Check your invitation code and use the email it was made for.'])->withInput();
+            }
         }
 
         $data = $request->validate([
@@ -38,7 +54,7 @@ class SignupController extends Controller
             'terms' => ['accepted'],
         ], ['terms.accepted' => 'Please accept the terms and the privacy notice.']);
 
-        $user = DB::transaction(function () use ($data): User {
+        $user = DB::transaction(function () use ($data, $invite): User {
             $business = Business::create([
                 'name' => $data['business_name'],
                 'slug' => $this->uniqueSlug($data['business_name']),
@@ -57,6 +73,8 @@ class SignupController extends Controller
 
             $flow = SetupApplier::neutralFlow();
             (new BotFlow(['draft' => $flow, 'published' => $flow, 'published_at' => now()]))->forceFill(['business_id' => $business->id])->save();
+
+            $invite?->forceFill(['used_at' => now(), 'business_id' => $business->id])->save();
 
             return User::create(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password'], 'business_id' => $business->id, 'role' => 'owner', 'active' => true]);
         });

@@ -42,6 +42,10 @@ class Billing
     /** Stop renewing. The plan keeps working until the paid month ends. */
     public function cancel(Business $business): void
     {
+        if (Stripe::enabled()) {
+            app(Stripe::class)->cancelAtPeriodEnd($business);
+        }
+
         $business->forceFill(['subscription_status' => 'canceled'])->save();
     }
 
@@ -49,6 +53,10 @@ class Billing
     public function renewDue(): array
     {
         $renewed = $failed = 0;
+
+        if (Stripe::enabled()) {
+            return ['renewed' => 0, 'failed' => 0];   // Stripe renews by itself and tells us through the webhook
+        }
 
         Business::query()->where('subscription_status', 'active')->whereIn('plan', ['starter', 'growth'])
             ->where('current_period_ends_at', '<=', now())->get()

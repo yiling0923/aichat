@@ -119,6 +119,16 @@ Anyone can now open `/signup`, create a business and get a **14-day free trial**
 - **Abuse protection:** sign-up is limited to 5 per hour per address, a hidden bot field, email confirmation, strong unique emails. **Legal pages** `/terms` and `/privacy` are starter text: have a lawyer review them before going public.
 - **Isolation:** every table carries the business, every query is scoped to the signed-in business, and tests prove two businesses cannot see each other.
 
+### Beta readiness (step 7)
+
+Code for the invite-only beta is done; the accounts, server and Meta approvals are in **`docs/GO-LIVE.md`** (step-by-step with rough costs).
+
+- **Invite-only sign-up:** `SIGNUP_MODE=invite` in `.env`. The platform console (`/platform`) makes invitation codes (optionally for one email only) and shows which are used. Default `SIGNUP_MODE=open`.
+- **Forgot password:** link on the sign-in page, one-hour email link, never reveals whether an email has an account.
+- **Customer privacy:** managers can **Download their data** or **Delete their data** on a customer's page (future bookings are cancelled first).
+- **Real payments (optional):** `BILLING_PROVIDER=stripe` uses Stripe Checkout and a signed webhook (`/webhook/stripe`). Default stays test mode.
+- **Safety:** security headers on every page, `/health` for an uptime monitor, `php artisan aichat:backup` (scheduled daily) and `php artisan aichat:preflight` (checks a server before real customers).
+
 ### Automations and marketing (step 5)
 
 Owner or manager, sidebar group **Grow**. Everything is switched off until you turn it on, and every message follows the same rules:
@@ -349,4 +359,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 7 (beta readiness): Meta business verification, a real WhatsApp number, a paid server with backups and monitoring, a domain, real email sending, a real payment provider (Stripe) and a legal review. Step 8: public launch.
+Step 7 needs your decisions and accounts: Meta business verification, a real WhatsApp number, a server, a domain, email sending and a legal review (all in `docs/GO-LIVE.md`). Step 8: public launch (open sign-up, multi-branch, packages, e-commerce, more channels).

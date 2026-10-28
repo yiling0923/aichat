@@ -76,6 +76,37 @@ class CustomerController extends Controller
         return back()->with('status', 'Customer saved.');
     }
 
+    /** Everything we hold about one customer, as a file (for a customer who asks for their data). */
+    public function export(int $id): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $customer = Customer::query()->with(['tags', 'bookings.service'])->findOrFail($id);
+        $chats = $customer->conversations()->with(['messages' => fn ($q) => $q->where('is_private', false)->orderBy('id')])->get();
+
+        $data = [
+            'customer' => $customer->only(['name', 'phone', 'email', 'language', 'interest', 'details', 'score', 'notes', 'consented_at', 'opted_out_at', 'created_at']),
+            'tags' => $customer->tags->pluck('name'),
+            'bookings' => $customer->bookings->map(fn ($b) => ['service' => $b->service?->label('en'), 'starts_at' => $b->starts_at, 'status' => $b->status]),
+            'conversations' => $chats->map(fn ($c) => ['channel' => $c->channel, 'messages' => $c->messages->map(fn ($m) => ['at' => $m->created_at, 'from' => $m->sender_type, 'text' => $m->body])]),
+        ];
+
+        return response()->streamDownload(fn () => print json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'customer-'.$customer->id.'.json', ['Content-Type' => 'application/json']);
+    }
+
+    /** Delete a customer and their chats for good (privacy request). Future bookings are cancelled first. */
+    public function erase(Request $request, int $id, \App\Booking\Bookings $bookings): RedirectResponse
+    {
+        $customer = Customer::query()->findOrFail($id);
+
+        foreach ($customer->bookings()->where('status', 'confirmed')->where('starts_at', '>', now())->get() as $booking) {
+            $bookings->cancel($booking, 'staff');
+        }
+
+        $customer->conversations()->delete();   // their messages go with them
+        $customer->delete();
+
+        return redirect()->route('customers')->with('status', 'The customer and their chats were deleted.');
+    }
+
     /** Add or remove one tag for the ticked customers on the list. */
     public function bulk(Request $request): RedirectResponse
     {

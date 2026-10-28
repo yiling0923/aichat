@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Billing\Billing;
 use App\Billing\Plans;
+use App\Billing\Stripe;
 use App\Models\Payment;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,8 @@ class BillingController extends Controller
             'daysLeft' => $plans->daysLeftInTrial($business),
             'usage' => $usage,
             'catalog' => config('plans.plans'),
-            'testMode' => $billing->provider()->name() === 'local',
+            'testMode' => ! Stripe::enabled() && $billing->provider()->name() === 'local',
+            'justPaid' => $request->boolean('paid'),
             'payments' => Payment::query()->where('business_id', $business->id)->orderByDesc('id')->limit(12)->get(),
         ]);
     }
@@ -36,6 +38,17 @@ class BillingController extends Controller
     public function subscribe(Request $request, Billing $billing): RedirectResponse
     {
         $data = $request->validate(['plan' => ['required', 'in:starter,growth']]);
+
+        if (Stripe::enabled()) {
+            try {
+                $url = app(Stripe::class)->checkoutUrl($request->user()->business, $data['plan'], $request->user()->email, route('billing').'?paid=1', route('billing'));
+            } catch (\RuntimeException $e) {
+                return back()->withErrors(['plan' => $e->getMessage()]);
+            }
+
+            return redirect()->away($url);
+        }
+
         $result = $billing->subscribe($request->user()->business, $data['plan']);
 
         return $result['ok']

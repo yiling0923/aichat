@@ -43,6 +43,13 @@ return [
         'graph_version' => env('META_GRAPH_VERSION', 'v21.0'),
     ],
 
+    'stripe' => [
+        // Real payments (BILLING_PROVIDER=stripe). Keys come from the Stripe dashboard; see docs/GO-LIVE.md.
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'prices' => ['starter' => env('STRIPE_PRICE_STARTER'), 'growth' => env('STRIPE_PRICE_GROWTH')],
+    ],
+
     'google_calendar' => [
         // Path to the service account JSON key. Leave empty to run with the built-in
         // calendar only (bookings are still saved and double bookings still blocked).
