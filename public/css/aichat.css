@@ -1090,3 +1090,13 @@ html { scroll-behavior: smooth; }
 .human-bar button { flex: none; border: 1px solid #e3c477; background: #fff; color: #7a5200; border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 600; cursor: pointer; }
 .human-bar button:hover { background: #fff2cc; }
 #od-summary { grid-column: 1 / -1; font-size: 13.5px; }
+
+/* Quick set for opening hours */
+.hours-quick { background: var(--accent-l); border: 1px solid var(--accent-m); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; display: grid; gap: 8px; }
+.hours-quick > b { font-size: 13px; }
+.hq-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hq-row input[type=time] { width: auto; }
+.hq-days { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.hq-days .chk { font-size: 13px; display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+.hq-quick a { color: var(--accent-d); font-weight: 600; }
+tr.hq-flash td { background: #fff7cc; transition: background .6s; }

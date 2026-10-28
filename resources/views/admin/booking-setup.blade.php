@@ -8,7 +8,18 @@
         <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split">
             @csrf
             <div>
-            <table class="table small-table">
+            <div class="hours-quick" id="hours-quick">
+                <b>Same hours on several days?</b>
+                <div class="hq-row"><input type="time" id="hq-open" value="{{ $hours['mon'][0] ?? '09:00' }}" aria-label="Opens"> <span class="mute">to</span> <input type="time" id="hq-close" value="{{ $hours['mon'][1] ?? '18:00' }}" aria-label="Closes"></div>
+                <div class="hq-days">@foreach ($days as $d)<label class="chk"><input type="checkbox" value="{{ $d }}" @checked(in_array($d, ['mon', 'tue', 'wed', 'thu', 'fri']))> {{ ucfirst($d) }}</label>@endforeach</div>
+                <div class="hq-row">
+                    <button type="button" class="btn small primary" id="hq-apply">Set ticked days</button>
+                    <button type="button" class="btn small" id="hq-close-days">Close ticked days</button>
+                    <span class="mute hq-quick">Quick pick: <a href="#" data-pick="mon-fri">Mon to Fri</a> · <a href="#" data-pick="mon-sat">Mon to Sat</a> · <a href="#" data-pick="all">Every day</a></span>
+                </div>
+                <small class="mute" id="hq-msg">Then press "Save hours and rules" to keep it.</small>
+            </div>
+            <table class="table small-table" id="hours-table">
                 <thead><tr><th>Day</th><th>Opens</th><th>Closes</th></tr></thead>
                 @foreach ($days as $d)
                     <tr>
@@ -88,6 +99,37 @@
         </form>
 @endsection
 @push('scripts')
+<script>
+(function () {
+  var box = document.getElementById('hours-quick'); if (!box) { return; }
+  var open = document.getElementById('hq-open'), close = document.getElementById('hq-close'), msg = document.getElementById('hq-msg');
+  var checks = box.querySelectorAll('.hq-days input');
+  function ticked() { return Array.prototype.filter.call(checks, function (c) { return c.checked; }).map(function (c) { return c.value; }); }
+  function setDay(d, o, c) {
+    var a = document.querySelector('input[name="hours[' + d + '][open]"]'), b = document.querySelector('input[name="hours[' + d + '][close]"]');
+    a.value = o; b.value = c; a.closest('tr').classList.add('hq-flash'); setTimeout(function () { a.closest('tr').classList.remove('hq-flash'); }, 1200);
+  }
+  document.getElementById('hq-apply').addEventListener('click', function () {
+    var days = ticked();
+    if (!days.length) { msg.textContent = 'Tick at least one day first.'; return; }
+    if (!open.value || !close.value || open.value >= close.value) { msg.textContent = 'Opening time must be before closing time.'; return; }
+    days.forEach(function (d) { setDay(d, open.value, close.value); });
+    msg.textContent = 'Set ' + days.length + ' day' + (days.length === 1 ? '' : 's') + '. Now press "Save hours and rules" to keep it.';
+  });
+  document.getElementById('hq-close-days').addEventListener('click', function () {
+    var days = ticked(); if (!days.length) { msg.textContent = 'Tick at least one day first.'; return; }
+    days.forEach(function (d) { setDay(d, '', ''); });
+    msg.textContent = 'Closed ' + days.length + ' day' + (days.length === 1 ? '' : 's') + '. Press "Save hours and rules" to keep it.';
+  });
+  box.querySelectorAll('[data-pick]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var on = { 'mon-fri': ['mon', 'tue', 'wed', 'thu', 'fri'], 'mon-sat': ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'], 'all': ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] }[a.dataset.pick];
+      checks.forEach(function (c) { c.checked = on.indexOf(c.value) > -1; });
+    });
+  });
+})();
+</script>
 <script>
     (function () {
         var hidden = document.getElementById('closed-dates'), list = document.getElementById('closed-list'), pick = document.getElementById('closed-pick');

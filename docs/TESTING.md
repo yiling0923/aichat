@@ -390,3 +390,10 @@ Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answe
 3. Press **Save**: the order is Paid and the notes say "Paid by card." If the customer pays later, close the pop-up: the order stays "Waiting for payment" and you can press **Mark paid** on its row any time.
 4. The customer's page shows "RM ... unpaid" under Spent while an order is waiting.
 5. No order and no pop-up for free services (price 0), no-shows, or a second press of Done.
+
+## AT. Quick set for opening hours
+
+1. Settings → Booking setup. Above the day table is a blue box "Same hours on several days?".
+2. Pick the opening and closing time, tick the days (or use the quick picks: Mon to Fri, Mon to Sat, Every day) and press **Set ticked days**. The rows fill in and flash yellow.
+3. **Close ticked days** empties the ticked days (closed). You can still change any single day by hand.
+4. Press **Save hours and rules** to keep it. A closing time earlier than the opening time is refused with a message.
