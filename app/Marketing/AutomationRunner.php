@@ -90,6 +90,34 @@ class AutomationRunner
         return $count;
     }
 
+    /**
+     * Send one survey right now to one customer, ignoring the wait and the visit. For the Test button on the Automations
+     * page. It still obeys consent, STOP and the 24-hour rule, so a "skipped" result tells you exactly what blocked it.
+     *
+     * @return array{status: string, reason: ?string}
+     */
+    public function testSurvey(Automation $a, Business $business, Customer $customer): array
+    {
+        return $this->current->runAs($business, function () use ($a, $business, $customer): array {
+            $language = $this->language($customer);
+            $result = $this->outreach->send(
+                $customer, (array) $a->message, $this->values($customer, $business, null, $language),
+                Outreach::ratingButtons($language), $a->template_name, [(string) $customer->name, (string) ($customer->interest ?: 'your visit')],
+            );
+
+            if ($result['status'] === 'sent' && $result['conversation'] !== null) {
+                $survey = Survey::create(['customer_id' => $customer->id, 'conversation_id' => $result['conversation']->id, 'sent_at' => now()]);
+                $state = (array) $result['conversation']->state;
+                $state['survey'] = $survey->id;
+                $result['conversation']->forceFill(['state' => $state])->save();
+            }
+
+            $this->log('survey', $customer, null, $result['status'], $result['reason'] ?? 'test message');
+
+            return ['status' => $result['status'], 'reason' => $result['reason'] ?? null];
+        });
+    }
+
     private function noShow(Automation $a, Business $business, CarbonInterface $now): int
     {
         $count = 0;

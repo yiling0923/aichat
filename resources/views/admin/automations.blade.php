@@ -47,6 +47,18 @@
             </div>
             <button class="btn primary" type="submit">Save</button>
         </form>
+        @if ($a->key === 'survey')
+            <form method="post" action="{{ url('/admin/automations/survey/test') }}" class="test-row">
+                @csrf
+                @if ($testCustomers->isEmpty())
+                    <span class="mute">To send a test you need a customer who agreed to be contacted and has a chat. A customer agrees when they leave their details in the chat.</span>
+                @else
+                    <label class="f grow"><span>Send a test now to</span>
+                        <select name="customer_id">@foreach ($testCustomers as $c)<option value="{{ $c->id }}">{{ $c->name ?: $c->phone }}</option>@endforeach</select></label>
+                    <button class="btn" type="submit" style="align-self:end">Send a test</button>
+                @endif
+            </form>
+        @endif
         </details>
     @endforeach
 @endsection

@@ -371,3 +371,12 @@ Schedule colours (section on Schedule): blue = Confirmed (upcoming), green = Don
 2. Switch the list to "Resolved", open that chat and press **Reopen**: it is open again.
 3. A resolved chat also opens by itself when the customer writes again in the website chat (you get a bell alert "wrote again"), or when you send them a reply.
 4. WhatsApp, Instagram and Messenger chats already reopened when the customer wrote again.
+
+## AR. Testing the rating (survey) message
+
+The survey automation waits until a visit has ended (2 hours by default), so "Run now" often sends nothing. To test it straight away:
+1. Marketing → Automations → open **Satisfaction survey**, scroll to the bottom of its card.
+2. Pick a customer under "Send a test now to" and press **Send a test**. The list only has customers who agreed to be contacted and have a chat (sample data customers qualify).
+3. Open that customer's chat: the message asks for a rating with buttons 1 to 5. Tap one: the bot thanks them. A rating of 1 or 2 makes a task and a bell alert.
+4. Activity log shows the send, and "Survey answers and review links" shows the rating.
+5. "Run now" now explains when it sends nothing (no automation on, nobody due, or people skipped and why).

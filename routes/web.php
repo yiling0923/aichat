@@ -167,6 +167,7 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::get('/automations', [$a, 'index'])->name('automations');
     Route::get('/automations/activity', [$a, 'activity'])->name('automations.activity');
     Route::post('/automations/run', [$a, 'runNow']);
+    Route::post('/automations/survey/test', [$a, 'testSurvey']);
     Route::post('/automations/{key}', [$a, 'update'])->where('key', '[a-z_]+');
 
     $b = \App\Http\Controllers\BroadcastController::class;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Marketing\AutomationDefaults;
 use App\Marketing\AutomationRunner;
 use App\Models\Automation;
@@ -25,6 +26,10 @@ class AutomationController extends Controller
             'active' => 'automations',
             'automations' => Automation::query()->orderByRaw("case `key` when 'survey' then 1 when 'review_request' then 2 when 'rebooking' then 3 when 'no_show' then 4 else 5 end")->get(),
             'defs' => AutomationDefaults::all(),
+            // People a test message can reach: they agreed to be contacted, never sent STOP, and have a chat.
+            'testCustomers' => Customer::query()->whereNotNull('consented_at')->whereNull('opted_out_at')
+                ->whereIn('id', \App\Models\Conversation::query()->where('channel', '!=', 'preview')->whereNotNull('customer_id')->select('customer_id'))
+                ->orderByDesc('id')->limit(100)->get(['id', 'name', 'phone']),
         ]);
     }
 
@@ -73,10 +78,39 @@ class AutomationController extends Controller
     /** For testing: run everything that is due right now instead of waiting for the scheduler. */
     public function runNow(Request $request, AutomationRunner $runner): RedirectResponse
     {
+        $on = Automation::query()->where('enabled', true)->get();
         $sent = $runner->runForBusiness($request->user()->business);
         $total = array_sum($sent);
 
-        return back()->with('status', $total.' message(s) sent. See the Activity page for what happened to each customer.');
+        if ($total > 0) {
+            return back()->with('status', $total.' message(s) sent. See the Activity log for what happened to each customer.');
+        }
+
+        // Nothing went out: say why, so it does not look broken.
+        if ($on->isEmpty()) {
+            return back()->with('status', '0 messages sent: no automation is switched on. Open a card below, set Status to On and press Save. Then run again.');
+        }
+
+        $skipped = AutomationLog::query()->where('created_at', '>=', now()->subMinute())->where('status', 'skipped')->count();
+        $hint = $skipped > 0
+            ? $skipped.' customer(s) were skipped, for example because they never agreed to be contacted or sent STOP. The Activity log shows the reason for each.'
+            : 'Nobody is due yet. The satisfaction survey needs a visit that ended at least '.($on->firstWhere('key', 'survey')?->delay_hours ?? 2).' hours ago (and within the last 7 days). Use "Send a test" on the survey card to try it right now.';
+
+        return back()->with('status', '0 messages sent. '.$hint);
+    }
+
+    public function testSurvey(Request $request, AutomationRunner $runner): RedirectResponse
+    {
+        $data = $request->validate(['customer_id' => ['required', 'integer']]);
+        $customer = Customer::query()->findOrFail($data['customer_id']);
+        AutomationDefaults::ensure();
+        $automation = Automation::query()->where('key', 'survey')->firstOrFail();
+
+        $result = $runner->testSurvey($automation, $request->user()->business, $customer);
+
+        return back()->with('status', $result['status'] === 'sent'
+            ? 'Test survey sent to '.($customer->name ?: 'the customer').'. Open their chat to rate it: tap a number, then check the Activity log and the survey answers.'
+            : 'The test was not sent: '.($result['reason'] ?? $result['status']).'.');
     }
 
     public function activity(Request $request): View
