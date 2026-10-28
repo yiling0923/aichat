@@ -44,7 +44,7 @@
     </div>
 
     <div class="kpis main">
-        <div class="kpi"><span class="kpi-l">Spent</span><b>{{ $currency }} {{ number_format($paidTotal, 2) }}</b><span class="kpi-s">{{ $orders->where('status', 'paid')->count() }} paid {{ $orders->where('status', 'paid')->count() === 1 ? 'order' : 'orders' }}</span></div>
+        <div class="kpi"><span class="kpi-l">Spent</span><b>{{ $currency }} {{ number_format($paidTotal, 2) }}</b><span class="kpi-s">{{ $orders->where('status', 'paid')->count() }} paid {{ $orders->where('status', 'paid')->count() === 1 ? 'order' : 'orders' }}@if ($orders->where('status', 'pending')->count()) · <b class="td-late">{{ $currency }} {{ number_format($orders->where('status', 'pending')->sum('amount'), 2) }} unpaid</b>@endif</span></div>
         <div class="kpi"><span class="kpi-l">Bookings</span><b>{{ $bookingCount }}</b><span class="kpi-s">{{ $upcoming ? 'next: '.$local($upcoming->starts_at)->format('D j M, H:i') : 'none coming up' }}</span></div>
         <div class="kpi"><span class="kpi-l">Last visit</span><b>{{ $lastVisit ? $local($lastVisit->starts_at)->format('j M Y') : '-' }}</b><span class="kpi-s">{{ $lastVisit ? $lastVisit->service->label('en') : 'no visit yet' }}</span></div>
         <div class="kpi"><span class="kpi-l">Satisfaction</span><b>{{ $rating === null ? '-' : number_format($rating, 1).' / 5' }}</b><span class="kpi-s">{{ $rating === null ? 'no rating yet' : 'from their surveys' }}</span></div>

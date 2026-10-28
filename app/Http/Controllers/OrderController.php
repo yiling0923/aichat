@@ -116,7 +116,7 @@ class OrderController extends Controller
 
         $order->update($data);
 
-        return back()->with('status', 'Order updated.');
+        return back()->with('status', ($data['status'] ?? null) === 'paid' && count($data) === 1 ? 'Marked as paid.' : 'Order updated.');
     }
 
     public function destroy(int $id): RedirectResponse

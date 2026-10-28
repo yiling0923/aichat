@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Booking\Bookings;
 use App\Booking\SlotTakenException;
 use App\Models\Booking;
+use App\Models\Order;
 use App\Models\Practitioner;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -160,12 +161,42 @@ class ScheduleController extends Controller
     public function mark(Request $request, int $id): RedirectResponse
     {
         $data = $request->validate(['status' => ['required', 'in:completed,no_show']]);
-        $booking = Booking::query()->findOrFail($id);
+        $booking = Booking::query()->with(['service', 'customer'])->findOrFail($id);
+        $message = 'Booking updated.';
 
         if ($booking->status === 'confirmed') {
             $booking->update(['status' => $data['status']]);
+
+            if ($data['status'] === 'completed') {
+                $order = $this->orderForVisit($booking);
+                if ($order !== null) {
+                    $cur = $request->user()->business->settings['currency'] ?? 'RM';
+                    $message = 'Marked done. An order of '.$cur.' '.number_format((float) $order->amount, 2).' is waiting for payment in Orders. Press "Mark paid" there when the customer has paid.';
+                }
+            }
         }
 
-        return back()->with('status', 'Booking updated.');
+        return back()->with('status', $message);
+    }
+
+    /** The customer pays at the shop, so a finished visit becomes an unpaid order. Free services and repeats make none. */
+    private function orderForVisit(Booking $booking): ?Order
+    {
+        $price = (float) ($booking->service->price ?? 0);
+        $reference = 'BK-'.$booking->id;
+
+        if ($price <= 0 || Order::query()->where('reference', $reference)->exists()) {
+            return null;
+        }
+
+        return Order::create([
+            'customer_id' => $booking->customer_id,
+            'reference' => $reference,
+            'items' => $booking->service->label('en'),
+            'amount' => $price,
+            'status' => 'pending',
+            'notes' => 'From the visit on '.$booking->starts_at->copy()->setTimezone($booking->business->timezone ?: 'UTC')->format('j M Y, H:i').' with '.($booking->practitioner->name ?? 'staff').'.',
+            'ordered_at' => now(),
+        ]);
     }
 }

@@ -17,7 +17,7 @@
         ]);
     @endphp
     <div class="page-head">
-        <div><h1>Orders</h1><p class="mute">A simple record of sales and payments you enter yourself. Not a shop checkout.</p></div>
+        <div><h1>Orders</h1><p class="mute">A simple record of sales and payments. A finished visit adds an unpaid order for you; press Mark paid when the customer pays at the shop. Not an online shop checkout.</p></div>
         <div class="bar">
             <a class="btn" href="{{ $export }}">Export CSV</a>
             <button type="button" class="btn primary" id="new-order">New order</button>
@@ -63,7 +63,9 @@
                 <td>{{ $o->items ?: '-' }}@if ($o->notes)<br><small class="mute">{{ \Illuminate\Support\Str::limit($o->notes, 70) }}</small>@endif</td>
                 <td style="text-align:right;white-space:nowrap"><b>{{ number_format($o->amount, 2) }}</b></td>
                 <td><span class="tag {{ $tone[$o->status] ?? '' }}">{{ $label[$o->status] ?? $o->status }}</span></td>
-                <td style="text-align:right"><button type="button" class="btn small" data-edit
+                <td style="text-align:right;white-space:nowrap">
+                    @if ($o->status === 'pending')<form method="post" action="{{ url('/admin/orders/'.$o->id) }}" style="display:inline">@csrf<input type="hidden" name="status" value="paid"><button type="submit" class="btn small primary" title="The customer has paid">Mark paid</button></form>@endif
+                    <button type="button" class="btn small" data-edit
                     data-action="{{ url('/admin/orders/'.$o->id) }}" data-delete="{{ url('/admin/orders/'.$o->id.'/delete') }}"
                     data-customer="{{ $o->customer_id }}" data-reference="{{ $o->reference }}" data-items="{{ $o->items }}" data-amount="{{ $o->amount }}"
                     data-status="{{ $o->status }}" data-date="{{ $local?->format('Y-m-d\TH:i') }}" data-notes="{{ $o->notes }}">Edit</button></td>

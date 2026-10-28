@@ -382,3 +382,11 @@ The survey automation waits until a visit has ended (2 hours by default), so "Ru
 5. "Run now" now explains when it sends nothing (no automation on, nobody due, or people skipped and why).
 
 Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answers (n)". On Survey answers use the "Show" list to see only waiting, low (1 or 2) or one rating, and page through with Previous / Next.
+
+## AS. Visit done, then pay at the shop
+
+1. Book a visit in the chat for a priced service. After its time passes, open Schedule, click the booking and press **Mark done** (or press Done in the List view).
+2. The message says an order of that price is waiting for payment. Open **Orders**: a new row with reference `BK-...` and status "Waiting for payment".
+3. The customer pays at the shop: press **Mark paid** on that row. For a discount, press **Edit**, change the amount, set Paid and Save.
+4. The customer's page shows "RM ... unpaid" under Spent while an order is waiting.
+5. No order is made for free services (price 0), no-shows, or a second press of Done.
