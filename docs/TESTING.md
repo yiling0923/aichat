@@ -258,3 +258,9 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 4. Press Create with empty fields: the first empty field is highlighted, nothing is sent.
 5. Use an email that already exists: the error sits under the email with a "Sign in instead" link.
 6. Fill everything and tick the terms: you land on "Check your email" showing your address.
+
+## AC. Login, forgot and reset pages
+
+1. Sign out and open `/login`: same look as sign-up, with "Show" on the password and "Keep me signed in".
+2. Type a wrong password: the message appears under the email and your email stays filled in.
+3. Press "Forgot password?", send the link, open it from `storage/logs/laravel.log`, choose a new password. All three pages share the same style.

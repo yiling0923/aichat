@@ -1,25 +1,18 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Choose a new password</title>
-    <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
-</head>
-<body>
-<div class="center-page">
-    <div class="card">
-        <div class="brand-row"><span class="logo">A</span> Choose a new password</div>
-        @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
-        <form method="post" action="{{ route('password.update') }}">@csrf
-            <input type="hidden" name="token" value="{{ $token }}">
-            <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ old('email', $email) }}" required>@error('email') <div class="error">{{ $message }}</div> @enderror</div>
-            <div class="field"><label for="password">New password (8 or more characters)</label><input id="password" name="password" type="password" required>@error('password') <div class="error">{{ $message }}</div> @enderror</div>
-            <div class="field"><label for="password_confirmation">Repeat it</label><input id="password_confirmation" name="password_confirmation" type="password" required></div>
-            <button class="btn primary" type="submit">Save password</button>
-        </form>
-        <p class="mute" style="margin-top:14px;font-size:12px"><a href="{{ route('login') }}">Back to sign in</a></p>
-    </div>
-</div>
-</body>
-</html>
+@extends('auth.layout')
+@section('title', 'Choose a new password')
+@section('heading', 'Choose a new password')
+@section('sub', 'At least 8 characters.')
+@section('body')
+    <form method="post" action="{{ route('password.update') }}" class="auth-card" style="padding:0;border:0;box-shadow:none;max-width:none">@csrf
+        <input type="hidden" name="token" value="{{ $token }}">
+        <label class="f"><span>Email</span>
+            <input id="email" name="email" type="email" value="{{ old('email', $email) }}" required autocomplete="username" @class(['bad' => $errors->has('email')])>
+            @error('email')<small class="field-err">{{ $message }}</small>@enderror</label>
+        <label class="f"><span>New password</span>
+            <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" @class(['bad' => $errors->has('password')])>
+            @error('password')<small class="field-err">{{ $message }}</small>@enderror</label>
+        <label class="f"><span>Repeat it</span><input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"></label>
+        <button class="btn primary block" type="submit">Save password</button>
+    </form>
+    <p class="auth-alt"><a href="{{ route('login') }}">&larr; Back to sign in</a></p>
+@endsection

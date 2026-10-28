@@ -814,3 +814,5 @@ details.inline summary { display: inline; cursor: pointer; font-weight: 600; tex
   .mobile-only { display: inline-flex; }
 }
 .auth-card .grid2 { margin: 0; }
+.f > span.row-between { display: flex !important; justify-content: space-between; align-items: baseline; } .row-between a { font-weight: 500; font-size: 12px; }
+.auth-card .note { margin: 0; }
