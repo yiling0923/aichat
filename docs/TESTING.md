@@ -312,3 +312,8 @@ Open the chat link (Settings, "Your customer chat link").
 4. "Save as draft", then press Send on the draft: a pop-up repeats the number and asks to confirm. After sending, the list shows a coloured bar of sent, skipped and failed.
 5. Open a sent broadcast: filter who got it by Sent, Skipped or Failed. The message shows on the right.
 6. Activity log: filters apply as you pick them, with removable chips and a Reset button.
+
+## AJ. Terms and privacy pages
+
+1. Open `/terms` and `/privacy` (also linked from the footer and the sign-up form). Each has numbered sections, a contents list on the left (above the text on a phone) and a link to the other page.
+2. The yellow "Starter text only" note stays until a lawyer has reviewed the wording. The contact address comes from your mail "from" address.
