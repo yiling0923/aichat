@@ -56,14 +56,24 @@
         @endforeach
     </div>
 
-    <div class="strip">
-        <span><b>{{ $kpi['handovers']['value'] }}</b> handed over to staff @if ($s['avgWait'] !== null)<small>(avg wait {{ $s['avgWait'] }} min)</small>@endif</span>
-        <span><b>{{ $s['surveyAvg'] === null ? '-' : number_format($s['surveyAvg'], 1).' / 5' }}</b> survey score <small>({{ $s['surveyCount'] }} answers)</small></span>
-        <span><b>{{ $s['noShowRate'] === null ? '-' : $s['noShowRate'].'%' }}</b> no-show rate</span>
-        <span><b>{{ $s['cancelRate'] === null ? '-' : $s['cancelRate'].'%' }}</b> cancelled</span>
-        <span><b>{{ $s['repeatCustomers'] }}</b> repeat customers</span>
-        <span><b>{{ $s['optedOut'] }}</b> opted out</span>
-        <span><b>{{ $s['aiCalls'] }}</b> AI calls</span>
+    @php
+        $surveyTone = $s['surveyAvg'] === null ? '' : ($s['surveyAvg'] >= 4 ? 'good' : ($s['surveyAvg'] < 3 ? 'bad' : 'warn'));
+        $noShowTone = $s['noShowRate'] === null ? '' : ($s['noShowRate'] <= 5 ? 'good' : ($s['noShowRate'] > 15 ? 'bad' : 'warn'));
+        $cancelTone = $s['cancelRate'] === null ? '' : ($s['cancelRate'] <= 10 ? 'good' : ($s['cancelRate'] > 25 ? 'bad' : 'warn'));
+        $facts = [
+            ['Handed over to staff', $kpi['handovers']['value'], $s['avgWait'] !== null ? 'avg wait '.$s['avgWait'].' min' : 'a person was needed', ''],
+            ['Survey score', $s['surveyAvg'] === null ? '-' : number_format($s['surveyAvg'], 1).' / 5', $s['surveyCount'].' '.($s['surveyCount'] === 1 ? 'answer' : 'answers'), $surveyTone],
+            ['No-show rate', $s['noShowRate'] === null ? '-' : $s['noShowRate'].'%', 'of finished visits', $noShowTone],
+            ['Cancelled', $s['cancelRate'] === null ? '-' : $s['cancelRate'].'%', 'of bookings', $cancelTone],
+            ['Repeat customers', $s['repeatCustomers'], 'came back to book', ''],
+            ['Opted out', $s['optedOut'], 'sent STOP', ''],
+            ['AI calls', $s['aiCalls'], 'in this period', ''],
+        ];
+    @endphp
+    <div class="facts">
+        @foreach ($facts as [$label, $value, $note, $tone])
+            <div class="fact {{ $tone }}"><span class="fl">{{ $label }}</span><b>{{ $value }}</b><small>{{ $note }}</small></div>
+        @endforeach
     </div>
 
     <div class="tabs" id="report-tabs">

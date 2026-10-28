@@ -398,3 +398,5 @@ Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answe
 3. The blue line sums it up in words, for example "Mon to Fri 10am to 7pm · Sat 10am to 5pm · Sun closed".
 4. One day different (Saturday closes earlier)? Press "One day is different? Set each day separately" and change just that day. The summary shows the odd day.
 5. Press **Save hours and rules** to keep it. A closing time before the opening time is refused with a message.
+
+Reports summary tiles (Reports page): under the four big cards there are seven small tiles: handed over to staff, survey score, no-show rate, cancelled, repeat customers, opted out and AI calls, each with a short note. A coloured top edge shows how it is going (green good, amber so-so, red needs attention) for survey score, no-show rate and cancelled. On a phone they sit two per row.

@@ -58,7 +58,7 @@ class ReportsTest extends TestCase
 
         $this->actingAs($this->user)->get('/admin/reports')->assertOk()
             ->assertSee('Export CSV')->assertSee('Chats started per day')->assertSee('Busiest weekdays')->assertSee('Busiest hours')
-            ->assertSee('By practitioner')->assertSee('no-show rate')->assertSee('Dr One')->assertSee('Laser')->assertSee('WhatsApp');
+            ->assertSee('By practitioner')->assertSee('No-show rate')->assertSee('Dr One')->assertSee('Laser')->assertSee('WhatsApp');
     }
 
     public function test_channel_service_and_practitioner_filters_change_the_booking_numbers(): void
