@@ -9,21 +9,24 @@
     <li><span>Status</span><span class="tag {{ $b->status === 'confirmed' ? 'ok' : 'warn' }}">{{ str_replace('_', ' ', $b->status) }}</span></li>
 </ul>
 @if ($b->status === 'confirmed')
-    <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/move') }}" class="move-form">
-        @csrf
-        <label>Change time
-            <input type="date" name="date" value="{{ $local->format('Y-m-d') }}" required>
-            <input type="time" name="time" value="{{ $local->format('H:i') }}" step="900" required>
-        </label>
-        <input type="hidden" name="starts_at" value="">
-        @if ($b->conversation_id)<label class="chk"><input type="checkbox" name="notify" value="1" checked> Tell the customer in the chat</label>@endif
-        <button class="btn small primary" type="submit">Move</button>
-    </form>
-    <div class="actions" style="margin-top:12px">
+    <div class="move-box">
+        <div class="mb-title">Change time</div>
+        <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/move') }}" class="move-form">
+            @csrf
+            <input type="hidden" name="starts_at" value="">
+            <div class="mf-row">
+                <input type="date" name="date" value="{{ $local->format('Y-m-d') }}" required aria-label="Date">
+                <input type="time" name="time" value="{{ $local->format('H:i') }}" step="900" required aria-label="Time">
+                <button class="btn small primary" type="submit">Move</button>
+            </div>
+            @if ($b->conversation_id)<label class="chk"><input type="checkbox" name="notify" value="1" checked> Tell the customer in the chat</label>@endif
+        </form>
+    </div>
+    <div class="dlg-foot">
         @if ($b->starts_at->isPast())
-            <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="completed"><button class="btn small">Done</button></form>
+            <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="completed"><button class="btn small">Mark done</button></form>
             <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="no_show"><button class="btn small">No-show</button></form>
         @endif
-        <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/cancel') }}" onsubmit="return confirm('Cancel this booking?')">@csrf<button class="btn small danger">Cancel booking</button></form>
+        <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/cancel') }}" onsubmit="return confirm('Cancel this booking?')" class="push">@csrf<button class="btn small danger">Cancel booking</button></form>
     </div>
 @endif

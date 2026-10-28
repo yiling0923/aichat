@@ -116,7 +116,7 @@
         @foreach ($bookings as $b)
             <template id="b-{{ $b->id }}">@include('admin._booking_detail', ['b' => $b, 'tz' => $tz])</template>
         @endforeach
-        <dialog id="bk-dialog" class="dlg"><div class="dlg-body"></div><form method="dialog"><button class="btn small">Close</button></form></dialog>
+        <dialog id="bk-dialog" class="dlg"><button type="button" class="dlg-x" aria-label="Close">&times;</button><div class="dlg-body"></div></dialog>
         <dialog id="mv-dialog" class="dlg">
             <h3>Move this booking?</h3>
             <p id="mv-text" style="margin:8px 0"></p>
@@ -210,7 +210,7 @@
             if (t) {
                 dlg.querySelector('.dlg-body').innerHTML = document.getElementById(t.dataset.open).innerHTML;
                 dlg.showModal();
-            } else if (e.target === dlg) {
+            } else if (e.target === dlg || e.target.closest('.dlg-x')) {
                 dlg.close();
             }
         });
