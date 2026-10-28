@@ -404,3 +404,10 @@ Reports summary tiles (Reports page): under the four big cards there are seven s
 Report card size (Reports → Overview, Bookings, People, Money): cards are larger and the charts have bigger numbers and dates. On a wide screen the cards sit in two big columns, on a smaller screen in one, and the bars are thicker.
 
 Reports redesign (Reports page): four big cards with a small trend line and a green or red change badge, a health strip (survey score, no-show rate and cancelled get a coloured dot), then one large smooth "Day by day" chart. Switch it between Chats, Bookings, New customers and Paid; move the mouse over it to see the exact number for each day. Below: Top services as a ranked list with percentages, and Chats by channel as a colour bar with a legend. The Bookings, People and Money tabs use the same ranked lists.
+
+## AU. Channels page
+
+1. Channels: four cards at the top (website, WhatsApp, Messenger, Instagram) with a coloured icon and a status: Connected, Needs attention or Not connected.
+2. **+ Connect a channel** (or the Connect button on a card) opens a pop-up: pick WhatsApp, Messenger or Instagram, read the three short steps, paste the details and press Connect.
+3. Each connected account is a card with Check connection, Subscribe to messages and **Settings**. Settings opens a pop-up (name, token, on or off, reminder template) with Save and Remove. WhatsApp accounts also have a test message box.
+4. "Meta app connection" at the bottom is the one-time technical setup, marked advanced. A yellow note at the top tells you when it still needs finishing.

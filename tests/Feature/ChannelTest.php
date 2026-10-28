@@ -579,6 +579,6 @@ class ChannelTest extends TestCase
         $this->get('/admin/channels')->assertSee('Needs attention')->assertSee('Problem')->assertSee('Token expired');
 
         config(['services.meta.app_secret' => '', 'services.meta.verify_token' => '']);
-        $this->get('/admin/channels')->assertSee('2 to fix')->assertSee('Add META_APP_SECRET to .env')->assertSee('Add META_VERIFY_TOKEN to .env');
+        $this->get('/admin/channels')->assertSee('connect-dialog', false)->assertSee('Settings')->assertSee('2 to fix')->assertSee('Add META_APP_SECRET to .env')->assertSee('Add META_VERIFY_TOKEN to .env');
     }
 }

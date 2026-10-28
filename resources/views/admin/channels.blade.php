@@ -13,13 +13,18 @@
         ];
         $problems = collect($checks)->where('ok', false)->count();
     @endphp
-    <div class="page-head"><div><h1>Channels</h1><p class="mute">Where customers can message you. Everyone lands in the same Inbox.</p></div></div>
+    <div class="page-head"><div><h1>Channels</h1><p class="mute">Where customers can message you. Everyone lands in the same Inbox.</p></div>
+        <button type="button" class="btn primary" id="open-connect">+ Connect a channel</button></div>
     @error('channel')<div class="note err">{{ $message }}</div>@enderror
     @error('type')<div class="note err">{{ $message }}</div>@enderror
 
+    @if ($problems && $channels->isEmpty())
+        <div class="note warn">WhatsApp, Messenger and Instagram need a one-time setup with Meta first ({{ $problems }} {{ $problems === 1 ? 'step' : 'steps' }} to finish, see <a href="#meta-setup">Meta app connection</a> at the bottom). The website chat works right now.</div>
+    @endif
+
     <div class="ch-cards">
         <div class="ch-card on">
-            <div class="ch-top"><b>Website chat</b><span class="tag ok">Always on</span></div>
+            <div class="ch-top"><span class="ch-ic web">&#9678;</span><b>Website chat</b><span class="tag ok">Always on</span></div>
             <p class="mute">Works right away. Add it to your website or share the link.</p>
             <a class="btn small" href="#website">Get the link</a>
         </div>
@@ -29,7 +34,7 @@
                 $bad = $list->contains(fn ($c) => $c->last_error || ! $c->active);
             @endphp
             <div class="ch-card {{ $list->isEmpty() ? '' : ($bad ? 'warn' : 'on') }}">
-                <div class="ch-top"><b>{{ $label }}</b>
+                <div class="ch-top"><span class="ch-ic {{ $type }}">{{ strtoupper(substr($type, 0, 1)) }}</span><b>{{ $label }}</b>
                     @if ($list->isEmpty())<span class="tag">Not connected</span>
                     @elseif ($bad)<span class="tag warn">Needs attention</span>
                     @else<span class="tag ok">Connected</span>@endif
@@ -71,10 +76,15 @@
                 <div class="acct-actions">
                     <button class="btn small" type="submit" formaction="{{ url('/admin/channels/'.$c->id.'/check') }}">Check connection</button>
                     <button class="btn small" type="submit" formaction="{{ url('/admin/channels/'.$c->id.'/subscribe') }}">Subscribe to messages</button>
+                    <button type="button" class="btn small" data-open="acct-{{ $c->id }}">Settings</button>
                 </div>
-                <details class="acct-more">
-                    <summary>Settings</summary>
-                    <div class="grid2" style="margin-top:12px">
+            </form>
+        <dialog id="acct-{{ $c->id }}" class="dlg wide">
+            <button type="button" class="dlg-x" aria-label="Close">&times;</button>
+            <h3>{{ $c->name }} <span class="tag">{{ $c->label() }}</span></h3>
+            <form method="post" action="{{ url('/admin/channels/'.$c->id) }}">
+                @csrf
+                <div class="grid2" style="margin-top:12px">
                         <label class="f"><span>Name</span><input type="text" name="name" value="{{ $c->name }}"></label>
                         <label class="f"><span>{{ $c->type === 'instagram' ? 'Linked Facebook Page ID' : ($c->type === 'whatsapp' ? 'WhatsApp Business Account ID' : 'Page ID (not needed)') }}</span>
                             <input type="text" name="waba_id" value="{{ $c->waba_id }}"></label>
@@ -88,12 +98,13 @@
                                 </select></label>
                         @endif
                     </div>
-                    <div class="acct-actions">
+                    <div class="dlg-foot">
                         <button class="btn primary small" type="submit">Save settings</button>
                         <button class="btn danger small" type="submit" formaction="{{ url('/admin/channels/'.$c->id.'/delete') }}" onclick="return confirm('Remove this channel? Chats already received stay in the Inbox.')">Remove</button>
                     </div>
-                </details>
+                
             </form>
+        </dialog>
             @if ($c->type === 'whatsapp')
                 <form method="post" action="{{ url('/admin/channels/'.$c->id.'/test') }}" class="test-row">
                     @csrf
@@ -106,8 +117,11 @@
         <div class="card empty-card"><b>Nothing connected yet</b><p class="mute">The website chat works without any setup. To add WhatsApp, Messenger or Instagram, use "Connect a channel" below.</p></div>
     @endforelse
 
-    <h2 id="connect">Connect a channel</h2>
-    <form method="post" action="{{ url('/admin/channels') }}" class="card">
+    <dialog id="connect-dialog" class="dlg wide">
+        <button type="button" class="dlg-x" aria-label="Close">&times;</button>
+        <h3 id="connect">Connect a channel</h3>
+        <p class="mute" style="margin-top:2px">Pick the app, follow the short steps, then paste the details.</p>
+    <form method="post" action="{{ url('/admin/channels') }}">
         @csrf
         <div class="seg" id="type-seg">
             @foreach ($types as $v => $l)<a href="#" data-type="{{ $v }}" @class(['on' => old('type', 'whatsapp') === $v])>{{ $l }}</a>@endforeach
@@ -127,8 +141,10 @@
         <p class="mute small-note" style="margin-top:8px">The token is stored encrypted and is never shown again. After connecting, press <b>Check connection</b> on the account.</p>
     </form>
 
+    </dialog>
+
     <details class="card fold" id="meta-setup" @if ($problems) open @endif>
-        <summary><span><b>Meta app connection</b> (set up once)
+        <summary><span><b>Meta app connection</b> (advanced, set up once)
             <span class="tag {{ $problems ? 'warn' : 'ok' }}">{{ $problems ? $problems.' to fix' : 'All set' }}</span>
             <small class="mute fold-help">The address Meta sends messages to. Needed for WhatsApp, Messenger and Instagram, not for the website chat.</small></span></summary>
         <div style="padding:0 18px 18px">
@@ -169,6 +185,14 @@
   document.querySelectorAll('#type-seg a').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); pick(a.dataset.type); }); });
   document.querySelectorAll('[data-pick]').forEach(function (a) { a.addEventListener('click', function () { pick(a.dataset.pick); }); });
   pick(hidden.value || 'whatsapp');
+
+  // Pop-ups: connect a channel, and each account's settings.
+  document.querySelectorAll('dialog.dlg').forEach(function (d) { d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('.dlg-x')) { d.close(); } }); });
+  var cd = document.getElementById('connect-dialog');
+  document.getElementById('open-connect').addEventListener('click', function () { cd.showModal(); });
+  document.querySelectorAll('[data-pick]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); cd.showModal(); }); });
+  document.querySelectorAll('[data-open]').forEach(function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.open).showModal(); }); });
+  @if ($errors->has('channel') || $errors->has('type') || $errors->has('external_id') || $errors->has('access_token') || $errors->has('name')) cd.showModal(); @endif
 
   document.querySelectorAll('[data-copy]').forEach(function (b) {
     b.addEventListener('click', function () {
