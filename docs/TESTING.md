@@ -185,6 +185,12 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 6. **Extra answers**: **Add an answer**, or click an idea such as "+ Parking". **Edit** opens a pop-up with a Delete button and a "may use" switch.
 7. Folded at the bottom: everything the AI knows, and the recent AI calls in plain words (Answered, Stopped, Failed).
 
+### W. Orders page
+1. **Orders**: four tiles (Paid, Waiting for payment, Refunded, Average paid order) in your currency (set `currency` in business settings, default RM). They follow the filters below.
+2. Filters: **Search** (customer, item, reference, note), **Period** (All time, This month, Last month, last 30 or 90 days, This year) and the status buttons with counts. Active filters show as chips you can remove; **Reset** clears them.
+3. **New order** opens a pop-up (customer, amount, what, status, date, reference, notes). **Edit** on a row opens the same pop-up with every field and **Delete**; before, only the status could be changed.
+4. **Export CSV** downloads the orders for the chosen period (same file as Reports > Export CSV > Orders).
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

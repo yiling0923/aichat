@@ -155,6 +155,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/orders', [$o, 'index'])->name('orders');
     Route::post('/orders', [$o, 'store']);
     Route::post('/orders/{id}', [$o, 'update'])->whereNumber('id');
+    Route::post('/orders/{id}/delete', [$o, 'destroy'])->whereNumber('id');
     Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('reports');
     Route::get('/reports/export', [\App\Http\Controllers\ReportsController::class, 'export'])->name('reports.export');
 });

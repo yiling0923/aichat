@@ -554,7 +554,7 @@ class MarketingTest extends TestCase
         $this->actingAs($staff)->post('/admin/orders', ['customer_id' => $theirs->id, 'amount' => 1, 'status' => 'paid'])->assertNotFound();
         $this->actingAs($staff)->post('/admin/orders', ['amount' => -5, 'status' => 'paid'])->assertSessionHasErrors('amount');
 
-        $this->actingAs($staff)->get('/admin/orders')->assertOk()->assertSee('3 facial package')->assertSee('450.00')->assertSee('Paid total shown: <b>450.00</b>', false);
+        $this->actingAs($staff)->get('/admin/orders')->assertOk()->assertSee('3 facial package')->assertSee('450.00')->assertSee('<b>RM 450.00</b>', false)->assertSee('Paid (1)')->assertSee('Waiting for payment (1)');
         $this->actingAs($staff)->get('/admin/orders?status=pending')->assertSee('Serum')->assertDontSee('3 facial package');
 
         $pending = $this->in(fn () => Order::query()->where('items', 'Serum')->first());
