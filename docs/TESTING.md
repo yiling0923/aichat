@@ -411,3 +411,13 @@ Reports redesign (Reports page): four big cards with a small trend line and a gr
 2. **+ Connect a channel** (or the Connect button on a card) opens a pop-up: pick WhatsApp, Messenger or Instagram, read the three short steps, paste the details and press Connect.
 3. Each connected account is a card with Check connection, Subscribe to messages and **Settings**. Settings opens a pop-up (name, token, on or off, reminder template) with Save and Remove. WhatsApp accounts also have a test message box.
 4. "Meta app connection" at the bottom is the one-time technical setup, marked advanced. A yellow note at the top tells you when it still needs finishing.
+
+## AV. Reminders when the team does not reply
+
+1. In the customer chat type `human`. Do not reply as staff. (The scheduler must be running, or run `php artisan aichat:check-handovers` yourself each time to speed it up.)
+2. At once: the bell chimes and the chat shows in Needs a person on Today.
+3. After 5 minutes: the customer gets "Thank you for waiting...", and the bell chimes again ("has waited 5 minutes"). After 10 minutes it chimes again.
+4. After 20 minutes: the customer gets "Sorry for the wait, our team is still busy... type menu to go back". The bell chimes again.
+5. After 30 minutes: owners and managers get an "URGENT" alert.
+6. On Today the waiting time turns red from 10 minutes.
+7. As soon as a team member replies in the Inbox, all reminders stop.

@@ -97,4 +97,48 @@ class HandoverTimeoutTest extends TestCase
 
         $this->assertSame([], $this->events());
     }
+
+    public function test_staff_get_a_fresh_bell_alert_at_every_step_and_the_owner_an_urgent_one(): void
+    {
+        Http::fake();
+        $inBiz = fn (callable $f) => app(CurrentBusiness::class)->runAs($this->business, $f);
+        $staff = \App\Models\User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $owner = \App\Models\User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $titles = fn ($u) => \App\Models\StaffNotification::query()->where('user_id', $u->id)->orderBy('id')->pluck('title')->all();
+
+        Carbon::setTestNow('2026-11-03 03:05:00');
+        $this->artisan('aichat:check-handovers');
+        $this->assertStringContainsString('has waited 5 minutes', implode('|', $titles($staff)));
+
+        Carbon::setTestNow('2026-11-03 03:10:00');
+        $this->artisan('aichat:check-handovers');
+        $this->assertStringContainsString('has waited 10 minutes', implode('|', $titles($staff)));   // the same unread alert is refreshed, not duplicated
+        $this->assertCount(1, $titles($staff));
+
+        // 20 minutes: the customer also gets an honest second message with the way back to the menu.
+        Carbon::setTestNow('2026-11-03 03:20:00');
+        $this->artisan('aichat:check-handovers');
+        $inBiz(function () {
+            $texts = $this->conversation->messages()->where('sender_type', 'bot')->pluck('body')->implode('|');
+            $this->assertStringContainsString('still busy', $texts);
+            $this->assertStringContainsString('menu', $texts);
+        });
+
+        // 30 minutes: urgent, and only owners and managers get the new wording.
+        Carbon::setTestNow('2026-11-03 03:30:00');
+        $this->artisan('aichat:check-handovers');
+        $this->assertStringContainsString('URGENT', implode('|', $titles($owner)));
+        $this->assertStringNotContainsString('URGENT', implode('|', $titles($staff)));
+    }
+
+    public function test_no_alerts_once_staff_have_replied(): void
+    {
+        Http::fake();
+        $staff = \App\Models\User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        app(CurrentBusiness::class)->runAs($this->business, fn () => $this->conversation->addMessage('out', 'staff', 'On it!'));
+
+        Carbon::setTestNow('2026-11-03 03:10:00');
+        $this->artisan('aichat:check-handovers');
+        $this->assertSame(0, \App\Models\StaffNotification::query()->where('user_id', $staff->id)->count());
+    }
 }

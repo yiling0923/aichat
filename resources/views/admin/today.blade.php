@@ -69,7 +69,7 @@
                     @foreach ($waiting as $c)
                         <div class="td-row">
                             <span class="td-av warn">{{ mb_strtoupper(mb_substr($c->customer?->name ?: ($c->contact_name ?: 'V'), 0, 1)) }}</span>
-                            <div class="td-id"><b>{{ $c->customer?->name ?: ($c->contact_name ?: 'Visitor '.$c->id) }}</b><small class="mute">{{ $c->handover_reason ?: 'Asked for a person' }}@if ($c->handover_at) · {{ $c->handover_at->diffForHumans() }}@endif</small></div>
+                            <div class="td-id"><b>{{ $c->customer?->name ?: ($c->contact_name ?: 'Visitor '.$c->id) }}</b>@php $mins = $c->handover_at ? (int) $c->handover_at->diffInMinutes(now()) : 0; @endphp<small class="{{ $mins >= 10 ? 'td-late' : 'mute' }}">{{ $c->handover_reason ?: 'Asked for a person' }}@if ($c->handover_at) · waiting {{ $mins < 60 ? $mins.' min' : $c->handover_at->diffForHumans(null, true) }}@endif</small></div>
                             <a class="btn small primary" href="{{ route('inbox', ['c' => $c->id]) }}">Reply</a>
                         </div>
                     @endforeach
