@@ -261,8 +261,8 @@ class BookingTest extends TestCase
 
     private function googleCredentials(): void
     {
-        $key = openssl_pkey_new(['private_key_bits' => 2048]);
-        openssl_pkey_export($key, $pem);
+        // A fixed throw-away key: generating one fails on Windows when OpenSSL has no openssl.cnf.
+        $pem = file_get_contents(__DIR__.'/../fixtures/test-google-key.pem');
         $path = sys_get_temp_dir().'/aichat-test-google-'.uniqid().'.json';
         file_put_contents($path, json_encode(['client_email' => 'bot@test.iam.gserviceaccount.com', 'private_key' => $pem]));
         config(['services.google_calendar.credentials' => $path]);
