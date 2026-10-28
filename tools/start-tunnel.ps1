@@ -25,8 +25,9 @@ while ($true) {
     $script:handled = $false
 
     ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=accept-new -R 80:localhost:80 nokey@localhost.run 2>&1 | ForEach-Object {
-        $line = "$_"
-        Write-Host $line
+        # Windows PowerShell wraps ssh's messages in error objects: show only the text, and skip blank ones.
+        $line = if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.Exception.Message } else { "$_" }
+        if ($line.Trim() -ne '') { Write-Host $line }
 
         if (-not $script:handled -and $line -match '(https://[a-z0-9]+\.lhr\.life)') {
             $script:handled = $true
