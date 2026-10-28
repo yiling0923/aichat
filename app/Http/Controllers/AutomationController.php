@@ -115,19 +115,37 @@ class AutomationController extends Controller
 
     public function activity(Request $request): View
     {
+        $tab = $request->query('tab') === 'surveys' ? 'surveys' : 'messages';
         $key = (string) $request->query('key', '');
         $status = (string) $request->query('status', '');
+        $rating = (string) $request->query('rating', '');
+
+        $surveys = Survey::query()->with(['customer', 'booking.service'])->whereNotNull('sent_at')
+            ->when($rating === 'waiting', fn ($q) => $q->whereNull('rating'))
+            ->when(in_array($rating, ['1', '2', '3', '4', '5'], true), fn ($q) => $q->where('rating', (int) $rating))
+            ->when($rating === 'low', fn ($q) => $q->whereIn('rating', [1, 2]))
+            ->orderByDesc('id')->paginate(25, ['*'], 'spage')->withQueryString();
+
+        $answered = Survey::query()->whereNotNull('sent_at')->whereNotNull('rating');
 
         return view('admin.automation-activity', [
             'business' => $request->user()->business,
             'active' => 'automations',
+            'tab' => $tab,
             'logs' => AutomationLog::query()->with('customer')
                 ->when(in_array($key, AutomationDefaults::KEYS, true), fn ($q) => $q->where('automation_key', $key))
                 ->when(in_array($status, ['sent', 'skipped', 'failed'], true), fn ($q) => $q->where('status', $status))
                 ->orderByDesc('id')->paginate(30)->withQueryString(),
-            'surveys' => Survey::query()->with('customer')->whereNotNull('sent_at')->orderByDesc('id')->limit(30)->get(),
+            'surveys' => $surveys,
+            'surveyStats' => [
+                'sent' => Survey::query()->whereNotNull('sent_at')->count(),
+                'answered' => (clone $answered)->count(),
+                'average' => (clone $answered)->avg('rating'),
+                'low' => (clone $answered)->whereIn('rating', [1, 2])->count(),
+                'reviews' => Survey::query()->whereNotNull('review_sent_at')->count(),
+            ],
             'defs' => AutomationDefaults::all(),
-            'key' => $key, 'status' => $status,
+            'key' => $key, 'status' => $status, 'rating' => $rating,
         ]);
     }
 }

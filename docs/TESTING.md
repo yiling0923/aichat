@@ -378,5 +378,7 @@ The survey automation waits until a visit has ended (2 hours by default), so "Ru
 1. Marketing → Automations → open **Satisfaction survey**, scroll to the bottom of its card.
 2. Pick a customer under "Send a test now to" and press **Send a test**. The list only has customers who agreed to be contacted and have a chat (sample data customers qualify).
 3. Open that customer's chat: the message asks for a rating with buttons 1 to 5. Tap one: the bot thanks them. A rating of 1 or 2 makes a task and a bell alert.
-4. Activity log shows the send, and "Survey answers and review links" shows the rating.
+4. Marketing → Activity log → **Messages sent** shows the send, and the **Survey answers** tab shows the rating (stars), plus average, answer rate, low ratings and review links sent.
 5. "Run now" now explains when it sends nothing (no automation on, nobody due, or people skipped and why).
+
+Activity log tabs (AR): the page has two tabs, "Messages sent" and "Survey answers (n)". On Survey answers use the "Show" list to see only waiting, low (1 or 2) or one rating, and page through with Previous / Next.

@@ -74,4 +74,20 @@ class SurveyTestSendTest extends TestCase
         $this->actingAs($this->owner)->get('/admin/automations')->assertDontSee('Send a test now to');
         $this->post('/admin/automations/survey/test', ['customer_id' => $c->id])->assertSessionHas('status', fn ($s) => str_contains($s, 'not sent') && str_contains($s, 'no consent'));
     }
+
+    public function test_activity_log_has_a_survey_answers_tab_with_summary_and_filter(): void
+    {
+        $c = $this->customerWithChat();
+        $this->in(function () use ($c) {
+            Survey::create(['customer_id' => $c->id, 'rating' => 5, 'sent_at' => now()->subDay(), 'answered_at' => now()->subHours(20), 'review_sent_at' => now()->subHours(19)]);
+            Survey::create(['customer_id' => $c->id, 'rating' => 2, 'comment' => 'Waited too long', 'sent_at' => now()->subDay(), 'answered_at' => now()]);
+            Survey::create(['customer_id' => $c->id, 'sent_at' => now()]);
+        });
+
+        $this->actingAs($this->owner)->get('/admin/automations/activity')->assertOk()->assertSee('Messages sent')->assertSee('Survey answers (2)')->assertDontSee('Waited too long');
+        $this->get('/admin/automations/activity?tab=surveys')->assertOk()
+            ->assertSee('Average rating')->assertSee('3.5 / 5')->assertSee('Waited too long')->assertSee('★★★★★', false);
+        $this->get('/admin/automations/activity?tab=surveys&rating=low')->assertSee('Waited too long')->assertDontSee('★★★★★', false);
+        $this->get('/admin/automations/activity?tab=surveys&rating=waiting')->assertDontSee('Waited too long')->assertSee('Test message');
+    }
 }
