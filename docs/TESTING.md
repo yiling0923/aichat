@@ -191,6 +191,13 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 3. **New order** opens a pop-up (customer, amount, what, status, date, reference, notes). **Edit** on a row opens the same pop-up with every field and **Delete**; before, only the status could be changed.
 4. **Export CSV** downloads the orders for the chosen period (same file as Reports > Export CSV > Orders).
 
+### X. Customer detail page
+1. Open any customer (Customers list or the search box). The top shows their initial, name, phone, email, language, since when, lead level, tags and whether they can receive promotions.
+2. Buttons: **Open chat** (their latest chat), **WhatsApp** (opens wa.me with their number), **Edit** (pop-up with all details, tags and private notes) and **...** (managers: download their data, delete their data).
+3. Four tiles: **Spent** (paid orders), **Bookings** (and the next one), **Last visit**, **Satisfaction** (average of their survey ratings).
+4. **Activity** lists everything newest first: upcoming and past bookings, orders, survey ratings, chats and when they became a customer. Click an item to jump to the schedule, orders or chat.
+5. **Follow-ups**: open tasks with a **Done** button, and a quick add (title and optional due time). **Notes** shows the private note and what they asked about.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

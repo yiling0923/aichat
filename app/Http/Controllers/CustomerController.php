@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Order;
+use App\Models\Survey;
 use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Contracts\View\View;
@@ -47,13 +49,48 @@ class CustomerController extends Controller
     public function show(Request $request, int $id): View
     {
         $customer = Customer::query()->with(['tags', 'conversations', 'bookings.service', 'bookings.practitioner'])->findOrFail($id);
+        $business = $request->user()->business;
+        $tz = $business->timezone ?: 'UTC';
+
+        $orders = Order::query()->where('customer_id', $customer->id)->orderByDesc('ordered_at')->limit(20)->get();
+        $surveys = Survey::query()->where('customer_id', $customer->id)->whereNotNull('rating')->orderByDesc('answered_at')->limit(20)->get();
+        $bookings = $customer->bookings->sortByDesc('starts_at')->values();
+        $upcoming = $bookings->filter(fn ($b) => $b->status === 'confirmed' && $b->starts_at->isFuture())->sortBy('starts_at')->first();
+        $lastVisit = $bookings->first(fn ($b) => $b->status === 'completed');
+
+        // One list of everything that happened, newest first.
+        $events = collect();
+        foreach ($bookings as $b) {
+            $events->push(['type' => 'booking', 'at' => $b->starts_at, 'title' => $b->service->label('en').' ('.str_replace('_', ' ', $b->status).')',
+                'sub' => 'with '.$b->practitioner->name, 'url' => route('schedule', ['view' => 'week', 'date' => $b->starts_at->copy()->setTimezone($tz)->format('Y-m-d')])]);
+        }
+        foreach ($orders as $o) {
+            $events->push(['type' => 'order', 'at' => $o->ordered_at, 'title' => 'Order '.number_format($o->amount, 2).' ('.$o->status.')', 'sub' => $o->items, 'url' => route('orders', ['customer' => $customer->id])]);
+        }
+        foreach ($surveys as $sv) {
+            $events->push(['type' => 'survey', 'at' => $sv->answered_at, 'title' => 'Rated the visit '.$sv->rating.' out of 5', 'sub' => null, 'url' => null]);
+        }
+        foreach ($customer->conversations as $c) {
+            $events->push(['type' => 'chat', 'at' => $c->last_message_at ?? $c->created_at, 'title' => (\App\Reports\ReportData::CHANNELS[$c->channel] ?? ucfirst($c->channel)).' chat', 'sub' => $c->status === 'open' ? 'open' : 'resolved', 'url' => route('inbox', ['c' => $c->id])]);
+        }
+        $events->push(['type' => 'new', 'at' => $customer->created_at, 'title' => 'Became a customer', 'sub' => $customer->interest ? 'Asked about '.$customer->interest : null, 'url' => null]);
 
         return view('admin.customer', [
-            'business' => $request->user()->business,
+            'business' => $business,
             'active' => 'customers',
             'customer' => $customer,
             'allTags' => Tag::query()->where('type', 'customer')->orderBy('name')->get(),
             'tasks' => Task::query()->where('customer_id', $customer->id)->whereNull('done_at')->get(),
+            'orders' => $orders,
+            'paidTotal' => (float) $orders->where('status', 'paid')->sum('amount'),
+            'bookingCount' => $bookings->whereIn('status', ['confirmed', 'completed'])->count(),
+            'rating' => $surveys->avg('rating'),
+            'upcoming' => $upcoming,
+            'lastVisit' => $lastVisit,
+            'events' => $events->filter(fn ($e) => $e['at'] !== null)->sortByDesc('at')->take(30)->values(),
+            'latestChat' => $customer->conversations->sortByDesc('last_message_at')->first(),
+            'tz' => $tz,
+            'currency' => $business->settings['currency'] ?? 'RM',
         ]);
     }
 
