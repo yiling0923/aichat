@@ -12,6 +12,12 @@
     @include('admin._side', ['active' => $active])
     <main class="page">
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
+        @php($planState = app(\App\Billing\Plans::class)->state($business))
+        @if (in_array($planState, ['trial_expired', 'past_due', 'canceled'], true))
+            <div class="note err">Your plan is not active, so the AI is paused. Messages still reach your inbox. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Plan &amp; billing</a>@endif</div>
+        @elseif ($planState === 'trial')
+            <div class="note warn">Free trial: {{ app(\App\Billing\Plans::class)->daysLeftInTrial($business) }} day(s) left. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Choose a plan</a>@endif</div>
+        @endif
         @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
         @yield('content')
     </main>

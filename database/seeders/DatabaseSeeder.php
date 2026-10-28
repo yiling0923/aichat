@@ -33,14 +33,20 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        // The person who runs the whole service (sign in at /login, then you land on /platform).
+        User::query()->firstOrCreate(
+            ['email' => 'platform@example.com'],
+            ['name' => 'Platform Owner', 'password' => 'password', 'role' => 'platform_owner', 'email_verified_at' => now()],
+        );
+
         User::query()->firstOrCreate(
             ['email' => 'owner@example.com'],
-            ['name' => 'Sarah Lim', 'password' => 'password', 'business_id' => $business->id, 'role' => 'owner'],
+            ['name' => 'Sarah Lim', 'password' => 'password', 'business_id' => $business->id, 'role' => 'owner', 'email_verified_at' => now()],
         );
 
         User::query()->firstOrCreate(
             ['email' => 'staff@example.com'],
-            ['name' => 'Amy Tan', 'password' => 'password', 'business_id' => $business->id, 'role' => 'staff'],
+            ['name' => 'Amy Tan', 'password' => 'password', 'business_id' => $business->id, 'role' => 'staff', 'email_verified_at' => now()],
         );
 
         if (Service::query()->withoutGlobalScopes()->where('business_id', $business->id)->doesntExist()) {

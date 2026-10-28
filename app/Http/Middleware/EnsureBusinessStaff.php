@@ -30,7 +30,21 @@ class EnsureBusinessStaff
             return $request->expectsJson() ? response()->json(['message' => 'Account is switched off.'], 403) : redirect()->route('login');
         }
 
+        if ($user->isPlatformOwner()) {
+            return $request->expectsJson()
+                ? response()->json(['message' => 'The platform owner has no business inbox.'], 403)
+                : redirect()->route('platform.index');
+        }
+
+        if ($user->email_verified_at === null) {
+            return $request->expectsJson()
+                ? response()->json(['message' => 'Confirm your email first.'], 403)
+                : redirect()->route('verification.notice');
+        }
+
         $business = $user->business;
+
+        abort_if($business !== null && $business->status === 'paused', 403, 'This business is paused'.($business->paused_reason ? ': '.$business->paused_reason : '').'. Please contact support.');
 
         abort_if($business === null || ! $business->isActive(), 403, 'No active business for this account.');
 

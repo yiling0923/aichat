@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Billing\Plans;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -52,7 +53,12 @@ class SettingsController extends Controller
             'role' => ['required', Rule::in(self::ROLES)],
         ]);
 
-        User::create($data + ['business_id' => $request->user()->business_id, 'active' => true]);
+        $plans = app(Plans::class);
+        if (! $plans->canAdd($request->user()->business, 'staff')) {
+            return back()->withErrors(['email' => 'Your plan has reached its limit of team members. Upgrade under Plan & billing to add more.']);
+        }
+
+        User::create($data + ['business_id' => $request->user()->business_id, 'active' => true, 'email_verified_at' => now()]);
 
         return back()->with('status', 'Team member added.');
     }

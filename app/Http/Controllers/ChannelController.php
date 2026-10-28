@@ -45,6 +45,10 @@ class ChannelController extends Controller
             'access_token' => ['required', 'string', 'max:1000'],
         ]);
 
+        if (! app(\App\Billing\Plans::class)->canAdd($request->user()->business, 'channels')) {
+            return back()->withErrors(['type' => 'Your plan has reached its limit of connected channels. Upgrade under Plan & billing.'])->withInput();
+        }
+
         // Ids are unique across all businesses, so nobody can take over another business's number or page.
         if (Channel::query()->withoutGlobalScopes()->where('type', $data['type'])->where('external_id', $data['external_id'])->exists()) {
             return back()->withErrors(['external_id' => 'This '.Channel::TYPES[$data['type']].' account is already connected.'])->withInput();

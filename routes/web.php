@@ -163,3 +163,33 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::post('/broadcasts/{id}/send', [$b, 'send'])->whereNumber('id');
     Route::post('/broadcasts/{id}/delete', [$b, 'destroy'])->whereNumber('id');
 });
+
+// Phase 6: sign-up, email confirmation, getting-started guide, plans, legal pages and the platform owner console.
+Route::get('/signup', [\App\Http\Controllers\SignupController::class, 'show'])->name('signup');
+Route::post('/signup', [\App\Http\Controllers\SignupController::class, 'store'])->middleware('throttle:signup');
+Route::get('/email/verify', [\App\Http\Controllers\SignupController::class, 'notice'])->middleware('auth')->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\SignupController::class, 'verify'])->whereNumber('id')->middleware('throttle:20,1')->name('verification.verify');
+Route::post('/email/resend', [\App\Http\Controllers\SignupController::class, 'resend'])->middleware(['auth', 'throttle:3,10'])->name('verification.resend');
+Route::get('/terms', [\App\Http\Controllers\LegalController::class, 'terms'])->name('terms');
+Route::get('/privacy', [\App\Http\Controllers\LegalController::class, 'privacy'])->name('privacy');
+
+Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
+    $s = \App\Http\Controllers\SetupController::class;
+    Route::get('/setup', [$s, 'index'])->name('setup');
+    Route::post('/setup/draft', [$s, 'draft'])->middleware('throttle:10,1');
+    Route::post('/setup/approve', [$s, 'approve']);
+    Route::post('/setup/discard', [$s, 'discard']);
+    Route::post('/setup/go-live', [$s, 'goLive']);
+
+    $b = \App\Http\Controllers\BillingController::class;
+    Route::get('/billing', [$b, 'index'])->name('billing');
+    Route::post('/billing/subscribe', [$b, 'subscribe']);
+    Route::post('/billing/cancel', [$b, 'cancel']);
+});
+
+Route::middleware(['auth', 'platform'])->prefix('platform')->group(function () {
+    $p = \App\Http\Controllers\PlatformController::class;
+    Route::get('/', [$p, 'index'])->name('platform.index');
+    Route::post('/businesses/{id}/pause', [$p, 'pause'])->whereNumber('id');
+    Route::post('/businesses/{id}/resume', [$p, 'resume'])->whereNumber('id');
+});

@@ -20,6 +20,12 @@ class Business extends Model
         'languages',
         'settings',
         'status',
+        'plan',
+        'subscription_status',
+        'trial_ends_at',
+        'current_period_ends_at',
+        'paused_reason',
+        'setup_done_at',
     ];
 
     protected function casts(): array
@@ -27,6 +33,9 @@ class Business extends Model
         return [
             'languages' => 'array',
             'settings' => 'array',
+            'trial_ends_at' => 'datetime',
+            'current_period_ends_at' => 'datetime',
+            'setup_done_at' => 'datetime',
         ];
     }
 

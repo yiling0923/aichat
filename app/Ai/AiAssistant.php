@@ -2,6 +2,7 @@
 
 namespace App\Ai;
 
+use App\Billing\Plans;
 use App\Models\AiUsage;
 use App\Models\Business;
 use App\Models\Conversation;
@@ -83,6 +84,19 @@ class AiAssistant
     public function preview(Business $business, string $text): ?AiAnswer
     {
         return $this->ask($business, null, [['role' => 'user', 'content' => mb_substr($text, 0, 500)]], 'preview');
+    }
+
+    /**
+     * One structured call for other features (the sign-up setup draft). Counted and capped like any AI call.
+     *
+     * @param  array<string, mixed>  $schema
+     * @return array<string, mixed>|null
+     */
+    public function structured(Business $business, string $purpose, string $system, string $userText, array $schema): ?array
+    {
+        $this->lastNote = null;
+
+        return $this->call($business, null, $purpose, $system, [['role' => 'user', 'content' => $userText]], $schema);
     }
 
     /** A suggested reply for staff, saved as a private card in the chat. */
@@ -186,8 +200,21 @@ class AiAssistant
             }
 
             $cap = (int) ($business->settings['ai']['monthly_cap'] ?? config('aichat.ai.default_monthly_cap'));
-            if (AiUsage::query()->where('created_at', '>=', now()->startOfMonth())->count() >= $cap) {
+            $used = AiUsage::query()->where('created_at', '>=', now()->startOfMonth())->count();
+            if ($used >= $cap) {
                 $this->lastNote = 'The monthly AI limit ('.$cap.' calls) is reached.';
+
+                return null;
+            }
+
+            // The plan has its own limit. At the limit the AI pauses, the owner is told, and chats keep reaching the inbox.
+            $plans = app(Plans::class);
+            $planLimit = $plans->limit($business, 'ai');
+            if ($planLimit !== null && $used >= $planLimit) {
+                $this->lastNote = $plans->inGoodStanding($business)
+                    ? 'The AI limit of your plan ('.$planLimit.' replies a month) is reached. Upgrade under Plan & billing.'
+                    : 'The AI is paused because your plan is not active. See Plan & billing.';
+                $plans->notifyLimit($business, 'ai');
 
                 return null;
             }

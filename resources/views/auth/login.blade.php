@@ -23,7 +23,8 @@
             </div>
             <button class="btn primary" type="submit">Sign in</button>
         </form>
-        <p class="mute" style="margin-top:14px;font-size:12px">Sample login after seeding: owner@example.com / password</p>
+        <p class="mute" style="margin-top:14px;font-size:12px">New here? <a href="{{ route('signup') }}">Start a free trial</a></p>
+        <p class="mute" style="margin-top:6px;font-size:12px">Sample login after seeding: owner@example.com / password</p>
     </div>
 </div>
 </body>

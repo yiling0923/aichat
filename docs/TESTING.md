@@ -1,6 +1,6 @@
-# How to run and test everything (steps 0 to 4)
+# How to run and test everything (steps 0 to 6)
 
-Use the sample business "Lumiere Aesthetic Clinic (sample)". Sample logins: `owner@example.com` / `password` (everything) and `staff@example.com` / `password` (inbox, schedule, customers, tasks).
+Use the sample business "Lumiere Aesthetic Clinic (sample)". Sample logins: `owner@example.com` / `password` (everything), `staff@example.com` / `password` (inbox, schedule, customers, tasks) and `platform@example.com` / `password` (the `/platform` console).
 
 ## 1. Start of every working session (Windows)
 
@@ -90,6 +90,16 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 7. **Summarise (AI)** in the Inbox adds a private note. Add an **extra answer** (Parking) and see it in "Everything the AI knows".
 8. Real AI: `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY=...`, `php artisan config:clear`, then repeat steps 2 to 3. Watch **Recent AI calls** for tokens and the estimated cost.
 
+### K. Sign-up, plans and platform console (step 6)
+1. Sign out. Open `http://localhost/aichat/public/signup`, fill the form, tick the terms, **Create my account**. You land on "Check your email".
+2. Open `storage\logs\laravel.log`, scroll to the bottom, copy the long `.../email/verify/...` link into the browser. You land on **Getting started**. (Before that, any admin page sends you back to the email page.)
+3. Paste into the box: `Cleaning - RM 120 (45 min)`, a new line `Whitening: RM 600 60 min`, a new line `Check-up - 50`. Add an address. **Draft my setup**: a table appears. Untick one row, **Approve and save**. Open **Booking setup** (services are there) and your test chat `/chat/<your-slug>` (type `hi`, English, Prices): the prices are yours.
+4. **Plan & billing**: usage shows 0 of the trial limits. **Choose Starter**: a test payment appears, usage limits grow. **Cancel renewal**: still Active until the month ends.
+5. Limits: on the trial, **Settings > Team** allows 2 people; adding a third shows a message. **Booking setup** refuses a third practitioner.
+6. AI limit: set `AI_PROVIDER=fake`, `php artisan config:clear`, AI assistant > Auto. In tinker set `DB::table('businesses')->where('slug','<slug>')->update(['trial_ends_at'=>now()->subDay()]);` Reload: a red banner says the AI is paused. The test chat still answers from the menu.
+7. Sign out, sign in as `platform@example.com` / `password`: you land on `/platform`. See both businesses and the totals. **Pause** yours: its test chat shows 404 and its staff cannot enter. **Resume** brings it back.
+8. Two businesses stay apart: sign in as `owner@example.com` (sample clinic) and check Customers shows none of the new business's people.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 
@@ -102,6 +112,8 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 | `php artisan aichat:check-handovers` | Handover reminders and escalation |
 | `php artisan aichat:send-reminders` | Booking reminders (24 h and 2 h before) |
 | `php artisan aichat:run-automations` | Sends the automatic messages that are due (the scheduler runs it every 5 minutes) |
+| `php artisan aichat:renew-subscriptions` | Takes the next monthly payment for paid plans (scheduled daily; test mode takes no real money) |
+| `php artisan aichat:make-platform-owner you@example.com` | Creates the login for the `/platform` console |
 | `php artisan aichat:meta-webhook` | Saves the webhook address in Meta |
 | `php artisan config:clear` | Use after every change to `.env` |
 | `php artisan migrate:fresh --seed` | **Wipes all data** and restores the sample data |

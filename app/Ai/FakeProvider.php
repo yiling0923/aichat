@@ -24,6 +24,12 @@ class FakeProvider implements AiProvider
         }
         $lower = mb_strtolower($last);
 
+        if (isset($schema['properties']['services'])) {
+            $json = ['services' => \App\Setup\SetupDrafter::readLines($last), 'faqs' => []];
+
+            return $this->wrap($json, $system, $last);
+        }
+
         if (isset($schema['properties']['summary'])) {
             $json = ['summary' => 'Customer chatted with the business. (Pretend summary from the fake AI.) Last message: '.mb_substr($last, 0, 120)];
 

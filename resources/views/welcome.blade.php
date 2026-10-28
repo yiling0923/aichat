@@ -26,6 +26,10 @@
                 <span><b>Staff area</b><br><span class="mute">owner@example.com / password (sample login)</span></span>
                 <a class="btn" href="{{ route('login') }}">Sign in</a>
             </li>
+            <li>
+                <span><b>New business?</b><br><span class="mute">{{ config('plans.trial_days') }}-day free trial</span></span>
+                <a class="btn primary" href="{{ route('signup') }}">Sign up</a>
+            </li>
         </ul>
     </div>
 </div>

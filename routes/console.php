@@ -12,3 +12,4 @@ Artisan::command('inspire', function () {
 Schedule::command('aichat:check-handovers')->everyMinute()->withoutOverlapping();
 Schedule::command('aichat:send-reminders')->everyMinute()->withoutOverlapping();
 Schedule::command('aichat:run-automations')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('aichat:renew-subscriptions')->dailyAt('03:10')->withoutOverlapping();

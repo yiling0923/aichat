@@ -36,6 +36,8 @@
         <a @class(['on' => $active === 'templates']) href="{{ route('templates') }}"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z"/><path d="M8 9h8M8 13h5"/></svg>Templates</a>
     @endif
     @if ($isOwner)
+        <a @class(['on' => $active === 'setup-guide']) href="{{ route('setup') }}"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Getting started</a>
+        <a @class(['on' => $active === 'billing']) href="{{ route('billing') }}"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Plan &amp; billing</a>
         <a @class(['on' => $active === 'channels']) href="{{ route('channels') }}"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Channels</a>
         <a @class(['on' => $active === 'menu']) href="{{ route('menu') }}"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Menu builder</a>
         <a @class(['on' => $active === 'setup']) href="{{ route('booking.setup') }}"><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Booking setup</a>

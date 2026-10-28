@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Billing\Plans;
 use App\Booking\BookingRules;
 use App\Booking\GoogleCalendar;
 use App\Models\Practitioner;
@@ -87,6 +88,10 @@ class BookingSetupController extends Controller
 
     public function storePractitioner(Request $request): RedirectResponse
     {
+        if (! app(Plans::class)->canAdd($request->user()->business, 'practitioners')) {
+            return back()->withErrors(['name' => 'Your plan has reached its limit of practitioners. Upgrade under Plan & billing to add more.']);
+        }
+
         Practitioner::create($this->practitionerData($request));
 
         return back()->with('status', 'Practitioner added.');
@@ -133,6 +138,6 @@ class BookingSetupController extends Controller
             'google_calendar_id' => ['nullable', 'string', 'max:255'],
         ]);
 
-        return ['name' => $data['name'], 'google_calendar_id' => $data['google_calendar_id'] ?: null, 'active' => $request->boolean('active', true)];
+        return ['name' => $data['name'], 'google_calendar_id' => ($data['google_calendar_id'] ?? null) ?: null, 'active' => $request->boolean('active', true)];
     }
 }

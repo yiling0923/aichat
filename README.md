@@ -107,6 +107,18 @@ It uses Claude (model `claude-haiku-5-5`, set with `AI_MODEL`) through Anthropic
 **Try it for free:** set `AI_PROVIDER=fake`, run `php artisan config:clear`, open **AI assistant**, choose **Auto**, Save, and in the test chat type `what is the pricing for a facial` or `what time are you around`. Try `I want a refund` to see the hand-over.
 Words the menu already knows (price, hours, book and so on) still go to the menu; the AI handles the rest.
 
+### Many businesses and self-service (step 6)
+
+Anyone can now open `/signup`, create a business and get a **14-day free trial** (set in `config/plans.php`, together with the plans, prices and limits).
+
+- **Sign-up:** business name, owner, email, password, tick the terms. A confirmation email is sent; until the link is opened the staff area is closed. On your own computer `MAIL_MAILER=log` writes the email to `storage/logs/laravel.log`: open that file and copy the link. For real email put SMTP settings in `.env` (`MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`).
+- **Getting started** (owner, left menu): paste your website text or a price list, press **Draft my setup**, check the table, **Approve and save**. Nothing is saved to the business before you approve. With `AI_PROVIDER=off` it reads simple lines such as `Facial - RM 188 (60 min)`; with the AI on, the AI drafts services and answers. Approving also rewrites the Prices, Opening hours and Location screens of the chat menu. Then connect Google Calendar and WhatsApp (links to the pages with **Check connection**), try the test chat, choose a plan, and press **go live**.
+- **Plans and limits:** AI replies per month, team members, practitioners, connected channels. At the AI limit (or when the trial ended, or a payment failed) the **AI pauses**, the owner gets an email once a month and sees a banner, and customer messages still reach the inbox and the menu bot keeps working. Adding people past the limit is refused with a message. The sample business has no plan, so it has no limits.
+- **Plan & billing** (owner): usage against limits, choose Starter or Growth, cancel renewal (works until the paid month ends), payment list. **No money is taken yet:** the payment provider is a local test mode (`BILLING_PROVIDER=local`). A real provider (Stripe) is connected at go-live (step 7). Renewals run daily through the scheduler (`php artisan aichat:renew-subscriptions`).
+- **Platform console** (`/platform`): only for the platform owner. Shows all businesses, plan, users, chats, AI calls, revenue, monthly recurring total, and **Pause / Resume** for any business (a paused business loses its chat and staff area). Sample login after seeding: `platform@example.com` / `password`. Make your own with `php artisan aichat:make-platform-owner you@example.com`.
+- **Abuse protection:** sign-up is limited to 5 per hour per address, a hidden bot field, email confirmation, strong unique emails. **Legal pages** `/terms` and `/privacy` are starter text: have a lawyer review them before going public.
+- **Isolation:** every table carries the business, every query is scoped to the signed-in business, and tests prove two businesses cannot see each other.
+
 ### Automations and marketing (step 5)
 
 Owner or manager, sidebar group **Grow**. Everything is switched off until you turn it on, and every message follows the same rules:
@@ -337,4 +349,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Steps 6 to 8: self-service sign-up for new businesses, billing, the platform owner console, and moving to paid hosting when you go live.
+Step 7 (beta readiness): Meta business verification, a real WhatsApp number, a paid server with backups and monitoring, a domain, real email sending, a real payment provider (Stripe) and a legal review. Step 8: public launch.

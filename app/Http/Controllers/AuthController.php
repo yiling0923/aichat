@@ -27,6 +27,10 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->user()->isPlatformOwner()) {
+            return redirect()->route('platform.index');
+        }
+
         return redirect()->intended(route('today'));
     }
 
