@@ -303,3 +303,5 @@ details.menu summary::-webkit-details-marker { display: none; }
 .cols { grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); }
 .tabs { overflow-x: auto; white-space: nowrap; }
 .tabs a { flex: none; }
+.masonry { column-width: 380px; column-gap: 14px; }
+.masonry > .card { break-inside: avoid; margin: 0 0 14px; display: block; width: 100%; }
