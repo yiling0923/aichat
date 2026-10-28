@@ -8,14 +8,16 @@
 </head>
 <body>
 <div class="center-page">
-    <div class="card">
-        <div class="brand-row"><span class="logo">A</span> Check your email</div>
+    <div class="card auth-card center">
+        <div class="verify-ic">&#9993;</div>
+        <h1>Check your email</h1>
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
-        <p>We sent a confirmation link to <b>{{ $email ?? 'your email' }}</b>. Open it to continue.</p>
-        <p class="mute" style="margin:10px 0 14px">No email? Check spam, or send it again. On your own computer (mail driver "log") the email is written to <code>storage/logs/laravel.log</code>.</p>
+        <p>We sent a confirmation link to<br><b>{{ $email ?? 'your email' }}</b></p>
+        <p class="mute" style="margin:8px 0 16px">Open it to start. No email? Look in spam, or send it again.</p>
+        @if (app()->environment('local'))<p class="note warn" style="text-align:left">Testing on your own computer: the email is written to <code>storage/logs/laravel.log</code>. Open that file and copy the link.</p>@endif
         @auth
-            <form method="post" action="{{ route('verification.resend') }}">@csrf<button class="btn primary" type="submit">Send it again</button></form>
-            <form method="post" action="{{ route('logout') }}" style="margin-top:8px">@csrf<button class="btn" type="submit">Sign out</button></form>
+            <form method="post" action="{{ route('verification.resend') }}">@csrf<button class="btn primary block" type="submit">Send it again</button></form>
+            <form method="post" action="{{ route('logout') }}" style="margin-top:8px">@csrf<button class="btn block" type="submit">Sign out</button></form>
         @endauth
     </div>
 </div>

@@ -248,3 +248,13 @@ Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Product
 | "no tunnel" | The tunnel dropped. Restart `tools\start-tunnel.bat` |
 | Changed `.env` but nothing changed | `php artisan config:clear` |
 | Booking does not appear | In **Menu builder**: Reset to sample, then Publish |
+
+
+## AB. Sign-up page
+
+1. Open `/signup` while signed out. Left side lists what you get; right side is the form. On a phone only the form shows.
+2. Type a business name: a line under it shows your chat link.
+3. Type a password: the bar and the word under it change. "Show" reveals it.
+4. Press Create with empty fields: the first empty field is highlighted, nothing is sent.
+5. Use an email that already exists: the error sits under the email with a "Sign in instead" link.
+6. Fill everything and tick the terms: you land on "Check your email" showing your address.
