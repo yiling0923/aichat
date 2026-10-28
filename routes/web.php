@@ -90,6 +90,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/conversations', [\App\Http\Controllers\ConversationsController::class, 'index'])->name('conversations');
     Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks');
     Route::post('/tasks', [\App\Http\Controllers\TaskController::class, 'store']);
+    Route::post('/tasks/{id}', [\App\Http\Controllers\TaskController::class, 'update'])->whereNumber('id');
     Route::post('/tasks/{id}/toggle', [\App\Http\Controllers\TaskController::class, 'toggle'])->whereNumber('id');
     Route::post('/tasks/{id}/delete', [\App\Http\Controllers\TaskController::class, 'destroy'])->whereNumber('id');
     Route::get('/library', [\App\Http\Controllers\LibraryController::class, 'index'])->name('library');

@@ -198,6 +198,13 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 4. **Activity** lists everything newest first: upcoming and past bookings, orders, survey ratings, chats and when they became a customer. Click an item to jump to the schedule, orders or chat.
 5. **Follow-ups**: open tasks with a **Done** button, and a quick add (title and optional due time). **Notes** shows the private note and what they asked about.
 
+### Y. Tasks page
+1. **Tasks**: a quick add row at the top (what, due time, who). The **Today 5pm / Tomorrow 10am / Next week** buttons fill the due time for you. The task is assigned to you by default.
+2. Open tasks are grouped: **Overdue** (red), **Today**, **Tomorrow**, **This week**, **Later**, **No date**. Switch between **Open** and **Done**, and **Everyone** and **Only mine**; counts are shown.
+3. Click the **circle** to tick a task done (it moves to Done); in Done, click the green tick to reopen it.
+4. **Edit** opens a pop-up to change the text, due time and person, or **Delete**. Giving a task to someone else sends them a bell notification.
+5. Tasks from a customer page or the Inbox show the customer's name and an **Open chat** link.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

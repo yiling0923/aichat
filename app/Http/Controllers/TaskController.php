@@ -18,18 +18,43 @@ class TaskController extends Controller
 {
     public function index(Request $request): View
     {
-        $show = $request->query('show', 'open');
+        $show = $request->query('show', 'open') === 'done' ? 'done' : 'open';
         $mine = $request->boolean('mine');
         $business = $request->user()->business;
+        $tz = $business->timezone ?: 'UTC';
+        $me = $request->user()->id;
 
-        $tasks = Task::query()->with(['assignee', 'customer'])
+        $scoped = fn () => Task::query()->when($mine, fn ($q) => $q->where('assigned_to', $me));
+
+        $tasks = $scoped()->with(['assignee', 'customer'])
             ->when($show === 'done', fn ($q) => $q->whereNotNull('done_at')->orderByDesc('done_at'), fn ($q) => $q->whereNull('done_at')->orderByRaw('due_at is null')->orderBy('due_at'))
-            ->when($mine, fn ($q) => $q->where('assigned_to', $request->user()->id))
             ->limit(200)->get();
 
+        // Open tasks grouped by when they are due.
+        $now = \Carbon\Carbon::now($tz);
+        $groups = [];
+        if ($show === 'open') {
+            foreach ($tasks as $t) {
+                $due = $t->due_at?->copy()->setTimezone($tz);
+                $key = match (true) {
+                    $due === null => 'No date',
+                    $due->lt($now) => 'Overdue',
+                    $due->isSameDay($now) => 'Today',
+                    $due->isSameDay($now->copy()->addDay()) => 'Tomorrow',
+                    $due->lt($now->copy()->addDays(7)->endOfDay()) => 'This week',
+                    default => 'Later',
+                };
+                $groups[$key][] = $t;
+            }
+            $groups = array_replace(array_flip(array_intersect(['Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No date'], array_keys($groups))), $groups);
+        }
+
         return view('admin.tasks', [
-            'business' => $business, 'active' => 'tasks', 'tasks' => $tasks, 'show' => $show, 'mine' => $mine,
+            'business' => $business, 'active' => 'tasks', 'tasks' => $tasks, 'show' => $show, 'mine' => $mine, 'groups' => $groups,
+            'counts' => ['open' => $scoped()->whereNull('done_at')->count(), 'done' => $scoped()->whereNotNull('done_at')->count(),
+                'overdue' => $scoped()->whereNull('done_at')->where('due_at', '<', now())->count()],
             'team' => User::query()->where('business_id', $business->id)->where('active', true)->orderBy('name')->get(),
+            'tz' => $tz,
         ]);
     }
 
@@ -62,6 +87,26 @@ class TaskController extends Controller
         }
 
         return $request->expectsJson() ? response()->json(['task' => $task->id]) : back()->with('status', 'Task added.');
+    }
+
+    public function update(Request $request, int $id): RedirectResponse
+    {
+        $data = $request->validate(['title' => ['required', 'string', 'max:200'], 'due_at' => ['nullable', 'date'], 'assigned_to' => ['nullable', 'integer']]);
+        $business = $request->user()->business;
+        $task = Task::query()->findOrFail($id);
+        $assignee = $this->assignee($business->id, $data['assigned_to'] ?? null);
+
+        $task->update([
+            'title' => $data['title'],
+            'due_at' => ! empty($data['due_at']) ? \Carbon\Carbon::parse($data['due_at'], $business->timezone ?: 'UTC')->utc() : null,
+            'assigned_to' => $assignee,
+        ]);
+
+        if ($task->wasChanged('assigned_to') && $assignee !== null && $assignee !== $request->user()->id) {
+            app(\App\Services\Notifier::class)->notify($business, 'task', 'New task for you: '.$task->title, $request->user()->name.' assigned it to you.', route('tasks'), null, $assignee);
+        }
+
+        return back()->with('status', 'Task saved.');
     }
 
     public function toggle(int $id): RedirectResponse
