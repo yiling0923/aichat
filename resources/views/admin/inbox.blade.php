@@ -33,6 +33,7 @@
                         <div class="mute" id="thread-meta" style="font-size:12px"></div>
                     </div>
                     <div style="display:flex;gap:8px">
+                        <button class="btn" id="btn-summarize" type="button" style="display:none">Summarise (AI)</button>
                         <button class="btn" id="btn-give-back" type="button">Give back to bot</button>
                         <button class="btn danger" id="btn-resolve" type="button">Resolve</button>
                     </div>

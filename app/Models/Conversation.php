@@ -30,6 +30,8 @@ class Conversation extends Model
         'status',
         'assigned_to',
         'handover_reason',
+        'ai_intent',
+        'ai_mood',
         'handover_at',
         'opted_out_at',
         'last_message_at',

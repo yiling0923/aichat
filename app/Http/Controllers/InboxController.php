@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conversation;
+use App\Ai\AiAssistant;
 use App\Models\Message;
 use App\Models\MessageTemplate;
 use App\Models\Tag;
@@ -66,6 +67,8 @@ class InboxController extends Controller
             ->where('id', '>', $after)
             ->orderBy('id')
             ->get()
+            ->reject(fn (Message $m) => $m->sender_type === 'ai' && ($m->payload['status'] ?? 'pending') !== 'pending')
+            ->values()
             ->map(fn (Message $m) => $m->toChatArray());
 
         return response()->json([
@@ -77,6 +80,9 @@ class InboxController extends Controller
                 'status' => $conversation->status,
                 'handover_reason' => $conversation->handover_reason,
                 'assigned_to' => $conversation->assigned_to,
+                'ai_intent' => $conversation->ai_intent,
+                'ai_mood' => $conversation->ai_mood,
+                'ai_on' => app(AiAssistant::class)->active($conversation->business),
                 'channel_label' => $conversation->channel_id ? ($conversation->channelAccount?->label() ?? ucfirst($conversation->channel)) : 'Website',
                 'window_open' => $conversation->windowOpen(),
                 'can_template' => $conversation->channel_id && $conversation->channelAccount?->type === 'whatsapp',
@@ -101,8 +107,12 @@ class InboxController extends Controller
     public function reply(Request $request, int $id): JsonResponse
     {
         $data = $request->validate(['text' => ['required', 'string', 'max:2000']]);
-        $conversation = Conversation::query()->findOrFail($id);
 
+        return $this->sendStaffReply(Conversation::query()->findOrFail($id), $data['text']);
+    }
+
+    private function sendStaffReply(Conversation $conversation, string $text): JsonResponse
+    {
         if (! $conversation->windowOpen()) {
             return response()->json(['error' => $conversation->channelAccount?->type === 'whatsapp'
                 ? 'The 24-hour window is closed. Send an approved template instead.'
@@ -114,9 +124,46 @@ class InboxController extends Controller
             $conversation->handOverToStaff('Staff replied');
         }
 
-        $message = $conversation->addMessage('out', 'staff', $data['text']);
+        $message = $conversation->addMessage('out', 'staff', $text);
 
         return response()->json(['message' => $message->toChatArray(), 'mode' => $conversation->mode]);
+    }
+
+    /** Send the AI's drafted reply (optionally edited) as a staff message. */
+    public function aiSend(Request $request, int $id, int $messageId): JsonResponse
+    {
+        $data = $request->validate(['text' => ['nullable', 'string', 'max:2000']]);
+        $conversation = Conversation::query()->findOrFail($id);
+        $draft = Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'ai')->findOrFail($messageId);
+
+        abort_unless(($draft->payload['status'] ?? 'pending') === 'pending', 422, 'This suggestion was already used.');
+
+        $text = trim((string) ($data['text'] ?? '')) !== '' ? $data['text'] : (string) $draft->body;
+        $response = $this->sendStaffReply($conversation, $text);
+
+        if ($response->getStatusCode() === 200) {
+            $draft->forceFill(['payload' => array_merge((array) $draft->payload, ['status' => 'used'])])->save();
+        }
+
+        return $response;
+    }
+
+    public function aiDismiss(int $id, int $messageId): JsonResponse
+    {
+        $draft = Message::query()->where('conversation_id', $id)->where('sender_type', 'ai')->findOrFail($messageId);
+        $draft->forceFill(['payload' => array_merge((array) $draft->payload, ['status' => 'dismissed'])])->save();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function summarize(int $id, AiAssistant $ai): JsonResponse
+    {
+        $conversation = Conversation::query()->findOrFail($id);
+        $summary = $ai->summarize($conversation);
+
+        return $summary === null
+            ? response()->json(['error' => $ai->lastNote ?? 'The AI could not summarise this chat.'], 422)
+            : response()->json(['summary' => $summary]);
     }
 
     public function note(Request $request, int $id): JsonResponse

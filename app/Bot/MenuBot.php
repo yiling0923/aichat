@@ -2,6 +2,8 @@
 
 namespace App\Bot;
 
+use App\Ai\AiAssistant;
+use App\Marketing\Outreach;
 use App\Marketing\Surveys;
 use App\Models\BotEvent;
 use App\Models\Conversation;
@@ -18,7 +20,7 @@ class MenuBot
 {
     private const MAX_CHAIN = 12;
 
-    public function __construct(private LeadService $leads, private HandoverService $handovers, private BookingStep $booking, private Surveys $surveys) {}
+    public function __construct(private LeadService $leads, private HandoverService $handovers, private BookingStep $booking, private Surveys $surveys, private AiAssistant $ai) {}
 
     /**
      * @return list<\App\Models\Message>
@@ -95,6 +97,15 @@ class MenuBot
             $option = $this->match($flow, $node, $text, $optionId);
 
             if ($option === null) {
+                // Free text the menu cannot match: in AI mode the assistant answers, otherwise the usual "choose one".
+                if ($optionId === null && $this->aiShouldAnswer($conversation, $text)) {
+                    $handled = $this->askAi($conversation, $flow, $state, $node, $out, $language);
+
+                    if ($handled !== null) {
+                        return $handled;
+                    }
+                }
+
                 return $this->miss($conversation, $flow, $state, $out, $language, 'sorry_choose');
             }
 
@@ -384,6 +395,68 @@ class MenuBot
         }
 
         $state['awaiting'] = $state['awaiting'] === 'my_booking' ? 'my_booking' : 'booking';
+
+        return $this->finish($conversation, $state, $out);
+    }
+
+    private function aiShouldAnswer(Conversation $conversation, string $text): bool
+    {
+        $business = $conversation->business;
+        $length = mb_strlen(trim($text));
+
+        return $conversation->channel !== 'preview'
+            && in_array($this->ai->mode($business), ['approve', 'auto'], true)
+            && $this->ai->provider() !== null
+            && $length >= 2 && $length <= 500
+            && ! ctype_digit(trim($text));
+    }
+
+    /**
+     * Let the AI answer typed text. Returns null when the AI has nothing usable, so the caller falls back to the menu.
+     *
+     * @param  array<string, mixed>  $state
+     * @param  array<string, mixed>  $node
+     * @param  list<\App\Models\Message>  $out
+     * @return list<\App\Models\Message>|null
+     */
+    private function askAi(Conversation $conversation, Flow $flow, array $state, array $node, array $out, string $language): ?array
+    {
+        $answer = $this->ai->answer($conversation, 'reply');
+
+        if ($answer === null) {
+            return null;
+        }
+
+        $state['misses'] = 0;
+        $language = $conversation->language ?? $language;
+        $mode = $this->ai->mode($conversation->business);
+
+        // Upset customer, or someone asking for a person: say sorry (or OK) and hand over.
+        if ($answer->wantsHuman || in_array($answer->intent, ['complaint', 'handover'], true)) {
+            $out[] = $conversation->addMessage('out', 'bot', $answer->text, ['ai' => true]);
+
+            return $this->handover($conversation, $state, $out, 'AI: customer needs a person ('.$answer->intent.', '.$answer->mood.')', $language, null);
+        }
+
+        // Approval mode: staff see the drafted answer and decide. The customer is told we are checking.
+        if ($mode === 'approve') {
+            $this->ai->saveDraft($conversation, $answer);
+            $out[] = $conversation->addMessage('out', 'bot', Strings::get('ai_checking', $language));
+
+            return $this->handover($conversation, $state, $out, 'AI reply waiting for your approval', $language, null);
+        }
+
+        $text = $answer->text;
+        $disclosed = \App\Models\Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'bot')->where('payload->ai', true)->exists();
+        if (! $disclosed) {
+            $text .= "\n".Strings::get('ai_disclosure', $language);
+        }
+
+        $options = $answer->intent === 'booking'
+            ? array_merge(Outreach::bookNowButton($language), [['id' => '__menu', 'label' => Strings::get('back_to_menu', $language)]])
+            : $this->optionList($flow, $node, $language, $state);
+
+        $out[] = $conversation->addMessage('out', 'bot', $text, ['options' => $options, 'ai' => true]);
 
         return $this->finish($conversation, $state, $out);
     }

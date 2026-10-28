@@ -47,6 +47,7 @@
     if (seen[m.id]) { return; }
     seen[m.id] = true;
     if (m.id > lastId) { lastId = m.id; }
+    if (m.from === 'ai') { addAiCard(m); return; }
     var div = document.createElement('div');
     var cls = m.private ? 'private' : m.from;
     div.className = 'm ' + cls;
@@ -98,6 +99,14 @@
       a.textContent = (c.customer.name || 'Customer') + (c.customer.phone ? ' · ' + c.customer.phone : '');
       cust.appendChild(a);
     } else { cust.textContent = 'No customer details yet'; }
+    if (c.ai_mood || c.ai_intent) {
+      var mood = document.createElement('span');
+      mood.className = 'tag ' + (c.ai_mood === 'angry' ? 'hot' : 'ok');
+      mood.style.marginLeft = '8px';
+      mood.textContent = [c.ai_intent, c.ai_mood].filter(Boolean).join(' · ');
+      mood.title = 'What the AI understood from the last messages';
+      cust.appendChild(mood);
+    }
 
     var tagsEl = document.getElementById('info-tags');
     tagsEl.innerHTML = '';
@@ -124,7 +133,35 @@
   function refreshInfo() { lastInfoKey = null; refreshThread(true); }
   var lastInfoKey = null;
 
+  function addAiCard(m) {
+    var card = document.createElement('div');
+    card.className = 'm ai-card';
+    var head = document.createElement('b');
+    head.textContent = 'AI suggestion' + (m.ai && m.ai.intent ? ' (' + m.ai.intent + (m.ai.mood ? ', ' + m.ai.mood : '') + ')' : '');
+    var body = document.createElement('div');
+    body.style.margin = '6px 0 8px'; body.textContent = m.text;
+    var row = document.createElement('div');
+    row.className = 'bar'; row.style.margin = '0';
+    function button(label, cls, fn) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn small ' + cls; b.textContent = label;
+      b.addEventListener('click', fn); row.appendChild(b);
+    }
+    button('Send now', 'primary', function () {
+      post('/ai/' + m.id + '/send', {}).then(function (d) {
+        if (d && d.error) { alert(d.error); return; }
+        card.remove(); refreshThread(); loadList();
+      });
+    });
+    button('Edit first', '', function () { textEl.value = m.text; textEl.focus(); });
+    button('Dismiss', '', function () { post('/ai/' + m.id + '/dismiss', {}).then(function () { card.remove(); }); });
+    card.appendChild(head); card.appendChild(body); card.appendChild(row);
+    logEl.appendChild(card);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
   function showMeta(c) {
+    document.getElementById('btn-summarize').style.display = c.ai_on ? '' : 'none';
     headEl.textContent = c.name;
     var mode = c.mode === 'human' ? 'Staff are handling this chat. The bot is silent.' : 'The bot is answering this chat.';
     metaEl.textContent = (c.channel_label || c.channel) + ' · ' + c.status + ' · ' + mode + (c.handover_reason ? ' (' + c.handover_reason + ')' : '');
@@ -144,7 +181,7 @@
     api('/conversations/' + current + '?after=' + lastId).then(function (data) {
       if (!data.conversation) { return; }
       showMeta(data.conversation);
-      var key = JSON.stringify([data.conversation.tags, data.conversation.assigned_to, data.conversation.customer, data.conversation.window_open, current]);
+      var key = JSON.stringify([data.conversation.ai_mood, data.conversation.ai_intent, data.conversation.tags, data.conversation.assigned_to, data.conversation.customer, data.conversation.window_open, current]);
       if (force || key !== lastInfoKey) { lastInfoKey = key; renderInfo(data); }
       data.messages.forEach(addLine);
     });
@@ -172,6 +209,14 @@
   });
   document.getElementById('btn-give-back').addEventListener('click', function () {
     post('/give-back').then(function () { refreshThread(); loadList(); });
+  });
+  document.getElementById('btn-summarize').addEventListener('click', function () {
+    var b = this; b.disabled = true; b.textContent = 'Summarising...';
+    post('/summarize', {}).then(function (d) {
+      b.disabled = false; b.textContent = 'Summarise (AI)';
+      if (d && d.error) { alert(d.error); return; }
+      refreshThread();
+    });
   });
   document.getElementById('btn-resolve').addEventListener('click', function () {
     post('/resolve').then(function () { refreshThread(); loadList(); });

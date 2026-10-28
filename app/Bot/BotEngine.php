@@ -2,6 +2,7 @@
 
 namespace App\Bot;
 
+use App\Ai\AiAssistant;
 use App\Models\Conversation;
 use App\Models\Message;
 
@@ -11,7 +12,7 @@ use App\Models\Message;
  */
 class BotEngine
 {
-    public function __construct(private MenuBot $menu, private FlowRepository $flows) {}
+    public function __construct(private MenuBot $menu, private FlowRepository $flows, private AiAssistant $ai) {}
 
     /**
      * @param  Flow|null  $flow  a flow to use instead of the published one (menu preview)
@@ -21,6 +22,15 @@ class BotEngine
     {
         // Staff are handling this chat, so the bot stays silent.
         if ($conversation->isHandledByStaff()) {
+            // Staff are in charge, but the AI can still offer them a suggested reply (never sent by itself).
+            if ($conversation->channel !== 'preview' && $conversation->business !== null && $this->ai->active($conversation->business)) {
+                try {
+                    $this->ai->suggest($conversation);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+
             return [];
         }
 

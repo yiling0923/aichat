@@ -35,6 +35,9 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/note', [InboxController::class, 'note'])->whereNumber('id');
     Route::post('/api/conversations/{id}/give-back', [InboxController::class, 'giveBack'])->whereNumber('id');
     Route::post('/api/conversations/{id}/resolve', [InboxController::class, 'resolve'])->whereNumber('id');
+    Route::post('/api/conversations/{id}/ai/{messageId}/send', [InboxController::class, 'aiSend'])->whereNumber(['id', 'messageId']);
+    Route::post('/api/conversations/{id}/ai/{messageId}/dismiss', [InboxController::class, 'aiDismiss'])->whereNumber(['id', 'messageId']);
+    Route::post('/api/conversations/{id}/summarize', [InboxController::class, 'summarize'])->whereNumber('id');
     Route::post('/api/conversations/{id}/tag', [InboxController::class, 'tag'])->whereNumber('id');
     Route::post('/api/conversations/{id}/assign', [InboxController::class, 'assign'])->whereNumber('id');
     Route::post('/api/conversations/{id}/template', [\App\Http\Controllers\TemplateController::class, 'send'])->whereNumber('id');
@@ -99,6 +102,14 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::post('/library', [$l, 'store']);
     Route::post('/library/{id}', [$l, 'update'])->whereNumber('id');
     Route::post('/library/{id}/delete', [$l, 'destroy'])->whereNumber('id');
+
+    $ai = \App\Http\Controllers\AiSettingsController::class;
+    Route::get('/ai', [$ai, 'index'])->name('ai');
+    Route::post('/ai', [$ai, 'save']);
+    Route::post('/ai/preview', [$ai, 'preview'])->middleware('throttle:30,1');
+    Route::post('/ai/knowledge', [$ai, 'storeEntry']);
+    Route::post('/ai/knowledge/{id}', [$ai, 'updateEntry'])->whereNumber('id');
+    Route::post('/ai/knowledge/{id}/delete', [$ai, 'destroyEntry'])->whereNumber('id');
 
     $tp = \App\Http\Controllers\TemplateController::class;
     Route::get('/templates', [$tp, 'index'])->name('templates');

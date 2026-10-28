@@ -32,6 +32,7 @@
     <div class="sec">Set up</div>
     <a @class(['on' => $active === 'library']) href="{{ route('library') }}"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>Library</a>
     @if (auth()->user()->canManage())
+        <a @class(['on' => $active === 'ai']) href="{{ route('ai') }}"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg>AI assistant</a>
         <a @class(['on' => $active === 'templates']) href="{{ route('templates') }}"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z"/><path d="M8 9h8M8 13h5"/></svg>Templates</a>
     @endif
     @if ($isOwner)

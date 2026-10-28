@@ -47,6 +47,7 @@ class Message extends Model
             'options' => $this->payload['options'] ?? [],
             'private' => $this->is_private,
             'time' => $this->created_at?->toIso8601String(),
+            'ai' => $this->sender_type === 'ai' ? ['status' => $this->payload['status'] ?? 'pending', 'intent' => $this->payload['intent'] ?? null, 'mood' => $this->payload['mood'] ?? null] : null,
             'delivery' => $this->payload['delivery'] ?? null,
             'delivery_error' => $this->payload['delivery_error'] ?? null,
         ];

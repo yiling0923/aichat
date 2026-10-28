@@ -27,4 +27,21 @@ return [
     // Minutes after a handover when staff have not replied: holding message,
     // reminder, reassign, owner alert. The owner can change these per business later.
     'handover_timeouts' => [5, 10, 20, 30],
+
+    // AI mode (step 5b). The provider is a platform setting; each business chooses its own mode in Settings > AI.
+    //   off    no AI anywhere (the default, and what you pay nothing for)
+    //   fake   a built-in pretend AI for trying the screens and for tests (no internet, no cost)
+    //   claude the real thing, needs ANTHROPIC_API_KEY
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'off'),
+        'model' => env('AI_MODEL', 'claude-haiku-5-5'),
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'max_tokens' => 700,
+        'history_messages' => 8,        // how much of the chat the AI reads
+        'replies_per_conversation_per_hour' => 6,
+        'default_monthly_cap' => 300,   // AI calls per business per month; the owner can change it
+        // Rough prices in US dollars per million tokens, only to show an estimate (Claude Haiku 5.5, short prompts).
+        'price_input_per_million' => 0.10,
+        'price_output_per_million' => 0.50,
+    ],
 ];

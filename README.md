@@ -3,7 +3,7 @@
 A guided menu bot, staff inbox and booking assistant for WhatsApp, Instagram, Messenger and website chat.
 Built with PHP and Laravel, runs on XAMPP on your own computer. See `docs/` for the plan (PDF) and the page layouts (PDF).
 
-**Where we are: step 5 (automations and marketing).** A customer opens the test chat, picks a language, taps buttons
+**Where we are: step 5b (AI mode, optional).** A customer opens the test chat, picks a language, taps buttons
 (prices, hours, location, promotions, book an appointment, talk to staff) and the bot answers. Booking requests are saved
 as customers. Staff answer handed-over chats in the inbox. The owner edits the menu in the **Menu builder**. No AI is used yet.
 Step 2 adds real booking: the customer taps a service, a day and a time, gives a name and phone, and the booking is saved
@@ -67,6 +67,45 @@ Step 2 adds real booking: the customer taps a service, a day and a time, gives a
    The panel on the right lets you try the draft first. Nothing you try there is saved as a lead or handover.
 
 Typed words that always work: `menu` (back to the main menu), `human` or `staff` (talk to a person), `stop` (no promotional messages).
+
+### AI mode (step 5b, optional)
+
+Off by default. When on, an AI helps in the chat. The buttons, the booking steps and the menu stay exactly as they are: the AI only steps in when a customer **types something the menu does not understand**, and for your team's inbox.
+It uses Claude (model `claude-haiku-5-5`, set with `AI_MODEL`) through Anthropic's official PHP SDK.
+
+**Install the new library once:** after `git pull`, run `composer install` in the project folder.
+
+**Three system settings in `.env`** (then `php artisan config:clear`):
+
+| `AI_PROVIDER=` | Meaning |
+|---|---|
+| `off` | No AI at all. The default. Costs nothing |
+| `fake` | A free pretend AI that follows simple rules and quotes your own data. Use it to try every screen. It is not intelligent |
+| `claude` | The real AI. Needs `ANTHROPIC_API_KEY=` from https://console.anthropic.com (pay as you go; a short answer costs a small fraction of a cent) |
+
+**Then each business chooses a mode** at **AI assistant** in the sidebar (owner or manager):
+
+| Mode | What happens |
+|---|---|
+| Off | Only the menu bot |
+| Suggest | Customers never see AI text. When a chat is with your team, the AI drops a suggested reply card into the Inbox (**Send now**, **Edit first** or **Dismiss**) |
+| Approve | The AI drafts an answer to a typed question and your team checks it first. The customer sees "One moment, I am checking this with our team" and the chat goes to your team with the draft ready |
+| Auto | The AI answers typed questions by itself, with your menu buttons shown under the answer. It says once per chat that it is a virtual assistant |
+
+**What it knows:** your opening hours, services with prices and durations, the information screens of your menu (prices, location, promotions) and the **extra answers** you add on the same page (parking, payment, aftercare). The page shows exactly what it knows.
+
+**Safety built in:**
+- It may only quote prices, discounts and links that exist in your own information. If it writes a price or a percentage that is not there, the answer is stopped and the customer gets the normal menu instead. These stops are counted on the page.
+- It never offers appointment times. For a booking it points to the **Book now** button.
+- An upset customer ("terrible", "refund") gets a short apology and is passed to your team. Someone who asks for a person is passed too. The Inbox shows what the AI understood (intent and mood) next to the customer.
+- Customer messages are treated as untrusted text: instructions inside them are ignored.
+- A monthly limit of AI calls (default 300, you can change it) and a limit per chat per hour protect your bill. When a limit is reached, or the AI is down, the menu bot carries on as normal.
+- The **Try it** box lets you ask a question as a customer would, and shows what the AI understood, without sending anything.
+
+**Summaries:** in the Inbox, **Summarise (AI)** writes a short private note about the chat for your team.
+
+**Try it for free:** set `AI_PROVIDER=fake`, run `php artisan config:clear`, open **AI assistant**, choose **Auto**, Save, and in the test chat type `what is the pricing for a facial` or `what time are you around`. Try `I want a refund` to see the hand-over.
+Words the menu already knows (price, hours, book and so on) still go to the menu; the AI handles the rest.
 
 ### Automations and marketing (step 5)
 
@@ -190,6 +229,7 @@ Sign in and you land on **Today**. The left menu:
 | **Tags** | Customer tags and chat tags: create, rename, recolour, merge, delete | owner, manager |
 | **Library** | Saved replies in English and 中文 | everyone reads, owner and manager edit |
 | **Orders**, **Reports** | Simple order records; numbers for the owner | everyone |
+| **AI assistant** | AI mode: how it helps, extra answers, a test box, usage | owner, manager |
 | **Automations**, **Broadcasts** | Automatic messages and opt-in broadcasts | owner, manager |
 | **Templates** | WhatsApp message templates: create, send to Meta, check approval | owner, manager |
 | **Channels**, **Menu builder**, **Booking setup**, **Settings** | Bot menu, services and hours, business name, time zone, accent colour, team accounts | owner |
@@ -282,6 +322,7 @@ See `n8n/README.md`. The app works without it.
 |---|---|
 | `app/Bot` | The menu bot: engine, sample menu, validator, business hours, booking steps |
 | `app/Channels` | Meta webhook parsing, sending to WhatsApp, Messenger and Instagram, templates |
+| `app/Ai` | AI mode: Claude and the fake AI, the business knowledge, the safety check |
 | `app/Marketing` | Automations, survey answers, broadcasts, and the rules for sending to customers |
 | `app/Booking` | Free times, saving and cancelling bookings, Google Calendar |
 | `app/Console` | The handover reminder command |
@@ -296,4 +337,4 @@ See `n8n/README.md`. The app works without it.
 
 ## Next
 
-Step 5b: AI mode (optional). The bot understands typed free text and replies automatically, with staff suggestions and approval. Then self-service sign-up and billing (steps 6 to 8).
+Steps 6 to 8: self-service sign-up for new businesses, billing, the platform owner console, and moving to paid hosting when you go live.

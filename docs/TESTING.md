@@ -80,7 +80,17 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 7. **Broadcasts**: give two customers the same tag, create a broadcast for that tag, check "2 can receive it", **Send now**, open it to see the recipients. Pressing Send twice does not send twice.
 8. **Orders**: add an order for a customer, change its status. **Reports**: switch between 7, 30 and 90 days.
 
-### I. n8n (optional)
+### I. AI mode (free with the fake AI)
+1. `.env`: `AI_PROVIDER=fake`, then `php artisan config:clear`. Open **AI assistant**: it says "System AI: fake".
+2. Choose **Auto**, Save. In **Try it** type `what is the pricing for a facial`: it quotes your services and prices.
+3. In the test chat (English menu) type `what time are you around`: the AI answers with your opening hours plus "(I am a virtual assistant.)" once, with the menu buttons under it. Type `I want a refund`: an apology, and the chat goes to staff; the Inbox shows "complaint, angry".
+4. Type `i would like a slot tomorrow`: it points to **Book now**. Words like `price` or `hours` still go to the menu (the AI only gets what the menu cannot match).
+5. Choose **Approve**: type a question, the customer sees "checking with our team", and the Inbox shows a purple AI suggestion card: **Send now**, **Edit first**, **Dismiss**.
+6. Choose **Suggest**: customers get no AI text; after **Talk to staff** and another message, the Inbox gets a suggestion card.
+7. **Summarise (AI)** in the Inbox adds a private note. Add an **extra answer** (Parking) and see it in "Everything the AI knows".
+8. Real AI: `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY=...`, `php artisan config:clear`, then repeat steps 2 to 3. Watch **Recent AI calls** for tokens and the estimated cost.
+
+### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 
 ## 4. Useful commands
