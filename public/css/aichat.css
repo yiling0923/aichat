@@ -207,7 +207,10 @@ mark { background: #fff1a8; border-radius: 3px; padding: 0 1px; }
   .shell { flex-direction: column; height: auto; min-height: 100vh; }
   .side { width: 100%; flex-direction: row; align-items: center; overflow-x: auto; padding: 8px 10px; gap: 2px; }
   .side a.on { box-shadow: none; }
-  .ws, .side .sec, .side .me { display: none; }
+  .ws, .side .sec { display: none; }
+  .side .me { display: flex; align-items: center; gap: 8px; margin: 0 0 0 auto; padding: 0 4px; white-space: nowrap; font-size: 12px; }
+  .side .me br, .side .me span { display: none; }
+  .table { display: block; overflow-x: auto; white-space: nowrap; }
   .side a { white-space: nowrap; }
   .page { padding: 18px 16px 40px; overflow: visible; }
   .inbox { grid-template-columns: 1fr; height: auto; }
@@ -221,7 +224,7 @@ mark { background: #fff1a8; border-radius: 3px; padding: 0 1px; }
 @media (max-width: 900px) { .card.split { grid-template-columns: 1fr; } }
 
 /* Tags page */
-.tags-cols { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+.tags-cols { grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); }
 .tag-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .tag-add input[type=text] { flex: 1; min-width: 160px; }
 .tag-add select { flex: 1; min-width: 120px; }
