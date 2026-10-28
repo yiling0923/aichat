@@ -76,6 +76,10 @@ class Bookings
             }
         }
 
+        app(\App\Services\Notifier::class)->notify($business, 'booking', 'New booking: '.($customer->name ?: 'Customer'),
+            $service->label('en').' · '.$booking->starts_at->copy()->setTimezone($business->timezone ?: 'UTC')->format('D j M, H:i').' · '.$practitioner->name,
+            route('schedule', ['view' => 'week', 'date' => $booking->starts_at->copy()->setTimezone($business->timezone ?: 'UTC')->format('Y-m-d')]));
+
         $this->n8n->send('booking.created', $this->payload($booking, $customer));
 
         return $booking;
@@ -95,6 +99,12 @@ class Bookings
             } catch (Throwable $e) {
                 Log::warning('Google event not deleted', ['booking' => $booking->id, 'error' => $e->getMessage()]);
             }
+        }
+
+        if ($by === 'customer') {
+            app(\App\Services\Notifier::class)->notify($booking->business, 'booking', 'Booking cancelled by '.($booking->customer?->name ?: 'a customer'),
+                $booking->service->label('en').' · '.$booking->starts_at->copy()->setTimezone($booking->business->timezone ?: 'UTC')->format('D j M, H:i'),
+                route('schedule', ['view' => 'week', 'date' => $booking->starts_at->copy()->setTimezone($booking->business->timezone ?: 'UTC')->format('Y-m-d')]));
         }
 
         $this->n8n->send('booking.cancelled', $this->payload($booking, $booking->customer) + ['cancelled_by' => $by]);

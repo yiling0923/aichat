@@ -22,6 +22,10 @@ class BotEngine
     {
         // Staff are handling this chat, so the bot stays silent.
         if ($conversation->isHandledByStaff()) {
+            if ($conversation->channel !== 'preview' && $conversation->business !== null && (string) $incoming->body !== '') {
+                app(\App\Services\Notifier::class)->notify($conversation->business, 'message', 'New message from '.\App\Services\Notifier::chatName($conversation), (string) $incoming->body, route('inbox', ['c' => $conversation->id]));
+            }
+
             // Staff are in charge, but the AI can still offer them a suggested reply (never sent by itself).
             if ($conversation->channel !== 'preview' && $conversation->business !== null && $this->ai->active($conversation->business)) {
                 try {

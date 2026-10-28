@@ -47,14 +47,19 @@ class TaskController extends Controller
         $conversation = ! empty($data['conversation_id']) ? Conversation::query()->findOrFail($data['conversation_id']) : null;
         $customerId = $data['customer_id'] ?? $conversation?->customer_id;
 
+        $assignee = $this->assignee($business->id, $data['assigned_to'] ?? null);
         $task = Task::create([
             'title' => $data['title'],
             'due_at' => ! empty($data['due_at']) ? \Carbon\Carbon::parse($data['due_at'], $business->timezone ?: 'UTC')->utc() : null,
-            'assigned_to' => $this->assignee($business->id, $data['assigned_to'] ?? null),
+            'assigned_to' => $assignee,
             'created_by' => $request->user()->id,
             'conversation_id' => $conversation?->id,
             'customer_id' => $customerId ? Customer::query()->findOrFail($customerId)->id : null,
         ]);
+
+        if ($assignee !== null && $assignee !== $request->user()->id) {
+            app(\App\Services\Notifier::class)->notify($business, 'task', 'New task for you: '.$task->title, $request->user()->name.' assigned it to you.', route('tasks'), null, $assignee);
+        }
 
         return $request->expectsJson() ? response()->json(['task' => $task->id]) : back()->with('status', 'Task added.');
     }

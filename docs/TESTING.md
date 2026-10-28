@@ -135,6 +135,14 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 5. **Booking setup**: "Days you are closed" is a date picker with removable chips (no more typing dates with commas).
 6. **Marketing > Automations**: each automation is a folded card (open when switched on).
 
+### P. Bell notifications
+1. Open the staff area (the bell is at the top, left of the search box; in the Inbox it is in the chat list header).
+2. In another browser window open the test chat, type `human`. Within 20 seconds the bell shows a red number and the tab title shows `(1)`. Open the bell: "Visitor needs a person".
+3. Send another message as the customer: the list shows "New message from ..." (one entry, updated, not one per message).
+4. Click an entry: it opens that chat and clears all alerts about it. **Mark all read** clears everything.
+5. Make a booking in the chat: everyone gets "New booking". Cancel it as the customer (My booking): "Booking cancelled by ...". Add a task assigned to someone else: only they get "New task for you".
+6. **Turn on desktop alerts** (bottom of the bell): the browser asks permission; after that a pop-up appears for new alerts while the staff page is open in any tab.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

@@ -41,6 +41,9 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/tag', [InboxController::class, 'tag'])->whereNumber('id');
     Route::post('/api/conversations/{id}/assign', [InboxController::class, 'assign'])->whereNumber('id');
     Route::post('/api/conversations/{id}/template', [\App\Http\Controllers\TemplateController::class, 'send'])->whereNumber('id');
+    Route::get('/api/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::post('/api/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);
+    Route::post('/api/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->whereNumber('id');
     Route::get('/api/search', \App\Http\Controllers\SearchController::class)->middleware('throttle:120,1');
     Route::get('/api/quick-replies', [\App\Http\Controllers\LibraryController::class, 'list']);
 });

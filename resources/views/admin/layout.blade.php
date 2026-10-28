@@ -12,6 +12,7 @@
     @include('admin._side', ['active' => $active])
     <main class="page">
         <div class="topbar">
+            @include('admin._bell')
             <div class="gsearch">
                 <input id="gsearch" type="search" placeholder="Search customers and chats" autocomplete="off" aria-label="Search" data-url="{{ url('/admin/api/search') }}">
                 <kbd>Ctrl K</kbd>
@@ -33,6 +34,7 @@
     </main>
 </div>
 <script src="{{ asset('js/search.js') }}"></script>
+<script src="{{ asset('js/notifications.js') }}"></script>
 @stack('scripts')
 </body>
 </html>

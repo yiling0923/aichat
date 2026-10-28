@@ -49,6 +49,8 @@ class HandoverService
 
         $business = $conversation->business;
 
+        app(Notifier::class)->notify($business, 'handover', Notifier::chatName($conversation).' needs a person', $reason, route('inbox', ['c' => $conversation->id]));
+
         $this->n8n->send('handover.requested', [
             'business' => $business->slug,
             'conversation_id' => $conversation->id,

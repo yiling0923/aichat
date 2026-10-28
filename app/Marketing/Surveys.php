@@ -54,6 +54,8 @@ class Surveys
                 'customer_id' => $customer?->id,
                 'conversation_id' => $conversation->id,
             ]);
+            app(\App\Services\Notifier::class)->notify($business, 'survey', 'Low rating ('.$rating.'/5) from '.($customer?->name ?: 'a customer'), 'A manager should follow up.',
+                $customer ? route('customers.show', $customer->id) : route('tasks'), ['owner', 'manager']);
             $this->n8n->send('survey.low_score', [
                 'business' => $business->slug, 'survey_id' => $survey->id, 'rating' => $rating, 'conversation_id' => $conversation->id,
                 'customer_name' => $customer?->name, 'customer_phone' => $customer?->phone,

@@ -8,6 +8,7 @@ use App\Models\Business;
 use App\Models\Channel;
 use App\Models\Practitioner;
 use App\Models\User;
+use App\Services\Notifier;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -104,6 +105,8 @@ class Plans
 
         $settings['limit_notice'][$kind] = $month;
         $business->forceFill(['settings' => $settings])->save();
+
+        app(Notifier::class)->notify($business, 'plan', 'Plan limit reached: '.(config('plans.labels.'.$kind) ?? $kind), $kind === 'ai' ? 'The AI has paused. Chats still reach your inbox.' : null, route('billing'), ['owner']);
 
         $owners = User::query()->where('business_id', $business->id)->where('role', 'owner')->where('active', true)->get();
         foreach ($owners as $owner) {

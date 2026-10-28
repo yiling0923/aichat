@@ -15,6 +15,7 @@
         <section class="list">
             <div class="list-head">
                 <span>Inbox <a class="mini-link" href="{{ route('conversations') }}">Search all chats</a></span>
+                @include('admin._bell')
                 <select class="small" id="status-filter" aria-label="Filter">
                     <option value="open">Open</option>
                     <option value="resolved">Resolved</option>
@@ -64,5 +65,6 @@
     </main>
 </div>
 <script src="{{ asset('js/inbox.js') }}"></script>
+<script src="{{ asset('js/notifications.js') }}"></script>
 </body>
 </html>
