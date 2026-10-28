@@ -213,6 +213,11 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 5. WhatsApp chat older than 24 hours: the yellow bar has **Send a template**. Pick one, fill the parts (name is pre-filled), see the preview, press **Send template**.
 6. On a phone: the list and the chat are separate screens; the **←** button goes back to the list.
 
+### AA. Business and team, My account
+1. **Settings > Business and team**: tabs **Business** and **Team**. Business: name, address, time zone (common ones first, then by region), the currency shown with prices, and the colour of your staff area. Click a colour dot: the whole staff area changes colour at once; press **Save** to keep it. Below it, your customer chat link with Copy.
+2. **Team**: everyone with initial, email, role tag and a "(you)" mark, how many team members your plan allows, **Add a team member** (name, email, role, password) and **Edit** (role, switch off, new password). "What each role can do" lists the three roles. Changing your own role away from the last owner is still refused.
+3. **My account** (click your name at the bottom of the side menu; every role can open it): change your name and password. A new password needs your current one and must be typed twice.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

@@ -24,8 +24,32 @@ class SettingsController extends Controller
             'business' => $business,
             'active' => 'settings',
             'team' => User::query()->where('business_id', $business->id)->orderBy('name')->get(),
-            'timezones' => ['Asia/Kuala_Lumpur', 'Asia/Singapore', 'Asia/Hong_Kong', 'Asia/Shanghai', 'Asia/Bangkok', 'Asia/Jakarta', 'Australia/Sydney', 'Europe/London', 'America/New_York', 'UTC'],
+            'timezones' => $this->timezones($business->timezone),
+            'currencies' => ['RM' => 'RM (Malaysian ringgit)', 'S$' => 'S$ (Singapore dollar)', 'HK$' => 'HK$ (Hong Kong dollar)', '$' => '$ (dollar)', '€' => '€ (euro)', '£' => '£ (pound)', '¥' => '¥ (yuan or yen)', 'Rp' => 'Rp (rupiah)', '฿' => '฿ (baht)'],
+            'palette' => ['#0f766e', '#2563eb', '#7c3aed', '#db2777', '#b91c1c', '#c2410c', '#15803d', '#475569'],
+            'teamUsed' => app(Plans::class)->used($business, 'staff'),
+            'teamLimit' => app(Plans::class)->limit($business, 'staff'),
+            'chatUrl' => route('chat.show', $business->slug),
+            'tab' => $request->query('tab') === 'team' ? 'team' : 'business',
         ]);
+    }
+
+    /** Popular time zones first, then everything else by region. @return array<string, list<string>> */
+    private function timezones(?string $current): array
+    {
+        $popular = ['Asia/Kuala_Lumpur', 'Asia/Singapore', 'Asia/Hong_Kong', 'Asia/Shanghai', 'Asia/Bangkok', 'Asia/Jakarta', 'Australia/Sydney', 'Europe/London', 'America/New_York', 'UTC'];
+        if ($current && ! in_array($current, $popular, true)) {
+            array_unshift($popular, $current);
+        }
+
+        $rest = [];
+        foreach (\DateTimeZone::listIdentifiers() as $id) {
+            if (! in_array($id, $popular, true)) {
+                $rest[explode('/', $id)[0]][] = $id;
+            }
+        }
+
+        return ['Common' => $popular] + $rest;
     }
 
     public function saveProfile(Request $request): RedirectResponse
@@ -34,11 +58,19 @@ class SettingsController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'timezone' => ['required', 'timezone:all'],
             'accent' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'address' => ['nullable', 'string', 'max:200'],
+            'currency' => ['nullable', 'string', 'max:6'],
         ]);
 
         $business = $request->user()->business;
         $settings = (array) $business->settings;
         $settings['accent'] = $data['accent'] ?? null;
+        if (array_key_exists('address', $data)) {
+            $settings['address'] = $data['address'];
+        }
+        if (! empty($data['currency'])) {
+            $settings['currency'] = $data['currency'];
+        }
         $business->update(['name' => $data['name'], 'timezone' => $data['timezone'], 'settings' => $settings]);
 
         return back()->with('status', 'Settings saved.');

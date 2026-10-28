@@ -750,3 +750,22 @@ details.inline summary { display: inline; cursor: pointer; font-weight: 600; tex
   .c-tabs { margin: 0 -12px 8px; padding: 0 12px; }
 }
 #tpl-params .f { margin-bottom: 12px; }
+
+/* Business and team, account */
+.side .me a.me-link { display: inline; padding: 0; background: none; color: #fff; font-weight: 600; }
+.side .me a.me-link:hover { text-decoration: underline; background: none; }
+.team-list { padding: 4px 18px; }
+.member { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line-s); }
+.member:first-child { border-top: 0; }
+.member.off { opacity: .6; }
+.m-av { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent-m); color: var(--accent-d); display: grid; place-items: center; font-weight: 700; }
+.m-id { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.m-id small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role-help { margin-top: 14px; }
+.role-help ul { list-style: none; margin-top: 8px; }
+.role-help li { padding: 7px 0; border-top: 1px solid var(--line-s); font-size: 13px; color: var(--mute); }
+.role-help li:first-child { border-top: 0; }
+.role-help .tag { margin-right: 8px; min-width: 62px; justify-content: center; }
+[data-panel][hidden] { display: none; }
+[hidden] { display: none !important; }
+.role-help li { display: block; }

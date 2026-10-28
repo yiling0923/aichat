@@ -185,6 +185,11 @@ Route::post('/email/resend', [\App\Http\Controllers\SignupController::class, 're
 Route::get('/terms', [\App\Http\Controllers\LegalController::class, 'terms'])->name('terms');
 Route::get('/privacy', [\App\Http\Controllers\LegalController::class, 'privacy'])->name('privacy');
 
+Route::middleware('staff')->prefix('admin')->group(function () {
+    Route::get('/account', [\App\Http\Controllers\AccountController::class, 'index'])->name('account');
+    Route::post('/account', [\App\Http\Controllers\AccountController::class, 'save'])->middleware('throttle:10,1');
+});
+
 Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     $s = \App\Http\Controllers\SetupController::class;
     Route::get('/setup', [$s, 'index'])->name('setup');
