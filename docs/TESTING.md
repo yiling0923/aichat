@@ -328,3 +328,10 @@ Open the chat link (Settings, "Your customer chat link").
 1. In the customer chat, book two different times (use the same name and phone).
 2. Press "My booking": the bot lists every upcoming booking, numbered 1, 2 ..., with a "Cancel 1", "Cancel 2" button for each and "Keep it".
 3. Press "Cancel 2": only that booking is cancelled (check Schedule). With one booking the old single "Cancel booking" button shows.
+
+## AM. Bell sound
+
+1. Open any staff page and click anywhere on it once (browsers only allow sound after a click or key press).
+2. In the customer chat, type `human`. Within about 10 seconds you hear a four-note chime, the bell shakes and the number goes up. A new booking or message gives a softer two-note chime.
+3. Click the bell: the bottom left says "Sound is on". Press it to turn sound off (and again to turn it on and hear a test chime). Your choice is remembered in that browser.
+4. Check your computer or phone volume is up and the browser tab is not muted.

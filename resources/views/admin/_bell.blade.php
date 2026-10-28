@@ -6,6 +6,6 @@
     <div class="bell-menu" id="bell-menu" hidden>
         <div class="bell-head"><b>Notifications</b><button type="button" id="bell-all">Mark all read</button></div>
         <div class="bell-list" id="bell-list"><p class="bell-empty">Loading...</p></div>
-        <div class="bell-foot"><button type="button" id="bell-desktop">Turn on desktop alerts</button></div>
+        <div class="bell-foot"><button type="button" id="bell-sound">Sound is on</button><button type="button" id="bell-desktop">Turn on desktop alerts</button></div>
     </div>
 </div>

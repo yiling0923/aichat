@@ -1,4 +1,4 @@
-// The bell: polls every 20 seconds, shows unread count, lists the latest, optional desktop alerts.
+// The bell: polls every 10 seconds, shows unread count, lists the latest, plays a sound for new ones, optional desktop alerts.
 (function () {
   var root = document.getElementById('bell');
   if (!root) { return; }
@@ -6,6 +6,35 @@
   var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
   var btn = document.getElementById('bell-btn'), menu = document.getElementById('bell-menu'), badge = document.getElementById('bell-badge');
   var list = document.getElementById('bell-list'), desk = document.getElementById('bell-desktop');
+  var snd = document.getElementById('bell-sound'), ctx = null, soundOn = true;
+  try { soundOn = localStorage.getItem('aichat-sound') !== 'off'; } catch (e) { /* storage blocked: keep the default */ }
+
+  // A short chime made in the browser, so there is no sound file to load. Browsers only allow sound after the person has
+  // clicked or typed on the page once, so the first click or key press unlocks it.
+  function audio() {
+    if (!ctx) { var AC = window.AudioContext || window.webkitAudioContext; if (!AC) { return null; } ctx = new AC(); }
+    if (ctx.state === 'suspended') { ctx.resume(); }
+    return ctx;
+  }
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, function () { audio(); }, { once: true, passive: true }); });
+  function chime(urgent) {
+    var c = audio(); if (!c || c.state !== 'running') { return false; }
+    var notes = urgent ? [880, 1175, 880, 1175] : [880, 1175];
+    notes.forEach(function (f, i) {
+      var t = c.currentTime + i * 0.16, o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.3);
+    });
+    return true;
+  }
+  function soundLabel() { snd.textContent = soundOn ? 'Sound is on' : 'Sound is off'; snd.classList.toggle('off', !soundOn); }
+  snd.addEventListener('click', function () {
+    soundOn = !soundOn; try { localStorage.setItem('aichat-sound', soundOn ? 'on' : 'off'); } catch (e) { /* ignore */ }
+    soundLabel(); if (soundOn) { chime(false); }
+  });
+  soundLabel();
+
   var baseTitle = document.title, known = null, icons = { handover: '!', message: '\u2709', booking: '\u25A6', survey: '\u2605', plan: '$', task: '\u2713' };
 
   function ago(iso) {
@@ -38,10 +67,17 @@
     });
     // Desktop alert for anything new since the last check (not on the first load).
     var ids = d.items.filter(function (n) { return !n.read; }).map(function (n) { return n.id + ':' + n.time; });
-    if (known !== null && 'Notification' in window && Notification.permission === 'granted') {
-      d.items.filter(function (n) { return !n.read && known.indexOf(n.id + ':' + n.time) === -1; }).slice(0, 3).forEach(function (n) {
-        try { new Notification(n.title, { body: n.body || '' }); } catch (e) { /* not allowed here */ }
-      });
+    if (known !== null) {
+      var fresh = d.items.filter(function (n) { return !n.read && known.indexOf(n.id + ':' + n.time) === -1; });
+      if (fresh.length) {
+        if (soundOn) { chime(fresh.some(function (n) { return n.type === 'handover'; })); }
+        btn.classList.add('ring'); setTimeout(function () { btn.classList.remove('ring'); }, 1500);
+      }
+      if ('Notification' in window && Notification.permission === 'granted') {
+        fresh.slice(0, 3).forEach(function (n) {
+          try { new Notification(n.title, { body: n.body || '' }); } catch (e) { /* not allowed here */ }
+        });
+      }
     }
     known = ids;
   }
@@ -61,5 +97,5 @@
   deskLabel();
 
   load();
-  setInterval(load, 20000);
+  setInterval(load, 10000);
 })();

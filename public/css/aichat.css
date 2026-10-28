@@ -1016,3 +1016,7 @@ html { scroll-behavior: smooth; }
 .err-card h1 { font-size: 22px; }
 .err-card .mute { margin: 8px 0 20px; line-height: 1.6; }
 .err-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.bell-btn.ring svg { animation: bell-ring .6s ease-in-out 2; transform-origin: 50% 20%; }
+@keyframes bell-ring { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-5deg); } }
+.bell-foot button.off { color: var(--mute); }
+@media (prefers-reduced-motion: reduce) { .bell-btn.ring svg { animation: none; } }

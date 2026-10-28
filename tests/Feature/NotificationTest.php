@@ -139,4 +139,10 @@ class NotificationTest extends TestCase
         app(Notifier::class)->notify($ghost, 'message', 'x');
         $this->assertTrue(true);
     }
+
+    public function test_bell_has_a_sound_switch(): void
+    {
+        $owner = User::factory()->create(['business_id' => Business::factory()->create()->id, 'role' => 'owner']);
+        $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('bell-sound', false)->assertSee('Sound is on');
+    }
 }
