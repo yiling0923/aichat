@@ -66,6 +66,7 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/schedule', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('schedule');
     Route::post('/schedule/{id}/cancel', [\App\Http\Controllers\ScheduleController::class, 'cancel'])->whereNumber('id');
+    Route::post('/schedule/{id}/move', [\App\Http\Controllers\ScheduleController::class, 'move'])->whereNumber('id');
     Route::post('/schedule/{id}/mark', [\App\Http\Controllers\ScheduleController::class, 'mark'])->whereNumber('id');
 });
 

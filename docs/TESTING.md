@@ -117,6 +117,16 @@ Follow README "Connect Google Calendar". Then add an event in that calendar: tha
 5. **Export CSV** (top right) > **Bookings (detail)**: a file downloads. Open it in Excel: the columns are Booked on, Visit, Customer, Phone, Service, Practitioner, Status. Try the other files too.
 6. With little data the page still works: a new business shows zeros and "No data in this period".
 
+### N. Schedule calendar and drag to move
+1. **Schedule** opens the **Month** calendar. Use ← Today → and the practitioner filter. **Week** shows an hourly grid. **List** is the old table.
+2. Click a booking: a pop-up shows the details with **Done / No-show / Cancel booking**.
+3. **Week view:** drag a booking block to another time or day. A box asks "Move X to Thu 29 Oct, 15:00?" (times snap to 15 minutes). Press **Move it**. The page reloads with the booking at the new time.
+4. **Month view:** drag a booking to another day (the time stays the same).
+5. Tick **Tell the customer in the chat** (shown when the booking came from a chat): the customer gets "your appointment has been moved to ..." if their chat window is still open.
+6. Drop it on a time when the same practitioner already has a booking: the box says so and nothing changes. Dropping in the past is refused too.
+7. On a phone (no dragging): open the booking pop-up and use **Change time**.
+8. With Google Calendar connected, the event is replaced at the new time. Events you added by hand in Google are not checked when moving.
+
 ### J. n8n (optional)
 Start n8n, import `n8n/workflows/01-aichat-events-starter.json`, put its Production URL in `.env` as `N8N_WEBHOOK_URL`, run `php artisan config:clear`. Start a chat, book, hand over: each shows as an execution.
 

@@ -100,6 +100,62 @@ class Bookings
         $this->n8n->send('booking.cancelled', $this->payload($booking, $booking->customer) + ['cancelled_by' => $by]);
     }
 
+    /**
+     * Staff move a booking to another time (same practitioner and service). Other bookings of that practitioner
+     * are checked again inside a transaction; Google Calendar events that staff added by hand are not.
+     *
+     * @return array{notified: bool}
+     *
+     * @throws SlotTakenException when the practitioner already has a booking at that time
+     */
+    public function reschedule(Booking $booking, CarbonInterface $start, bool $notify = false): array
+    {
+        $start = $start->copy()->utc();
+        $end = $start->copy()->addMinutes($booking->service->duration_min);
+        $buffer = BookingRules::for($booking->business)['buffer_min'];
+
+        DB::transaction(function () use ($booking, $start, $end, $buffer): void {
+            Practitioner::query()->whereKey($booking->practitioner_id)->lockForUpdate()->first();
+
+            $clash = Booking::query()->where('practitioner_id', $booking->practitioner_id)->where('status', 'confirmed')->whereKeyNot($booking->id)
+                ->where('starts_at', '<', $end->copy()->addMinutes($buffer))->where('ends_at', '>', $start->copy()->subMinutes($buffer))->exists();
+
+            if ($clash) {
+                throw new SlotTakenException($booking->practitioner->name.' already has a booking around that time.');
+            }
+
+            $booking->forceFill(['starts_at' => $start, 'ends_at' => $end, 'reminder_24_sent_at' => null, 'reminder_2_sent_at' => null])->save();
+        });
+
+        $calendar = $booking->practitioner->google_calendar_id;
+        if ($booking->google_event_id && $calendar && $this->google->enabled()) {
+            try {
+                $this->google->deleteEvent($calendar, $booking->google_event_id);
+                $eventId = $this->google->createEvent($calendar, $booking->service->label('en').' - '.($booking->customer?->name ?: 'Customer'),
+                    'Phone: '.($booking->customer?->phone ?: '-')."\nBooked through the chat assistant.", $booking->starts_at, $booking->ends_at);
+                $booking->forceFill(['google_event_id' => $eventId])->save();
+            } catch (Throwable $e) {
+                $booking->forceFill(['google_event_id' => null])->save();
+                Log::warning('Google event not moved', ['booking' => $booking->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        $notified = false;
+        $chat = $booking->conversation;
+        if ($notify && $chat !== null && $chat->windowOpen()) {
+            $language = $chat->language ?? $booking->customer?->language ?? 'en';
+            $chat->addMessage('out', 'bot', \App\Bot\Text::fill(\App\Bot\Strings::get('booking_rescheduled', $language), [
+                'service' => $booking->service->label($language),
+                'when' => app(\App\Bot\BookingStep::class)->whenLabel($booking, $language),
+            ]));
+            $notified = true;
+        }
+
+        $this->n8n->send('booking.rescheduled', $this->payload($booking, $booking->customer) + ['notified_customer' => $notified]);
+
+        return ['notified' => $notified];
+    }
+
     /** Customers may cancel until cancel_hours before the start. */
     public function customerMayCancel(Booking $booking): bool
     {

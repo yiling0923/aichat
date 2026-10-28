@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Booking\Bookings;
+use App\Booking\SlotTakenException;
 use App\Models\Booking;
 use App\Models\Practitioner;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -123,6 +125,36 @@ class ScheduleController extends Controller
         $bookings->cancel(Booking::query()->findOrFail($id), 'staff');
 
         return back()->with('status', 'Booking cancelled (and removed from Google Calendar if it was there).');
+    }
+
+    /** Move a booking to another time (drag and drop on the calendar, or the form in the pop-up). */
+    public function move(Request $request, int $id, Bookings $bookings): JsonResponse|RedirectResponse
+    {
+        $data = $request->validate(['starts_at' => ['required', 'date_format:Y-m-d H:i'], 'notify' => ['nullable', 'boolean']]);
+        $booking = Booking::query()->with(['service', 'practitioner', 'customer', 'conversation'])->findOrFail($id);
+        $tz = $request->user()->business->timezone ?: 'UTC';
+        $fail = fn (string $message) => $request->expectsJson()
+            ? response()->json(['ok' => false, 'message' => $message], 422)
+            : back()->withErrors(['starts_at' => $message]);
+
+        if ($booking->status !== 'confirmed') {
+            return $fail('Only confirmed bookings can be moved.');
+        }
+
+        $start = Carbon::createFromFormat('Y-m-d H:i', $data['starts_at'], $tz);
+        if ($start->lte(Carbon::now($tz))) {
+            return $fail('Choose a time in the future.');
+        }
+
+        try {
+            $result = $bookings->reschedule($booking, $start, (bool) ($data['notify'] ?? false));
+        } catch (SlotTakenException $e) {
+            return $fail($e->getMessage());
+        }
+
+        $message = 'Moved to '.$start->format('D j M, H:i').'.'.(! empty($data['notify']) ? ($result['notified'] ? ' The customer was told in the chat.' : ' The customer could not be told (the chat window is closed).') : '');
+
+        return $request->expectsJson() ? response()->json(['ok' => true, 'message' => $message]) : back()->with('status', $message);
     }
 
     public function mark(Request $request, int $id): RedirectResponse

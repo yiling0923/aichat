@@ -9,6 +9,16 @@
     <li><span>Status</span><span class="tag {{ $b->status === 'confirmed' ? 'ok' : 'warn' }}">{{ str_replace('_', ' ', $b->status) }}</span></li>
 </ul>
 @if ($b->status === 'confirmed')
+    <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/move') }}" class="move-form">
+        @csrf
+        <label>Change time
+            <input type="date" name="date" value="{{ $local->format('Y-m-d') }}" required>
+            <input type="time" name="time" value="{{ $local->format('H:i') }}" step="900" required>
+        </label>
+        <input type="hidden" name="starts_at" value="">
+        @if ($b->conversation_id)<label class="chk"><input type="checkbox" name="notify" value="1" checked> Tell the customer in the chat</label>@endif
+        <button class="btn small primary" type="submit">Move</button>
+    </form>
     <div class="actions" style="margin-top:12px">
         @if ($b->starts_at->isPast())
             <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="completed"><button class="btn small">Done</button></form>

@@ -350,3 +350,13 @@ details.menu summary::-webkit-details-marker { display: none; }
 @media (max-width: 700px) { .mc { min-height: 70px; } .chip b { display: none; } }
 .legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
 .legend .chip { width: auto; cursor: default; }
+
+/* Drag and drop on the calendar */
+.chip[draggable=true], .ev[draggable=true] { cursor: grab; }
+.dragging { opacity: .45; }
+.drop-target { outline: 2px dashed var(--accent); outline-offset: -2px; background-color: var(--accent-l) !important; }
+.move-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-s); }
+.move-form label { font-size: 11.5px; font-weight: 600; color: var(--mute); display: flex; flex-direction: column; gap: 4px; }
+.move-form label:first-child { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; }
+.move-form input[type=date], .move-form input[type=time] { width: auto; height: 32px; }
+.chk { flex-direction: row !important; align-items: center; font-weight: 500 !important; color: var(--ink) !important; font-size: 12.5px !important; }

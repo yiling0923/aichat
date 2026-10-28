@@ -85,4 +85,87 @@ class ScheduleCalendarTest extends TestCase
         $this->get('/admin/schedule?practitioner=abc')->assertOk();
         $this->get('/admin/schedule?view=month&date='.now()->addMonth()->format('Y-m-d'))->assertOk()->assertSee(now()->addMonth()->format('F Y'));
     }
+
+    private function local(string $at): \Carbon\Carbon
+    {
+        return \Carbon\Carbon::parse($at, 'Asia/Kuala_Lumpur');
+    }
+
+    public function test_moving_a_booking_changes_its_time_and_resets_reminders(): void
+    {
+        $b = $this->make('Move Mia', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDays(2)->setTime(10, 0)->format('Y-m-d H:i'));
+        $b->forceFill(['reminder_24_sent_at' => now()])->save();
+        $new = now('Asia/Kuala_Lumpur')->addDays(3)->setTime(15, 30);
+
+        $this->actingAs($this->staff)->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => $new->format('Y-m-d H:i')])->assertOk()->assertJson(['ok' => true]);
+
+        $b = app(CurrentBusiness::class)->runAs($this->business, fn () => Booking::find($b->id));
+        $this->assertSame($new->format('Y-m-d H:i'), $b->starts_at->copy()->setTimezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i'));
+        $this->assertSame($new->copy()->addHour()->format('H:i'), $b->ends_at->copy()->setTimezone('Asia/Kuala_Lumpur')->format('H:i'));   // the service length is kept
+        $this->assertNull($b->reminder_24_sent_at);
+    }
+
+    public function test_moving_onto_another_booking_of_the_same_practitioner_is_refused_but_other_people_are_fine(): void
+    {
+        $day = now('Asia/Kuala_Lumpur')->addDays(2)->setTime(10, 0);
+        $a = $this->make('First', 'Dr A', 'Facial', $day->format('Y-m-d H:i'));
+        $b = $this->make('Second', 'Dr A', 'Facial', $day->copy()->setTime(14, 0)->format('Y-m-d H:i'));
+        $c = $this->make('Third', 'Dr B', 'Facial', $day->copy()->setTime(16, 0)->format('Y-m-d H:i'));
+        $this->actingAs($this->staff);
+
+        $this->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => $day->copy()->setTime(10, 30)->format('Y-m-d H:i')])->assertStatus(422)->assertJsonPath('ok', false);
+        $this->assertSame($day->copy()->setTime(14, 0)->format('H:i'), app(CurrentBusiness::class)->runAs($this->business, fn () => Booking::find($b->id))->starts_at->copy()->setTimezone('Asia/Kuala_Lumpur')->format('H:i'));
+        $this->postJson('/admin/schedule/'.$c->id.'/move', ['starts_at' => $day->format('Y-m-d H:i')])->assertOk();   // another practitioner, same time: fine
+        $this->postJson('/admin/schedule/'.$a->id.'/move', ['starts_at' => $day->copy()->addMinutes(15)->format('Y-m-d H:i')])->assertOk();   // overlapping itself is fine
+    }
+
+    public function test_cannot_move_into_the_past_a_cancelled_booking_or_another_business_and_input_is_checked(): void
+    {
+        $b = $this->make('Past Pat', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDays(2)->format('Y-m-d H:i'));
+        $cancelled = $this->make('Gone', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDays(3)->format('Y-m-d H:i'), 'cancelled');
+        $other = Business::factory()->create();
+        $theirs = $this->make('Theirs', 'Dr Z', 'Facial', now()->addDays(2)->format('Y-m-d H:i'), 'confirmed', $other);
+        $this->actingAs($this->staff);
+        $future = now('Asia/Kuala_Lumpur')->addDays(5)->format('Y-m-d H:i');
+
+        $this->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => now('Asia/Kuala_Lumpur')->subHour()->format('Y-m-d H:i')])->assertStatus(422);
+        $this->postJson('/admin/schedule/'.$cancelled->id.'/move', ['starts_at' => $future])->assertStatus(422);
+        $this->postJson('/admin/schedule/'.$theirs->id.'/move', ['starts_at' => $future])->assertNotFound();
+        $this->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => 'tomorrow'])->assertStatus(422);
+        $this->postJson('/admin/schedule/'.$b->id.'/move', [])->assertStatus(422);
+
+        auth()->logout();
+        $this->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => $future])->assertUnauthorized();
+    }
+
+    public function test_the_customer_is_told_in_the_chat_only_when_asked_and_possible(): void
+    {
+        $b = $this->make('Chatty Cleo', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDays(2)->setTime(10, 0)->format('Y-m-d H:i'));
+        $chat = app(CurrentBusiness::class)->runAs($this->business, function () use ($b) {
+            $chat = \App\Models\Conversation::startFor('web');
+            $chat->forceFill(['last_inbound_at' => now(), 'language' => 'en'])->save();
+            Booking::find($b->id)->forceFill(['conversation_id' => $chat->id])->save();
+
+            return $chat;
+        });
+        $this->actingAs($this->staff);
+        $when = now('Asia/Kuala_Lumpur')->addDays(4)->setTime(11, 0)->format('Y-m-d H:i');
+
+        $this->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => $when])->assertOk();
+        $this->assertSame(0, app(CurrentBusiness::class)->runAs($this->business, fn () => \App\Models\Message::where('conversation_id', $chat->id)->where('body', 'like', '%moved%')->count()));
+
+        $res = $this->postJson('/admin/schedule/'.$b->id.'/move', ['starts_at' => now('Asia/Kuala_Lumpur')->addDays(5)->setTime(11, 0)->format('Y-m-d H:i'), 'notify' => true])->assertOk();
+        $this->assertStringContainsString('customer was told', $res->json('message'));
+        $this->assertSame(1, app(CurrentBusiness::class)->runAs($this->business, fn () => \App\Models\Message::where('conversation_id', $chat->id)->where('body', 'like', '%moved%')->count()));
+    }
+
+    public function test_the_change_time_form_in_the_popup_works_without_javascript(): void
+    {
+        $b = $this->make('Form Fay', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDays(2)->setTime(10, 0)->format('Y-m-d H:i'));
+        $when = now('Asia/Kuala_Lumpur')->addDays(6)->setTime(9, 15)->format('Y-m-d H:i');
+
+        $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/move', ['starts_at' => $when])->assertRedirect()->assertSessionHas('status');
+        $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/move', ['starts_at' => '2001-01-01 10:00'])->assertSessionHasErrors('starts_at');
+        $this->get('/admin/schedule?date='.substr($when, 0, 10))->assertSee('Change time')->assertSee('draggable="true"', false);
+    }
 }
