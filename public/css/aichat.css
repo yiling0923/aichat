@@ -1008,3 +1008,11 @@ html { scroll-behavior: smooth; }
   .legal-toc a { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: var(--surface); }
   .legal-toc a { font-size: 12px; }
 }
+.setup-card li > span { display: flex; align-items: center; gap: 8px; }
+
+/* Error pages */
+.err-card { text-align: center; max-width: 420px; padding: 36px 28px; }
+.err-code { font-size: 54px; font-weight: 800; letter-spacing: -.04em; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+.err-card h1 { font-size: 22px; }
+.err-card .mute { margin: 8px 0 20px; line-height: 1.6; }
+.err-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }

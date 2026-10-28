@@ -31,7 +31,7 @@
             </div>
         @endif
         <table class="table">
-            <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pick').forEach(c => c.checked = this.checked)"></th><th>Name</th><th>Phone</th><th>Interested in</th><th>Tags</th><th>Lang</th><th>Lead level</th><th>Promo</th><th>Added</th></tr></thead>
+            <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pick').forEach(c => c.checked = this.checked)"></th><th>Name</th><th>Phone</th><th>Interested in</th><th>Tags</th><th>Lang</th><th>Lead level</th><th title="Can we send promotional messages?">Promotions</th><th>Added</th></tr></thead>
             <tbody>
             @forelse ($customers as $c)
                 <tr>
@@ -42,7 +42,7 @@
                     <td>@foreach ($c->tags as $t)<span class="chip" style="background:{{ $t->color }}">{{ $t->name }}</span>@endforeach</td>
                     <td>{{ strtoupper($c->language ?: '-') }}</td>
                     <td><span title="{{ ['hot' => 'Booked or ready to buy', 'warm' => 'Interested, left their details', 'cold' => 'Low interest'][$c->score] ?? 'Not set' }}" class="tag {{ $c->score === 'hot' ? 'hot' : ($c->score === 'warm' ? 'warn' : '') }}">{{ $c->score ? config('aichat.lead_levels')[$c->score] : '-' }}</span></td>
-                    <td>{{ $c->opted_out_at ? 'Opted out' : 'OK' }}</td>
+                    <td>@if ($c->opted_out_at)<span class="tag warn">Opted out</span>@elseif ($c->consented_at)<span class="tag ok">Allowed</span>@else<span class="mute">Not asked</span>@endif</td>
                     <td>{{ $c->created_at?->format('d M Y') }}</td>
                 </tr>
             @empty

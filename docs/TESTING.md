@@ -317,3 +317,8 @@ Open the chat link (Settings, "Your customer chat link").
 
 1. Open `/terms` and `/privacy` (also linked from the footer and the sign-up form). Each has numbered sections, a contents list on the left (above the text on a phone) and a link to the other page.
 2. The yellow "Starter text only" note stays until a lawyer has reviewed the wording. The contact address comes from your mail "from" address.
+
+## AK. Error pages and the new-owner walk-through
+
+1. Open a wrong address such as `/abc`: you see a friendly "Page not found" card with a button home, not a plain white error.
+2. Walk-through as a brand-new owner: sign up, confirm the email, Getting started (paste prices, approve), check Booking setup, open your chat link and book a visit, then see it in Inbox, Schedule, Customers and Today.

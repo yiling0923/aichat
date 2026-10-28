@@ -20,14 +20,14 @@
             </div>
         </div>
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
-        @if (in_array($active, ['library', 'tags', 'ai', 'templates', 'channels', 'menu', 'setup', 'settings', 'billing', 'setup-guide']) && auth()->user()->canManage())
+        @if (in_array($active, ['library', 'tags', 'ai', 'templates', 'channels', 'menu', 'setup', 'settings', 'billing']) && auth()->user()->canManage())
             <a class="crumb" href="{{ route('manage') }}">&larr; Settings</a>
         @endif
         @php($planState = app(\App\Billing\Plans::class)->state($business))
         @if (in_array($planState, ['trial_expired', 'past_due', 'canceled'], true))
             <div class="note err">Your plan is not active, so the AI is paused. Messages still reach your inbox. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Plan &amp; billing</a>@endif</div>
         @elseif ($planState === 'trial')
-            <div class="note warn">Free trial: {{ app(\App\Billing\Plans::class)->daysLeftInTrial($business) }} day(s) left. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Choose a plan</a>@endif</div>
+            <div class="note warn">Free trial: @php($dl = app(\App\Billing\Plans::class)->daysLeftInTrial($business)){{ $dl }} {{ $dl === 1 ? 'day' : 'days' }} left. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Choose a plan</a>@endif</div>
         @endif
         @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
         @yield('content')
