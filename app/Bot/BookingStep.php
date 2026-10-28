@@ -299,24 +299,35 @@ class BookingStep
         return $this->result([$c->addMessage('out', 'bot', $text)], 'done');
     }
 
-    /** Show the customer's next booking with cancel / keep buttons. Returns null when there is none. */
+    /** Show the customer's upcoming bookings (up to five) with cancel / keep buttons. Returns null when there is none. */
     public function summary(Conversation $c, string $language): ?array
     {
-        $booking = $this->upcoming($c);
+        $bookings = $this->upcomingList($c);
 
-        if ($booking === null) {
+        if ($bookings->isEmpty()) {
             return null;
         }
 
-        $text = Text::fill(Strings::get('booking_summary', $language), [
-            'service' => $booking->service->label($language),
-            'when' => $this->whenLabel($booking, $language),
-            'who' => $booking->practitioner->name,
-        ]);
-        $options = [
-            ['id' => 'bk_cancel', 'label' => Strings::get('opt_cancel', $language)],
-            ['id' => 'bk_keep', 'label' => Strings::get('opt_keep', $language)],
-        ];
+        if ($bookings->count() === 1) {
+            $booking = $bookings->first();
+            $text = Text::fill(Strings::get('booking_summary', $language), [
+                'service' => $booking->service->label($language),
+                'when' => $this->whenLabel($booking, $language),
+                'who' => $booking->practitioner->name,
+            ]);
+            $options = [['id' => 'bk_cancel', 'label' => Strings::get('opt_cancel', $language)]];
+        } else {
+            $lines = $bookings->values()->map(fn (Booking $b, int $i) => Text::fill(Strings::get('booking_summary_line', $language), [
+                'i' => $i + 1,
+                'service' => $b->service->label($language),
+                'when' => $this->whenLabel($b, $language),
+                'who' => $b->practitioner->name,
+            ]))->all();
+            $text = Text::fill(Strings::get('booking_summary_many', $language), ['n' => $bookings->count()])."\n".implode("\n", $lines);
+            $options = $bookings->values()->map(fn (Booking $b, int $i) => ['id' => 'bk_cancel:'.$b->id, 'label' => Text::fill(Strings::get('opt_cancel_n', $language), ['i' => $i + 1])])->all();
+        }
+
+        $options[] = ['id' => 'bk_keep', 'label' => Strings::get('opt_keep', $language)];
 
         return $this->result([$c->addMessage('out', 'bot', $text, ['options' => $options])]);
     }
@@ -325,11 +336,19 @@ class BookingStep
     public function handleSummary(Conversation $c, string $text, ?string $optionId, string $language): array
     {
         $normalized = Text::normalize($text);
-        $cancel = $optionId === 'bk_cancel' || $normalized === Text::normalize(Strings::get('opt_cancel', $language));
+        $cancel = $optionId === 'bk_cancel' || str_starts_with((string) $optionId, 'bk_cancel:') || $normalized === Text::normalize(Strings::get('opt_cancel', $language));
         $keep = $optionId === 'bk_keep' || $normalized === Text::normalize(Strings::get('opt_keep', $language));
 
         if ($cancel) {
-            $booking = $this->upcoming($c);
+            $list = $this->upcomingList($c);
+            $pickedId = str_starts_with((string) $optionId, 'bk_cancel:') ? (int) substr((string) $optionId, 10) : null;
+
+            // Several bookings and no button pressed: ask which one instead of guessing.
+            if ($pickedId === null && $list->count() > 1) {
+                return $this->result([$c->addMessage('out', 'bot', Strings::get('sorry_choose', $language))], 'retry');
+            }
+
+            $booking = $pickedId !== null ? $list->firstWhere('id', $pickedId) : $list->first();
             if ($booking === null) {
                 return $this->result([$c->addMessage('out', 'bot', Strings::get('booking_none_upcoming', $language))], 'done');
             }
@@ -352,13 +371,20 @@ class BookingStep
 
     private function upcoming(Conversation $c): ?Booking
     {
+        return $this->upcomingList($c)->first();
+    }
+
+    /** @return \Illuminate\Support\Collection<int, Booking> */
+    private function upcomingList(Conversation $c)
+    {
         return Booking::query()
             ->where('status', 'confirmed')
             ->where('starts_at', '>', now())
             ->where(fn ($q) => $q->where('conversation_id', $c->id)->when($c->customer_id, fn ($w) => $w->orWhere('customer_id', $c->customer_id)))
             ->with(['service', 'practitioner'])
             ->orderBy('starts_at')
-            ->first();
+            ->limit(5)
+            ->get();
     }
 
     public function whenLabel(Booking $booking, string $language): string

@@ -344,6 +344,37 @@ class BookingTest extends TestCase
         $this->inBusiness(fn () => $this->assertSame('cancelled', Booking::query()->first()->status));
     }
 
+    public function test_my_booking_lists_every_upcoming_booking_and_cancels_the_chosen_one(): void
+    {
+        [$token] = $this->bookViaChat('demo', '2026-11-05', '10:00');
+        $ids = $this->inBusiness(function () {
+            $first = Booking::query()->first();
+            $second = $first->replicate();
+            $second->starts_at = $first->starts_at->copy()->addDays(2);
+            $second->ends_at = $first->ends_at->copy()->addDays(2);
+            $second->save();
+
+            return [$first->id, $second->id];
+        });
+
+        $r = $this->say('demo', 'x', $token, 'my_booking');
+        $text = implode(' ', array_column($r->json('messages'), 'text'));
+        $this->assertStringContainsString('2 upcoming bookings', $text);
+        $this->assertStringContainsString('1.', $text);
+        $this->assertStringContainsString('2.', $text);
+        $this->assertContains('bk_cancel:'.$ids[1], $this->optionIds($r));
+
+        // Typing "cancel" with two bookings asks which one instead of guessing.
+        $r = $this->say('demo', 'cancel', $token);
+        $this->inBusiness(fn () => $this->assertSame(2, Booking::query()->where('status', 'confirmed')->count()));
+
+        $this->say('demo', 'x', $token, 'bk_cancel:'.$ids[1]);
+        $this->inBusiness(function () use ($ids) {
+            $this->assertSame('cancelled', Booking::query()->find($ids[1])->status);
+            $this->assertSame('confirmed', Booking::query()->find($ids[0])->status);
+        });
+    }
+
     public function test_cancelling_inside_the_window_goes_to_staff(): void
     {
         // Tomorrow 10:00 is about 26 hours away: allowed. Today 10:00 is 2 hours away: needs staff.

@@ -322,3 +322,9 @@ Open the chat link (Settings, "Your customer chat link").
 
 1. Open a wrong address such as `/abc`: you see a friendly "Page not found" card with a button home, not a plain white error.
 2. Walk-through as a brand-new owner: sign up, confirm the email, Getting started (paste prices, approve), check Booking setup, open your chat link and book a visit, then see it in Inbox, Schedule, Customers and Today.
+
+## AL. My booking with several bookings
+
+1. In the customer chat, book two different times (use the same name and phone).
+2. Press "My booking": the bot lists every upcoming booking, numbered 1, 2 ..., with a "Cancel 1", "Cancel 2" button for each and "Keep it".
+3. Press "Cancel 2": only that booking is cancelled (check Schedule). With one booking the old single "Cancel booking" button shows.
