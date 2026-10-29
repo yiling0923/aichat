@@ -27,18 +27,28 @@ class Notifier
                 ->when($roles !== null, fn ($q) => $q->whereIn('role', $roles))
                 ->get(['id']);
 
+            $pushTo = [];
+
             foreach ($users as $user) {
                 $same = $url === null ? null : StaffNotification::query()->where('user_id', $user->id)->where('type', $type)->where('url', $url)->whereNull('read_at')->first();
 
                 if ($same !== null) {
                     $same->forceFill(['title' => $title, 'body' => $body === null ? null : Str::limit($body, 140)])->save();
                     $same->touch();
+                    $pushTo[] = $user->id;
 
                     continue;
                 }
 
                 StaffNotification::create(['business_id' => $business->id, 'user_id' => $user->id, 'type' => $type, 'title' => Str::limit($title, 120),
                     'body' => $body === null ? null : Str::limit($body, 140), 'url' => $url]);
+                $pushTo[] = $user->id;
+            }
+
+            // The same alert on their phones and computers, after the page has been sent so nobody waits for it.
+            if ($pushTo !== [] && PushSender::configured()) {
+                $target = $url ?? route('inbox');
+                dispatch(fn () => app(PushSender::class)->toUsers($pushTo, $title, (string) $body, $target, $type.'-'.md5($target)))->afterResponse();
             }
         } catch (Throwable $e) {
             try {

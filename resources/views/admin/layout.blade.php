@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title'): {{ $business->name }}</title>
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
+    @include('admin._push')
 </head>
 <body>
 <div class="shell">
@@ -34,6 +35,7 @@
     </main>
 </div>
 <script src="{{ asset('js/search.js') }}"></script>
+<script src="{{ asset('js/push.js') }}"></script>
 <script src="{{ asset('js/notifications.js') }}"></script>
 <script src="{{ asset('js/autofilter.js') }}"></script>
 @stack('scripts')

@@ -487,3 +487,19 @@ Customers, All conversations, Orders, Reports, Activity log, Saved replies, Task
 4. Press **← Back** on the day list to leave without changing anything.
 5. A booking less than 24 hours away: the bot says changes that close need the team and hands the chat over to staff.
 6. If the person helping is busy at the new time but another practitioner is free, the booking moves to the free one.
+
+## BE. Phone alerts (staff get a pop-up even when the page is closed)
+
+One-time setup on the computer that runs the app:
+1. `git pull origin claude/sleepy-brown-fv558x`, then `composer install`, then `php artisan migrate`.
+2. `php artisan aichat:push-keys` (makes the private alert keys and saves them in `.env`; never share them), then `php artisan config:clear`.
+3. Alerts need `localhost` or an https address. Plain `http://192.168...` will not work.
+
+Per person and per device:
+1. Open **My account** → **Phone alerts** → **Turn on alerts** → press Allow in the browser.
+2. Press **Send me a test alert**. A pop-up should appear within seconds, even if you close the page first. Tapping it opens the inbox.
+3. The bell menu has the same switch ("Turn on phone alerts").
+4. Now close the page, then chat as a customer: staff get a pop-up for new chats, handovers and bookings. Several messages in one chat replace one pop-up instead of piling up.
+5. **Turn off alerts** stops it for this device only. Dead devices are removed automatically.
+6. iPhone: open the site in Safari, Share → Add to Home Screen, open it from the Home Screen icon, then turn alerts on.
+7. If keys are missing, the card says "Not set up on the server yet".

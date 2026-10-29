@@ -51,4 +51,11 @@ return [
         'price_input_per_million' => 0.10,
         'price_output_per_million' => 0.50,
     ],
+
+    // Phone and desktop alerts when the app is closed (Web Push). Make the keys with: php artisan aichat:push-keys
+    'push' => [
+        'public' => env('VAPID_PUBLIC_KEY'),
+        'private' => env('VAPID_PRIVATE_KEY'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:'.env('MAIL_FROM_ADDRESS', 'hello@example.com')),
+    ],
 ];

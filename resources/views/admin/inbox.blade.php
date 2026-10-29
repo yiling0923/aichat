@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Inbox: {{ $business->name }}</title>
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
+    @include('admin._push')
 </head>
 <body>
 <div class="shell">
@@ -95,6 +96,7 @@
 </dialog>
 <div class="toast" id="toast" hidden></div>
 <script src="{{ asset('js/inbox.js') }}"></script>
+<script src="{{ asset('js/push.js') }}"></script>
 <script src="{{ asset('js/notifications.js') }}"></script>
 </body>
 </html>

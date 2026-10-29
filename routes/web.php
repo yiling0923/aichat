@@ -45,6 +45,9 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/api/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/api/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);
     Route::post('/api/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->whereNumber('id');
+    Route::post('/api/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])->middleware('throttle:20,1');
+    Route::post('/api/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->middleware('throttle:20,1');
+    Route::post('/api/push/test', [\App\Http\Controllers\PushController::class, 'test'])->middleware('throttle:6,1');
     Route::get('/api/search', \App\Http\Controllers\SearchController::class)->middleware('throttle:120,1');
     Route::get('/api/quick-replies', [\App\Http\Controllers\LibraryController::class, 'list']);
 });

@@ -98,12 +98,26 @@
   document.addEventListener('click', function (e) { if (!e.target.closest('#bell')) { menu.hidden = true; } });
   document.getElementById('bell-all').addEventListener('click', function () { post('/read-all').then(load); });
 
+  // With phone alerts set up on the server the button turns them on for this device; otherwise it is the old desktop-only alert.
+  var P = window.aichatPush;
   function deskLabel() {
+    if (P && P.configured && P.supported()) {
+      P.state().then(function (st) {
+        desk.hidden = false;
+        desk.textContent = { on: 'Phone alerts are on (turn off)', off: 'Turn on phone alerts', blocked: 'Alerts are blocked in your browser', unsupported: 'Alerts not supported here', error: 'Turn on phone alerts' }[st] || 'Turn on phone alerts';
+        desk.disabled = st === 'blocked' || st === 'unsupported';
+        desk.dataset.state = st;
+      });
+      return;
+    }
     if (!('Notification' in window)) { desk.hidden = true; return; }
     desk.textContent = Notification.permission === 'granted' ? 'Desktop alerts are on' : (Notification.permission === 'denied' ? 'Desktop alerts are blocked in your browser' : 'Turn on desktop alerts');
     desk.disabled = Notification.permission !== 'default';
   }
-  desk.addEventListener('click', function () { Notification.requestPermission().then(deskLabel); });
+  desk.addEventListener('click', function () {
+    if (P && P.configured && P.supported()) { (desk.dataset.state === 'on' ? P.disable() : P.enable()).then(deskLabel); return; }
+    Notification.requestPermission().then(deskLabel);
+  });
   deskLabel();
 
   load();
