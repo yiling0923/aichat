@@ -3,8 +3,8 @@
     $waiting = \App\Models\Conversation::query()->where('channel', '!=', 'preview')->where('status', 'open')->where('mode', 'human')->count();
     $isOwner = auth()->user()->role === 'owner';
     $canManage = auth()->user()->canManage();
-    $hubPages = ['manage', 'library', 'tags', 'ai', 'templates', 'channels', 'menu', 'setup', 'settings', 'billing', 'setup-guide'];
-    $marketingPages = ['automations', 'broadcasts', 'activity'];
+    $hubPages = ['manage', 'tags', 'settings', 'billing', 'setup-guide'];
+    $marketingPages = ['automations', 'broadcasts', 'activity', 'templates'];
 @endphp
 @if ($accent && preg_match('/^#[0-9a-fA-F]{6}$/', $accent))
     <style>:root { --accent: {{ $accent }}; }</style>
@@ -26,7 +26,16 @@
     @endif
     <a @class(['on' => $active === 'reports']) href="{{ route('reports') }}"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Reports</a>
     @if ($canManage)
-    <div class="sec">Manage</div>
+    <div class="sec">Set up</div>
+    @if ($isOwner)
+    <a @class(['on' => $active === 'menu']) href="{{ route('menu') }}"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Menu builder</a>
+    <a @class(['on' => $active === 'setup']) href="{{ route('booking.setup') }}"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Booking setup</a>
+    <a @class(['on' => $active === 'channels']) href="{{ route('channels') }}"><svg viewBox="0 0 24 24"><path d="M5 12.5a7 7 0 0 1 14 0M8.5 12.5a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="12.5" r="1"/><path d="M12 14v7"/></svg>Channels</a>
+    @endif
+    <a @class(['on' => $active === 'ai']) href="{{ route('ai') }}"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>AI assistant</a>
+    <a @class(['on' => $active === 'library']) href="{{ route('library') }}"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z"/><path d="M8 9h8M8 13h5"/></svg>Saved replies</a>
+    @endif
+    @if ($canManage)
     <a @class(['on' => in_array($active, $hubPages)]) href="{{ route('manage') }}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
     @endif
     <div class="me">

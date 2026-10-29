@@ -20,7 +20,7 @@
             </div>
         </div>
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
-        @if (in_array($active, ['library', 'tags', 'ai', 'templates', 'channels', 'menu', 'setup', 'settings', 'billing']) && auth()->user()->canManage())
+        @if (in_array($active, ['tags', 'settings', 'billing']) && auth()->user()->canManage())
             <a class="crumb" href="{{ route('manage') }}">&larr; Settings</a>
         @endif
         @php($planState = app(\App\Billing\Plans::class)->state($business))

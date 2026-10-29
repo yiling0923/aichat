@@ -1,6 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Message templates')
 @section('content')
+    @include('admin._marketing_tabs', ['tab' => 'templates'])
     @php
         $languages = ['en' => 'English', 'zh_CN' => '中文（简体）', 'zh_HK' => '中文（香港）', 'ms' => 'Malay'];
         $statusOf = function ($t) {

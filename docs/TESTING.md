@@ -448,3 +448,11 @@ Today page layout (section AO, refreshed): date, greeting and one status line on
 2. Filter with All, Approved, Waiting, Problem, or type in **Search templates**.
 3. Each card: **Copy name**, **Duplicate** (opens New template with the same wording and a new name, so you can fix a rejected one) and **Remove**.
 4. New template: a letter counter, a live preview, and a short checklist (a full sentence, no changing part at the start or end, numbers in order, no shouting). Amber marks are warnings before Meta reviews it.
+
+## AY. Where things are in the side menu now
+
+The Settings page is short again. Everything else has its own place:
+- **Marketing** (Grow): Automations, Broadcasts, **Message templates** and Activity log are tabs on one page.
+- **Set up** (owner and managers): Menu builder, Booking setup and Channels (owner only), AI assistant, Saved replies.
+- **Settings**: Business and team, Plan and billing, Getting started, Tags.
+Older notes in this guide that say "Settings → Channels" (or Menu builder, Booking setup, AI assistant, Saved replies, Message templates) now mean the matching entry in the side menu or Marketing tab.
