@@ -526,3 +526,10 @@ Per person and per device:
 2. Members are listed owner first, then managers, then staff (switched-off people last), each with a round initials badge, name ("(you)" on yours), email, role tag and **Edit**. Switched-off people are faded with a red "Switched off" tag.
 3. "What each role can do" is three small cards (Owner, Manager, Staff). On a phone the role tag sits under the name and the cards stack.
 4. Add and Edit still use the same pop-up.
+
+## BJ. Tags page, tidied
+
+1. Settings → **Tags**. The "New tag" card has a **Preview** chip: type a name and pick a colour and the chip shows the tag as it will look. Press **Add tag**.
+2. The find / sort bar is the same white bar as other pages (Find a tag, A to Z / Most used) with "4 tags · 34 in use" on the right.
+3. Each row lines up: the coloured tag, a small bar showing how much it is used compared with your busiest tag, the count (click it to see those customers or chats), and **Edit** (rename, colour, merge, delete).
+4. "Ideas" shows one-tap suggestions you do not have yet. On a phone the bars are hidden and the rows stay compact.

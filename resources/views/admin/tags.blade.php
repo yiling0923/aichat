@@ -20,9 +20,10 @@
         <section class="tag-panel" data-panel="{{ $type }}" @if ($tab !== $type) hidden @endif>
             <form method="post" action="{{ url('/admin/tags') }}" class="card tag-new">
                 @csrf
+                <div class="tn-head"><b>New {{ $type === 'customer' ? 'people' : 'chat' }} tag</b><span class="chip tag-prev" style="background: {{ $palette[0] }}; color: {{ $ink($palette[0]) }}">Preview</span></div>
                 <input type="hidden" name="type" value="{{ $type }}">
                 <input type="hidden" name="color" value="{{ $palette[0] }}" class="pick-color">
-                <label class="f grow"><span>New {{ $type === 'customer' ? 'people' : 'chat' }} tag</span>
+                <label class="f grow"><span>Name</span>
                     <input type="text" name="name" placeholder="{{ $type === 'customer' ? 'VIP' : 'Price question' }}" required maxlength="60"></label>
                 <div class="swatches" role="radiogroup" aria-label="Colour">
                     @foreach ($palette as $i => $c)<button type="button" class="sw {{ $i === 0 ? 'on' : '' }}" data-color="{{ $c }}" style="background: {{ $c }}" aria-label="Colour {{ $c }}"></button>@endforeach
@@ -31,16 +32,18 @@
             </form>
 
             @if ($list->isNotEmpty())
-                <div class="tag-tools">
+                <div class="fbar tag-tools">
                     <input type="search" class="tag-find" placeholder="Find a tag" aria-label="Find a tag">
-                    <span class="mute">Sort:</span>
                     <div class="seg"><a href="{{ route('tags', ['tab' => $type, 'sort' => 'name']) }}" @class(['on' => $sort === 'name'])>A to Z</a><a href="{{ route('tags', ['tab' => $type, 'sort' => 'uses']) }}" @class(['on' => $sort === 'uses'])>Most used</a></div>
+                    <span class="f-note">{{ $list->count() }} {{ $list->count() === 1 ? 'tag' : 'tags' }} · {{ $list->sum($count) }} in use</span>
                 </div>
+                @php $max = max(1, (int) $list->max($count)); @endphp
                 <div class="card tag-rows">
                     @foreach ($list as $t)
                         <div class="tag-row" data-name="{{ mb_strtolower($t->name) }}">
                             <span class="chip" style="background: {{ $t->color }}; color: {{ $ink($t->color) }}">{{ $t->name }}</span>
                             <span class="tag-uses">
+                                <span class="tag-bar"><span style="width: {{ round($t->$count / $max * 100) }}%; background: {{ $t->color }}"></span></span>
                                 @if ($t->$count > 0)<a href="{{ $type === 'customer' ? route('customers', ['tag' => $t->id]) : route('conversations', ['tag' => $t->id]) }}">{{ $t->$count }} {{ $t->$count === 1 ? \Illuminate\Support\Str::singular($things) : $things }}</a>
                                 @else<span class="mute">Not used yet</span>@endif
                             </span>
@@ -54,7 +57,7 @@
             @php $have = $list->pluck('name')->map(fn ($n) => mb_strtolower($n)); $ideas = collect($suggestions[$type])->reject(fn ($s) => $have->contains(mb_strtolower($s))); @endphp
             @if ($ideas->isNotEmpty())
                 <div class="card ideas">
-                    <b>{{ $list->isEmpty() ? 'Start with a few' : 'Ideas' }}</b>
+                    <b>{{ $list->isEmpty() ? 'Start with a few' : 'Ideas' }}</b><span class="mute"> · tap to add one</span>
                     <div class="idea-row">
                         @foreach ($ideas as $idea)
                             <form method="post" action="{{ url('/admin/tags') }}">@csrf<input type="hidden" name="type" value="{{ $type }}"><input type="hidden" name="name" value="{{ $idea }}"><input type="hidden" name="color" value="{{ $palette[$loop->index % count($palette)] }}"><button class="btn small" type="submit">+ {{ $idea }}</button></form>
@@ -105,11 +108,18 @@
     });
   });
 
+  // The preview chip shows the new tag as it will look.
+  function preview(f) {
+    var c = f.querySelector('.pick-color').value, h = c.replace('#', ''), l = 0.299 * parseInt(h.substr(0, 2), 16) + 0.587 * parseInt(h.substr(2, 2), 16) + 0.114 * parseInt(h.substr(4, 2), 16), p = f.querySelector('.tag-prev');
+    p.textContent = f.querySelector('input[name=name]').value.trim() || 'Preview'; p.style.background = c; p.style.color = l > 160 ? '#15292a' : '#fff';
+  }
+
   // Colour swatches in the "new tag" forms.
   document.querySelectorAll('.tag-new').forEach(function (f) {
     f.querySelectorAll('.sw').forEach(function (s) {
-      s.addEventListener('click', function () { f.querySelector('.pick-color').value = s.dataset.color; f.querySelectorAll('.sw').forEach(function (x) { x.classList.toggle('on', x === s); }); });
+      s.addEventListener('click', function () { f.querySelector('.pick-color').value = s.dataset.color; f.querySelectorAll('.sw').forEach(function (x) { x.classList.toggle('on', x === s); }); preview(f); });
     });
+    f.querySelector('input[name=name]').addEventListener('input', function () { preview(f); });
   });
 
   // Find a tag.

@@ -1405,3 +1405,22 @@ html { scroll-behavior: smooth; }
 .role-card { padding: 16px 18px; }
 .role-card p { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--mute); }
 @media (max-width: 560px) { .member { flex-wrap: wrap; } .m-id { flex: 1 1 60%; } .m-tags { order: 3; margin-left: 56px; justify-content: flex-start; flex-basis: 100%; } .team-list { padding: 4px 16px; } .tm-head .btn { width: 100%; } }
+
+/* Tags page */
+.tag-new { padding: 20px 22px; }
+.tag-new .tn-head { flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tag-new .tn-head .chip { margin: 0; padding: 3px 12px; font-size: 12.5px; }
+.tag-new .swatches { padding-bottom: 8px; }
+.tag-tools.fbar { margin-bottom: 12px; }
+.tag-rows { padding: 4px 22px; }
+.tag-row { padding: 13px 0; gap: 16px; }
+.tag-row .chip { min-width: 0; }
+.tag-row .tag-uses { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.tag-bar { flex: 1 1 120px; max-width: 220px; height: 6px; border-radius: 4px; background: var(--line-s); overflow: hidden; }
+.tag-bar span { display: block; height: 100%; border-radius: 4px; }
+.tag-uses a, .tag-uses > .mute { flex: none; min-width: 96px; }
+.ideas { padding: 18px 22px; }
+@media (max-width: 560px) { .tag-bar { display: none; } .tag-rows, .tag-new, .ideas { padding-left: 16px; padding-right: 16px; } }
+.tag-row { display: grid; grid-template-columns: 180px minmax(0, 1fr) auto; }
+.tag-row .chip { justify-self: start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 560px) { .tag-row { grid-template-columns: auto minmax(0, 1fr) auto; } }
