@@ -1669,3 +1669,10 @@ details.au-card > form { padding-top: 0; }
   .au-edit { display: none; }
 }
 @media (min-width: 641px) { .au-head { flex-wrap: nowrap; align-items: flex-start; } .au-head form { flex: none; } }
+/* Automations: Status on one tight line, no tall gap before the fields */
+.au-status { justify-content: flex-start; margin: 0 0 4px; padding-top: 12px; }
+.au-status .f { display: flex; flex-direction: row; align-items: center; gap: 10px; margin: 0; }
+.au-status .f > span { margin: 0; }
+.au-status select { width: auto; min-width: 96px; height: 34px; margin: 0; }
+details.au-card > form .grid2 { margin-top: 10px; }
+details.au-card[open] > summary::after { content: none; }
