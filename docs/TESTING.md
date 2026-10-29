@@ -697,3 +697,10 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. Marketing > Automations: a "x / 5 switched on" strip, one icon and an Edit button per automation, and the Run now button on the top right.
 2. Press Edit on a card: it opens with Status, timing, messages and Save. Switch one On and Save: the card gets a green edge and the count goes up.
 3. Check on the phone (narrow window) and in 中文.
+
+## CD. Booking setup polish
+
+1. Open Booking setup. Three pills at the top jump to Opening hours and rules, Practitioners and Services (with counts).
+2. Practitioners and Services are now tidy tables with one header row. Change a name or price and press Save on that row.
+3. Press "+ New practitioner" or "+ Add service" to open the add form, add one and check it appears.
+4. On the phone (narrow window) each row becomes a clean card and nothing runs off the right edge. Check in 中文 too.

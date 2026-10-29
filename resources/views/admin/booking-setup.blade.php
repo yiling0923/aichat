@@ -1,11 +1,20 @@
 @extends('admin.layout')
 @section('title', __('Booking setup'))
 @section('content')
-        <h1>{{ __('Booking setup') }}</h1>
-        <p class="mute">{{ __('What customers can book, who does it, and when. Google Calendar:') }}
-            <span class="tag {{ $googleOn ? 'ok' : 'warn' }}">{{ $googleOn ? __('connected') : __('not connected (using the built-in calendar)') }}</span></p>
-        <h2>{{ __('Opening hours and rules') }}</h2>
-        <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split">
+        <div class="page-head">
+            <div>
+                <h1>{{ __('Booking setup') }}</h1>
+                <p class="mute">{{ __('What customers can book, who does it, and when. Google Calendar:') }}
+                    <span class="tag {{ $googleOn ? 'ok' : 'warn' }}">{{ $googleOn ? __('connected') : __('not connected (using the built-in calendar)') }}</span></p>
+            </div>
+        </div>
+        <nav class="bk-jump" aria-label="{{ __('Booking setup') }}">
+            <a href="#hours">{{ __('Opening hours and rules') }}</a>
+            <a href="#people">{{ __('Practitioners') }} <span>{{ $practitioners->count() }}</span></a>
+            <a href="#services">{{ __('Services') }} <span>{{ $services->count() }}</span></a>
+        </nav>
+        <h2 class="bk-h" id="hours">{{ __('Opening hours and rules') }}</h2>
+        <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split bk-card">
             @csrf
             <div>
             <div class="wk" id="wk">
@@ -51,54 +60,68 @@
             </div>
         </form>
 
-        <h2>{{ __('Practitioners') }}</h2>
-        <p class="mute">{{ __('One calendar per person or room. To use Google Calendar, share that calendar with the service account email (see README), then paste the calendar ID.') }}</p>
-        @foreach ($practitioners as $p)
-            <form method="post" action="{{ url('/admin/booking-setup/practitioners/'.$p->id) }}" class="card row">
-                @csrf
-                <label class="f"><span>{{ __('Name') }}</span><input type="text" name="name" value="{{ $p->name }}"></label>
-                <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" value="{{ $p->google_calendar_id }}" placeholder="{{ __('optional') }}"></label>
-                <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($p->active)><span>{{ __('Active') }}</span></label>
-                <button class="btn" type="submit">{{ __('Save') }}</button>
-            </form>
-        @endforeach
-        <form method="post" action="{{ url('/admin/booking-setup/practitioners') }}" class="card row">
-            @csrf
-            <label class="f"><span>{{ __('New practitioner') }}</span><input type="text" name="name" placeholder="{{ __('Name') }}"></label>
-            <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" placeholder="{{ __('optional') }}"></label>
-            <button class="btn primary" type="submit">{{ __('Add') }}</button>
-        </form>
+        <h2 class="bk-h" id="people">{{ __('Practitioners') }}</h2>
+        <p class="mute bk-sub">{{ __('One calendar per person or room. To use Google Calendar, share that calendar with the service account email (see README), then paste the calendar ID.') }}</p>
+        <div class="card bk-list bk-people">
+            <div class="bk-cols" aria-hidden="true"><span>{{ __('Name') }}</span><span>{{ __('Google Calendar ID') }}</span><span>{{ __('Active') }}</span><span></span></div>
+            @foreach ($practitioners as $p)
+                <form method="post" action="{{ url('/admin/booking-setup/practitioners/'.$p->id) }}" class="bk-row">
+                    @csrf
+                    <label class="f"><span>{{ __('Name') }}</span><input type="text" name="name" value="{{ $p->name }}"></label>
+                    <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" value="{{ $p->google_calendar_id }}" placeholder="{{ __('optional') }}"></label>
+                    <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($p->active)><span>{{ __('Active') }}</span></label>
+                    <button class="btn" type="submit">{{ __('Save') }}</button>
+                </form>
+            @endforeach
+            <details class="bk-add">
+                <summary>+ {{ __('New practitioner') }}</summary>
+                <form method="post" action="{{ url('/admin/booking-setup/practitioners') }}" class="bk-row bk-new">
+                    @csrf
+                    <label class="f"><span>{{ __('New practitioner') }}</span><input type="text" name="name" placeholder="{{ __('Name') }}"></label>
+                    <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" placeholder="{{ __('optional') }}"></label>
+                    <span></span>
+                    <button class="btn primary" type="submit">{{ __('Add') }}</button>
+                </form>
+            </details>
+        </div>
 
-        <h2>{{ __('Services') }}</h2>
-        @foreach ($services as $s)
-            <form method="post" action="{{ url('/admin/booking-setup/services/'.$s->id) }}" class="card row">
-                @csrf
-                <label class="f"><span>{{ __('Name (EN)') }}</span><input type="text" name="name_en" value="{{ $s->name['en'] ?? '' }}"></label>
-                <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh" value="{{ $s->name['zh'] ?? '' }}"></label>
-                <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="{{ $s->duration_min }}"></label>
-                <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price" value="{{ $s->price }}"></label>
-                <div class="f"><span>{{ __('Done by') }}</span>
-                    @foreach ($practitioners as $p)
-                        <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" @checked($s->practitioners->contains('id', $p->id))> {{ $p->name }}</label>
-                    @endforeach
-                </div>
-                <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($s->active)><span>{{ __('Active') }}</span></label>
-                <button class="btn" type="submit">{{ __('Save') }}</button>
-            </form>
-        @endforeach
-        <form method="post" action="{{ url('/admin/booking-setup/services') }}" class="card row">
-            @csrf
-            <label class="f"><span>{{ __('New service (EN)') }}</span><input type="text" name="name_en"></label>
-            <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh"></label>
-            <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="60"></label>
-            <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price"></label>
-            <div class="f"><span>{{ __('Done by') }}</span>
-                @foreach ($practitioners as $p)
-                    <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" checked> {{ $p->name }}</label>
-                @endforeach
-            </div>
-            <button class="btn primary" type="submit">{{ __('Add service') }}</button>
-        </form>
+        <h2 class="bk-h" id="services">{{ __('Services') }}</h2>
+        <div class="card bk-list bk-serv">
+            <div class="bk-cols" aria-hidden="true"><span>{{ __('Name (EN)') }}</span><span>{{ __('Name (中文)') }}</span><span>{{ __('Minutes') }}</span><span>{{ __('Price') }}</span><span>{{ __('Done by') }}</span><span>{{ __('Active') }}</span><span></span></div>
+            @foreach ($services as $s)
+                <form method="post" action="{{ url('/admin/booking-setup/services/'.$s->id) }}" class="bk-row">
+                    @csrf
+                    <label class="f"><span>{{ __('Name (EN)') }}</span><input type="text" name="name_en" value="{{ $s->name['en'] ?? '' }}"></label>
+                    <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh" value="{{ $s->name['zh'] ?? '' }}"></label>
+                    <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="{{ $s->duration_min }}"></label>
+                    <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price" value="{{ $s->price }}"></label>
+                    <div class="f"><span>{{ __('Done by') }}</span><div class="bk-who">
+                        @foreach ($practitioners as $p)
+                            <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" @checked($s->practitioners->contains('id', $p->id))> {{ $p->name }}</label>
+                        @endforeach
+                    </div></div>
+                    <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($s->active)><span>{{ __('Active') }}</span></label>
+                    <button class="btn" type="submit">{{ __('Save') }}</button>
+                </form>
+            @endforeach
+            <details class="bk-add">
+                <summary>+ {{ __('Add service') }}</summary>
+                <form method="post" action="{{ url('/admin/booking-setup/services') }}" class="bk-row bk-new">
+                    @csrf
+                    <label class="f"><span>{{ __('New service (EN)') }}</span><input type="text" name="name_en"></label>
+                    <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh"></label>
+                    <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="60"></label>
+                    <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price"></label>
+                    <div class="f"><span>{{ __('Done by') }}</span><div class="bk-who">
+                        @foreach ($practitioners as $p)
+                            <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" checked> {{ $p->name }}</label>
+                        @endforeach
+                    </div></div>
+                    <span></span>
+                    <button class="btn primary" type="submit">{{ __('Add service') }}</button>
+                </form>
+            </details>
+        </div>
 @endsection
 @push('scripts')
 <script>
