@@ -13,19 +13,19 @@
         <div class="dlg-foot"><button class="btn primary" type="submit">Save</button></div>
     </form>
 
-    <div class="card" id="phone-alerts" style="max-width:560px;margin-top:16px">
-        <h2 style="margin-top:0">Phone alerts</h2>
-        <p class="muted">Get a pop-up on this phone or computer for new chats and bookings, even when the page is closed. Turn it on for each device you use.</p>
-        <p id="pa-status" class="muted" style="font-weight:600">Checking…</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="card" id="phone-alerts" style="max-width:560px;margin-top:16px;padding:22px 24px">
+        <h3 style="margin:0 0 8px">Phone alerts</h3>
+        <p class="mute" style="margin:0 0 16px;line-height:1.5">Get a pop-up on this phone or computer for new chats and bookings, even when the page is closed. Turn it on for each device you use.</p>
+        <div id="pa-status" style="display:flex;align-items:center;gap:8px;margin:0 0 18px;padding:10px 12px;border-radius:10px;background:#f3f4f6;font-weight:600;font-size:14px"><span id="pa-dot" style="width:10px;height:10px;border-radius:50%;background:#9ca3af;flex:none"></span><span id="pa-text">Checking…</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button type="button" class="btn" id="pa-toggle" hidden>Turn on alerts</button>
-            <button type="button" class="btn secondary" id="pa-test" hidden>Send me a test alert</button>
+            <button type="button" class="btn" id="pa-test" hidden>Send me a test alert</button>
         </div>
-        <p id="pa-msg" class="muted" style="margin-bottom:0"></p>
+        <p id="pa-msg" class="mute" style="margin:14px 0 0;min-height:1em"></p>
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-      var P = window.aichatPush, st = document.getElementById('pa-status'), tg = document.getElementById('pa-toggle'), ts = document.getElementById('pa-test'), msg = document.getElementById('pa-msg');
+      var P = window.aichatPush, st = document.getElementById('pa-text'), dot = document.getElementById('pa-dot'), box = document.getElementById('pa-status'), tg = document.getElementById('pa-toggle'), ts = document.getElementById('pa-test'), msg = document.getElementById('pa-msg');
       var text = {
         unconfigured: 'Not set up on the server yet. Run: php artisan aichat:push-keys',
         unsupported: 'This browser cannot show alerts. On iPhone, add this site to the Home Screen first.',
@@ -35,6 +35,8 @@
       function refresh(s) {
         (s ? Promise.resolve(s) : P.state()).then(function (x) {
           st.textContent = text[x] || text.error;
+          dot.style.background = x === 'on' ? '#16a34a' : (x === 'off' ? '#9ca3af' : '#dc2626');
+          box.style.background = x === 'on' ? '#ecfdf5' : '#f3f4f6';
           tg.hidden = !(x === 'on' || x === 'off' || x === 'error');
           tg.textContent = x === 'on' ? 'Turn off alerts' : 'Turn on alerts';
           tg.dataset.state = x; ts.hidden = x !== 'on';
