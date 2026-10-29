@@ -1387,3 +1387,21 @@ html { scroll-behavior: smooth; }
 .set-card .grid2 { grid-template-columns: 1fr 1fr; }
 .set-card .grid2 .f { margin-bottom: 0; }
 @media (max-width: 700px) { .set-card .grid2 { grid-template-columns: 1fr; } }
+
+/* Team tab */
+.tm-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-top: 0 !important; }
+.tm-seats { flex: 1 1 260px; min-width: 0; }
+.tm-seats h3 { margin: 0; font-size: 16px; }
+.tm-seats p { margin: 3px 0 0; font-size: 13px; }
+.tm-seats .progress { margin: 10px 0 0; max-width: 360px; }
+.team-list { margin-top: 14px; padding: 4px 22px; }
+.member { gap: 14px; padding: 14px 0; }
+.m-av { width: 42px; height: 42px; font-size: 14px; }
+.m-id b { font-size: 14.5px; }
+.m-id small { font-size: 12.5px; margin-top: 2px; }
+.m-you { margin-left: 4px; color: var(--mute); font-size: 13px; font-weight: 500; }
+.m-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.role-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.role-card { padding: 16px 18px; }
+.role-card p { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--mute); }
+@media (max-width: 560px) { .member { flex-wrap: wrap; } .m-id { flex: 1 1 60%; } .m-tags { order: 3; margin-left: 56px; justify-content: flex-start; flex-basis: 100%; } .team-list { padding: 4px 16px; } .tm-head .btn { width: 100%; } }

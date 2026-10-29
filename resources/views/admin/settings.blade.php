@@ -66,24 +66,35 @@
     </section>
 
     <section data-panel="team" @if ($tab !== 'team') hidden @endif>
-        <div class="bar spread" style="margin-bottom:10px">
-            <span class="mute">@if ($teamLimit !== null)<b>{{ $teamUsed }} of {{ $teamLimit }}</b> team members on your plan @else <b>{{ $teamUsed }}</b> active team members @endif</span>
-            <button type="button" class="btn primary" id="add-member">Add a team member</button>
+        @php
+            $rank = ['owner' => 0, 'manager' => 1, 'staff' => 2];
+            $sorted = $team->sortBy(fn ($u) => [$u->active ? 0 : 1, $rank[$u->role] ?? 3, mb_strtolower($u->name)])->values();
+            $seatPct = $teamLimit ? min(100, round($teamUsed / $teamLimit * 100)) : 0;
+            $initials = fn ($n) => collect(preg_split('/\s+/', trim($n)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('') ?: '?';
+        @endphp
+        <div class="card set-card tm-head">
+            <div class="tm-seats">
+                <h3>Your team</h3>
+                <p class="mute">@if ($teamLimit !== null)<b>{{ $teamUsed }} of {{ $teamLimit }}</b> team members on your plan @else <b>{{ $teamUsed }}</b> active team members @endif</p>
+                @if ($teamLimit !== null)<div class="progress {{ $seatPct >= 100 ? 'hot' : ($seatPct >= 70 ? 'warn' : '') }}"><span style="width: {{ $seatPct }}%"></span></div>@endif
+            </div>
+            <button type="button" class="btn primary" id="add-member">+ Add a team member</button>
         </div>
         <div class="card team-list">
-            @foreach ($team as $u)
+            @foreach ($sorted as $u)
                 <div class="member {{ $u->active ? '' : 'off' }}">
-                    <span class="m-av">{{ mb_strtoupper(mb_substr($u->name, 0, 1)) }}</span>
-                    <div class="m-id"><b>{{ $u->name }}@if ($u->id === auth()->id()) <span class="mute">(you)</span>@endif</b><small class="mute">{{ $u->email }}</small></div>
-                    <span class="tag {{ $roleTone[$u->role] ?? '' }}">{{ ucfirst($u->role) }}</span>
-                    @unless ($u->active)<span class="tag hot">Switched off</span>@endunless
+                    <span class="m-av">{{ $initials($u->name) }}</span>
+                    <div class="m-id"><b>{{ $u->name }}@if ($u->id === auth()->id()) <span class="m-you">(you)</span>@endif</b><small class="mute">{{ $u->email }}</small></div>
+                    <div class="m-tags"><span class="tag {{ $roleTone[$u->role] ?? '' }}">{{ ucfirst($u->role) }}</span>@unless ($u->active)<span class="tag hot">Switched off</span>@endunless</div>
                     <button type="button" class="btn small" data-edit data-action="{{ url('/admin/settings/team/'.$u->id) }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}" data-role="{{ $u->role }}" data-active="{{ $u->active ? 1 : 0 }}">Edit</button>
                 </div>
             @endforeach
         </div>
-        <div class="card role-help">
-            <b>What each role can do</b>
-            <ul>@foreach ($roleHelp as $r => $text)<li><span class="tag {{ $roleTone[$r] }}">{{ ucfirst($r) }}</span> {{ $text }}</li>@endforeach</ul>
+        <h3 class="set-group" style="margin-top:22px">What each role can do</h3>
+        <div class="role-cards">
+            @foreach ($roleHelp as $r => $text)
+                <div class="card role-card"><span class="tag {{ $roleTone[$r] }}">{{ ucfirst($r) }}</span><p>{{ $text }}</p></div>
+            @endforeach
         </div>
     </section>
 

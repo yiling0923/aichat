@@ -519,3 +519,10 @@ Per person and per device:
 1. **Settings** (bottom of the left menu): tiles with an icon, a title, a short line and an arrow, grouped as Your business, Organise and You. New tiles: **My account** and **Phone alerts** (opens My account at the alerts card).
 2. **Business and team → Business**: three clear cards, each with a title and a short explanation: About your business (name and address side by side, time zone and currency side by side, colour swatches, Save at the bottom right), When a customer waits for a person (the email option sits in its own box, **Send me a test alert** and **Save** at the bottom right), and Your customer chat link.
 3. On a phone the fields stack and the buttons fill the width.
+
+## BI. Team tab, tidied
+
+1. Business and team → **Team**: a top card "Your team" with how many seats you use ("2 of 3 team members on your plan", with a bar that turns amber and red near the limit) and **+ Add a team member**.
+2. Members are listed owner first, then managers, then staff (switched-off people last), each with a round initials badge, name ("(you)" on yours), email, role tag and **Edit**. Switched-off people are faded with a red "Switched off" tag.
+3. "What each role can do" is three small cards (Owner, Manager, Staff). On a phone the role tag sits under the name and the cards stack.
+4. Add and Edit still use the same pop-up.
