@@ -564,3 +564,7 @@ Per person and per device:
 2. At the bottom of the card: how many chats are waiting for a person, how many tasks are overdue and how many bookings are tomorrow. Red means something needs you. Each one is a link.
 3. **Morning email (optional):** Settings → Business and team → **Smart helpers** → tick **Email me yesterday's summary every morning** → Save. Owners and managers get one email at about 8:00 your time. It needs the scheduler running (`php artisan schedule:work`) and email set up.
 4. Test it now without waiting: `php artisan aichat:daily-summary --force` sends it immediately to the owners and managers of businesses that turned it on. With MAIL_MAILER=log the email is written to `storage/logs/laravel.log` instead of sent.
+
+## BO. Fewer labels in the Inbox header
+
+The grey/pink AI label next to the customer ("complaint · angry") no longer repeats a tag: if a tag already says it (for example the Complaint tag), the AI label drops that word. A "neutral" mood is not shown at all. So you see the tags, plus the AI label only when it adds something (for example "angry").

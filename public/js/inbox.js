@@ -181,11 +181,15 @@
       a.textContent = (c.customer.name || 'Customer') + (c.customer.phone ? ' · ' + c.customer.phone : '');
       cust.appendChild(a);
     } else { cust.textContent = 'No customer details yet'; }
-    if (c.ai_mood || c.ai_intent) {
+    // The AI's reading of the chat, without repeating what a tag already says (an intent a tag covers is left out, and a neutral mood is not worth a label).
+    var tagNames = (c.tags || []).map(function (t) { return t.name.toLowerCase(); });
+    var intent = c.ai_intent && !tagNames.some(function (n) { return n.indexOf(String(c.ai_intent).toLowerCase()) !== -1; }) ? c.ai_intent : '';
+    var moodWord = c.ai_mood && c.ai_mood !== 'neutral' ? c.ai_mood : '';
+    if (intent || moodWord) {
       var mood = document.createElement('span');
       mood.className = 'tag ' + (c.ai_mood === 'angry' ? 'hot' : 'ok');
       mood.style.marginLeft = '8px';
-      mood.textContent = [c.ai_intent, c.ai_mood].filter(Boolean).join(' · ');
+      mood.textContent = [intent, moodWord].filter(Boolean).join(' · ');
       mood.title = 'What the AI understood from the last messages';
       cust.appendChild(mood);
     }
