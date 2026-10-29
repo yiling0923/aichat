@@ -24,7 +24,7 @@
         <p id="pa-msg" class="muted" style="margin-bottom:0"></p>
     </div>
     <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
       var P = window.aichatPush, st = document.getElementById('pa-status'), tg = document.getElementById('pa-toggle'), ts = document.getElementById('pa-test'), msg = document.getElementById('pa-msg');
       var text = {
         unconfigured: 'Not set up on the server yet. Run: php artisan aichat:push-keys',
@@ -43,6 +43,6 @@
       tg.addEventListener('click', function () { msg.textContent = ''; (tg.dataset.state === 'on' ? P.disable() : P.enable()).then(refresh); });
       ts.addEventListener('click', function () { msg.textContent = 'Sending…'; P.test().then(function (r) { msg.textContent = r.message || r.error || 'Done.'; }); });
       refresh();
-    })();
+    });
     </script>
 @endsection
