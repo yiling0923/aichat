@@ -96,6 +96,16 @@ class SettingsController extends Controller
         return back()->with('status', 'Waiting-chat settings saved.');
     }
 
+    public function saveSmart(Request $request): RedirectResponse
+    {
+        $business = $request->user()->business;
+        $settings = (array) $business->settings;
+        $settings['auto_tag'] = $request->boolean('auto_tag');
+        $business->update(['settings' => $settings]);
+
+        return back()->with('status', $settings['auto_tag'] ? 'Automatic tagging is on.' : 'Automatic tagging is off.');
+    }
+
     public function testAlerts(Request $request, \App\Services\StaffAlerts $alerts): RedirectResponse
     {
         $result = $alerts->test($request->user()->business, $request->user());

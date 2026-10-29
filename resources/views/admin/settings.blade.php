@@ -58,6 +58,13 @@
             <div class="set-foot"><button class="btn" type="submit" formaction="{{ url('/admin/settings/alerts/test') }}" title="Sends a test email to you, and to the WhatsApp number if set">Send me a test alert</button><button class="btn primary" type="submit">Save</button></div>
         </form>
 
+        <form method="post" action="{{ url('/admin/settings/smart') }}" class="card set-card">
+            @csrf
+            <div class="set-head"><h3>Automatic tags</h3><p class="mute">Chats are tagged by what the customer writes: Price question, Booking help, Cancel or change, Location, Payment, Aftercare and Complaint. Someone who asks about prices or booking becomes at least a warm lead, and owners and managers get a bell alert for a possible complaint. It uses simple word matching, no AI.</p></div>
+            <label class="terms set-check"><input type="checkbox" name="auto_tag" value="1" @checked(($business->settings['auto_tag'] ?? true) !== false)><span><b>Tag chats automatically</b> (you can still add or remove tags by hand).</span></label>
+            <div class="set-foot"><button class="btn primary" type="submit">Save</button></div>
+        </form>
+
         <div class="card set-card">
             <div class="set-head"><h3>Your customer chat link</h3><p class="mute">Share this link, or add the chat to your website.</p></div>
             <div class="copy-row"><input type="text" readonly value="{{ $chatUrl }}" id="chat-link"><button type="button" class="btn small" data-copy="chat-link">Copy</button><a class="btn small" href="{{ $chatUrl }}" target="_blank">Open</a></div>

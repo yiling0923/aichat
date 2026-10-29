@@ -126,6 +126,10 @@ class Conversation extends Model
             $this->forceFill(['last_message_at' => now()])->save();
         }
 
+        if ($direction === 'in' && $senderType === 'customer' && ! $private && $body !== null) {
+            app(\App\Services\AutoTagger::class)->tagMessage($this, $body);
+        }
+
         // Replies on WhatsApp, Messenger and Instagram are sent out as soon as they are saved.
         if ($deliver && $direction === 'out' && ! $private && $this->channel_id && in_array($senderType, ['bot', 'staff'], true)) {
             app(\App\Channels\ChannelSender::class)->deliver($this, $message);

@@ -547,3 +547,13 @@ Per person and per device:
 3. Open that chat in the Inbox. Above the reply box a **Suggested** row shows up to 3 replies that fit, for example **Opening hours**. Hover to see the start of the text. Click one: it goes into the box in the customer's language with their name filled in. You can edit before sending.
 4. When a person replies, or nothing matches (for example "ok thanks"), the row disappears.
 5. This is plain word matching (English, Malay and Chinese words for prices, hours, location, booking, aftercare, cancel, payment, thanks and hello). It needs no AI and no paid service. The better your saved reply titles, the better the suggestions.
+
+## BM. Automatic tags (no AI, free)
+
+1. As a customer in the website chat, write: "How much is a facial? Also this is terrible, I want a refund".
+2. In the Inbox open that chat. Under the name you see the tags **Price question** and **Complaint**, added by themselves. The tags are created the first time they are needed (see Settings → Tags → Chats).
+3. Owners and managers get a bell alert "... may be a complaint" (once per chat). Staff do not get it.
+4. Other examples: "can I book tomorrow?" → Booking help; "I want to cancel" → Cancel or change; "where is the parking?" or "地址在哪里" → Location; "deposit" or "付款" → Payment; "my face is swollen" or "红肿" → Aftercare; "多少钱" → Price question.
+5. A customer who was cold and asks about price or booking becomes warm. A hot customer is never lowered.
+6. Staff and bot messages never add tags. You can still add or remove tags by hand; removed tags can come back only if the customer writes about that topic again.
+7. Turn it off: Settings → Business and team → **Automatic tags** → untick **Tag chats automatically** → Save.

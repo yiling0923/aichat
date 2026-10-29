@@ -147,6 +147,7 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::get('/settings', [$c, 'index'])->name('settings');
     Route::post('/settings/profile', [$c, 'saveProfile']);
     Route::post('/settings/alerts', [$c, 'saveAlerts']);
+    Route::post('/settings/smart', [$c, 'saveSmart']);
     Route::post('/settings/alerts/test', [$c, 'testAlerts'])->middleware('throttle:6,1');
     Route::post('/settings/team', [$c, 'storeUser']);
     Route::post('/settings/team/{id}', [$c, 'updateUser'])->whereNumber('id');
