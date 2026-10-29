@@ -13,108 +13,103 @@
         $delta = fn ($n) => $n === 0 ? 'same as the week before' : ($n > 0 ? '▲ '.$n.' more than last week' : '▼ '.abs($n).' fewer than last week');
     @endphp
 
-    <section class="td-hero">
-        <div>
+    <header class="tp-hero">
+        <div class="tp-title">
+            <span class="tp-date">{{ $now->format('l, j F Y') }}</span>
             <h1>{{ $greet }}, {{ $first }}</h1>
-            <p class="mute">{{ $now->format('l, j F Y') }}
-                @if ($waiting->count())· <b class="td-alert">{{ $waiting->count() }} {{ $waiting->count() === 1 ? 'chat needs' : 'chats need' }} you</b>
-                @elseif ($upcoming)· Next up: <b>{{ $upcoming->starts_at->copy()->setTimezone($tz)->format('H:i') }}</b> {{ $upcoming->customer?->name ?: $upcoming->service->label('en') }}
-                @else· A quiet day so far @endif</p>
+            <p class="tp-sub">
+                @if ($waiting->count())<b class="tp-red">{{ $waiting->count() }} {{ $waiting->count() === 1 ? 'chat needs' : 'chats need' }} a reply</b>
+                @elseif ($upcoming)Next up at <b>{{ $upcoming->starts_at->copy()->setTimezone($tz)->format('H:i') }}</b>: {{ $upcoming->customer?->name ?: $upcoming->service->label('en') }}
+                @else A quiet day so far. @endif
+            </p>
         </div>
-        <div class="td-actions">
-            <a class="btn primary" href="{{ route('inbox') }}">Open inbox</a>
-            <a class="btn" href="{{ route('schedule') }}">Schedule</a>
+        <div class="tp-actions">
+            <button type="button" class="btn ghost" id="td-copy" data-link="{{ $chatUrl }}" title="Copy your customer chat link">Copy chat link</button>
             <a class="btn" href="{{ route('tasks') }}">+ Task</a>
-            <button type="button" class="btn" id="td-copy" data-link="{{ $chatUrl }}" title="Copy your customer chat link">Copy chat link</button>
+            <a class="btn" href="{{ route('schedule') }}">Schedule</a>
+            <a class="btn primary" href="{{ route('inbox') }}">Open inbox</a>
         </div>
-    </section>
+    </header>
 
     @if ($checklist)
         @php $done = collect($checklist)->where('done', true)->count(); @endphp
-        <div class="card setup-card">
-            <div class="bar spread"><h3>Get set up</h3><span class="mute">{{ $done }} of {{ count($checklist) }} done</span></div>
-            <div class="progress"><span style="width: {{ round($done / count($checklist) * 100) }}%"></span></div>
-            <ul>
-                @foreach ($checklist as $step)
-                    <li><span>@if ($step['done'])<span class="tick ok">&#10003;</span> <s class="mute">{{ $step['text'] }}</s>@else<span class="tick">&#9675;</span> {{ $step['text'] }}@endif</span>
-                        @unless ($step['done'])<a class="btn small" href="{{ $step['url'] }}">Do it</a>@endunless</li>
-                @endforeach
-            </ul>
-        </div>
+        <section class="tp-panel tp-setup">
+            <div class="tp-head"><h3>Get set up</h3><span class="tp-count">{{ $done }} of {{ count($checklist) }} done</span></div>
+            <div class="progress" style="margin:0 20px"><span style="width: {{ round($done / count($checklist) * 100) }}%"></span></div>
+            @foreach ($checklist as $step)
+                <div class="tp-row">
+                    <span class="tp-ck {{ $step['done'] ? 'ok' : '' }}">{{ $step['done'] ? '✓' : '' }}</span>
+                    <div class="tp-id"><b class="{{ $step['done'] ? 'tp-done' : '' }}">{{ $step['text'] }}</b></div>
+                    @unless ($step['done'])<a class="btn small" href="{{ $step['url'] }}">Do it</a>@endunless
+                </div>
+            @endforeach
+        </section>
     @endif
 
-    <div class="td-kpis">
-        <a class="td-kpi {{ $waiting->count() ? 'alert' : '' }}" href="{{ route('inbox') }}">
-            <span class="ic">✉</span><span class="kpi-l">Waiting for staff</span><b>{{ $waiting->count() }}</b>
-            <span class="kpi-s">{{ $waiting->count() ? 'Reply to take over from the bot' : 'The bot is handling everything' }}</span></a>
-        <a class="td-kpi" href="{{ route('schedule') }}">
-            <span class="ic">▦</span><span class="kpi-l">Bookings today</span><b>{{ $bookings->count() }}</b>
-            <span class="kpi-s">{{ $tomorrow }} tomorrow</span></a>
-        <a class="td-kpi" href="{{ route('inbox') }}">
-            <span class="ic">☰</span><span class="kpi-l">Open chats</span><b>{{ $openChats }}</b>
-            <span class="kpi-s">across all channels</span></a>
-        <a class="td-kpi" href="{{ route('customers') }}">
-            <span class="ic">+</span><span class="kpi-l">New customers</span><b>{{ $newLeads }}</b>
-            <span class="kpi-s {{ $leadsDelta > 0 ? 'up' : ($leadsDelta < 0 ? 'down' : '') }}">{{ $delta($leadsDelta) }}</span></a>
-        <a class="td-kpi" href="{{ route('orders') }}">
-            <span class="ic">$</span><span class="kpi-l">Paid, last 7 days</span><b>{{ $money($revenueWeek) }}</b>
-            <span class="kpi-s {{ ($revenueDelta ?? 0) > 0 ? 'up' : (($revenueDelta ?? 0) < 0 ? 'down' : '') }}">{{ $revenueDelta === null ? 'no sales the week before' : ($revenueDelta >= 0 ? '▲ ' : '▼ ').abs($revenueDelta).'% vs the week before' }}</span></a>
-    </div>
+    <section class="tp-stats">
+        <a class="tp-stat {{ $waiting->count() ? 'alert' : '' }}" href="{{ route('inbox') }}"><span class="tp-sl">Waiting for staff</span><b>{{ $waiting->count() }}</b><span class="tp-sn">{{ $waiting->count() ? 'Reply to take over' : 'All handled by the bot' }}</span></a>
+        <a class="tp-stat" href="{{ route('schedule') }}"><span class="tp-sl">Bookings today</span><b>{{ $bookings->count() }}</b><span class="tp-sn">{{ $tomorrow }} tomorrow</span></a>
+        <a class="tp-stat" href="{{ route('inbox') }}"><span class="tp-sl">Open chats</span><b>{{ $openChats }}</b><span class="tp-sn">all channels</span></a>
+        <a class="tp-stat" href="{{ route('customers') }}"><span class="tp-sl">New customers</span><b>{{ $newLeads }}</b><span class="tp-sn {{ $leadsDelta > 0 ? 'up' : ($leadsDelta < 0 ? 'down' : '') }}">{{ $leadsDelta === 0 ? 'same as last week' : ($leadsDelta > 0 ? '▲ '.$leadsDelta : '▼ '.abs($leadsDelta)).' vs last week' }}</span></a>
+        <a class="tp-stat" href="{{ route('orders') }}"><span class="tp-sl">Paid, 7 days</span><b>{{ $money($revenueWeek) }}</b><span class="tp-sn {{ ($revenueDelta ?? 0) > 0 ? 'up' : (($revenueDelta ?? 0) < 0 ? 'down' : '') }}">{{ $revenueDelta === null ? 'no sales the week before' : ($revenueDelta >= 0 ? '▲ ' : '▼ ').abs($revenueDelta).'% vs week before' }}</span></a>
+    </section>
 
-    <div class="td-cols">
-        <div class="td-main">
+    <div class="tp-cols">
+        <div class="tp-main">
             @if ($waiting->count())
-                <section class="card td-needs">
-                    <div class="bar spread"><h3>Needs a person</h3><a href="{{ route('inbox') }}" class="mute">Open inbox</a></div>
+                <section class="tp-panel">
+                    <div class="tp-head"><h3>Needs a person</h3><span class="tp-badge red">{{ $waiting->count() }}</span><a href="{{ route('inbox') }}" class="tp-link">Open inbox</a></div>
                     @foreach ($waiting as $c)
-                        <div class="td-row">
-                            <span class="td-av warn">{{ mb_strtoupper(mb_substr($c->customer?->name ?: ($c->contact_name ?: 'V'), 0, 1)) }}</span>
-                            <div class="td-id"><b>{{ $c->customer?->name ?: ($c->contact_name ?: 'Visitor '.$c->id) }}</b>@php $mins = $c->handover_at ? (int) $c->handover_at->diffInMinutes(now()) : 0; @endphp<small class="{{ $mins >= 10 ? 'td-late' : 'mute' }}">{{ $c->handover_reason ?: 'Asked for a person' }}@if ($c->handover_at) · waiting {{ $mins < 60 ? $mins.' min' : $c->handover_at->diffForHumans(null, true) }}@endif</small></div>
+                        @php $mins = $c->handover_at ? (int) $c->handover_at->diffInMinutes(now()) : 0; $nm = $c->customer?->name ?: ($c->contact_name ?: 'Visitor '.$c->id); @endphp
+                        <div class="tp-row">
+                            <span class="tp-av">{{ mb_strtoupper(mb_substr($nm, 0, 1)) }}</span>
+                            <div class="tp-id"><b>{{ $nm }}</b><small>{{ $c->handover_reason ?: 'Asked for a person' }}</small></div>
+                            <span class="tp-wait {{ $mins >= 10 ? 'late' : '' }}">{{ $mins < 60 ? $mins.' min' : $c->handover_at->diffForHumans(null, true) }}</span>
                             <a class="btn small primary" href="{{ route('inbox', ['c' => $c->id]) }}">Reply</a>
                         </div>
                     @endforeach
                 </section>
             @endif
 
-            <section class="card">
-                <div class="bar spread"><h3>Today's bookings</h3><a href="{{ route('schedule') }}" class="mute">Open schedule</a></div>
+            <section class="tp-panel">
+                <div class="tp-head"><h3>Today's bookings</h3>@if ($bookings->count())<span class="tp-badge">{{ $bookings->count() }}</span>@endif<a href="{{ route('schedule') }}" class="tp-link">Open schedule</a></div>
                 @forelse ($bookings as $b)
                     @php
                         $s = $b->starts_at->copy()->setTimezone($tz); $e = $b->ends_at->copy()->setTimezone($tz);
                         $state = $b->status === 'no_show' ? 'noshow' : ($b->status === 'completed' || $b->ends_at->lt(now()) ? 'done' : ($b->starts_at->lte(now()) ? 'now' : ($upcoming && $upcoming->id === $b->id ? 'next' : 'later')));
                     @endphp
-                    <div class="td-slot {{ $state }}">
-                        <div class="td-time"><b>{{ $s->format('H:i') }}</b><small>{{ $e->format('H:i') }}</small></div>
-                        <div class="td-id"><b>{{ $b->customer?->name ?: 'Walk-in' }}</b><small class="mute">{{ $b->service->label('en') }} · {{ $b->practitioner->name }}</small></div>
-                        <span class="tag {{ ['now' => 'ok', 'next' => 'warn', 'noshow' => 'hot'][$state] ?? '' }}">{{ ['now' => 'Now', 'next' => 'Next, '.$b->starts_at->diffForHumans(null, true), 'later' => 'Later', 'done' => 'Done', 'noshow' => 'No-show'][$state] }}</span>
+                    <div class="tp-row tp-slot {{ $state }}">
+                        <div class="tp-time"><b>{{ $s->format('H:i') }}</b><small>{{ $e->format('H:i') }}</small></div>
+                        <div class="tp-id"><b>{{ $b->customer?->name ?: 'Walk-in' }}</b><small>{{ $b->service->label('en') }} · {{ $b->practitioner->name }}</small></div>
+                        <span class="tp-chip {{ $state }}">{{ ['now' => 'In progress', 'next' => 'Next, in '.$b->starts_at->diffForHumans(null, true), 'later' => 'Later', 'done' => 'Done', 'noshow' => 'No-show'][$state] }}</span>
                     </div>
                 @empty
-                    <p class="td-empty">No bookings today. Customers can book any time from your chat link, and you can move them in the <a href="{{ route('schedule') }}">schedule</a>.</p>
+                    <p class="tp-empty">No bookings today. Customers can book any time from your chat link, and you can move bookings in the <a href="{{ route('schedule') }}">schedule</a>.</p>
                 @endforelse
             </section>
         </div>
 
-        <aside class="td-side">
-            <section class="card">
-                <div class="bar spread"><h3>Tasks for you</h3><a href="{{ route('tasks') }}" class="mute">All tasks</a></div>
+        <aside class="tp-side">
+            <section class="tp-panel">
+                <div class="tp-head"><h3>Tasks</h3>@if ($tasks->count())<span class="tp-badge">{{ $tasks->count() }}</span>@endif<a href="{{ route('tasks') }}" class="tp-link">All tasks</a></div>
                 @forelse ($tasks as $t)
                     @php $due = $t->due_at?->copy()->setTimezone($tz); $late = $due && $due->lt($now); @endphp
-                    <div class="td-task">
-                        <form method="post" action="{{ url('/admin/tasks/'.$t->id.'/toggle') }}">@csrf<button type="submit" class="td-check" aria-label="Mark done" title="Mark done"></button></form>
-                        <div class="td-id"><b>{{ $t->title }}</b><small class="{{ $late ? 'td-late' : 'mute' }}">{{ $due ? ($late ? 'Overdue · ' : '').$due->format('D j M, H:i') : 'No date' }}</small></div>
+                    <div class="tp-row">
+                        <form method="post" action="{{ url('/admin/tasks/'.$t->id.'/toggle') }}">@csrf<button type="submit" class="tp-check" aria-label="Mark done" title="Mark done"></button></form>
+                        <div class="tp-id"><b>{{ $t->title }}</b><small class="{{ $late ? 'tp-red' : '' }}">{{ $due ? ($late ? 'Overdue, ' : '').$due->format('D j M, H:i') : 'No date' }}</small></div>
                     </div>
                 @empty
-                    <p class="td-empty">Nothing to do. <a href="{{ route('tasks') }}">Add a follow-up</a>.</p>
+                    <p class="tp-empty">Nothing to do. <a href="{{ route('tasks') }}">Add a follow-up</a>.</p>
                 @endforelse
             </section>
 
-            <section class="card">
-                <div class="bar spread"><h3>This week</h3><span class="mute">{{ $weekTotal }} {{ $weekTotal === 1 ? 'booking' : 'bookings' }}</span></div>
-                <div class="td-week">
+            <section class="tp-panel">
+                <div class="tp-head"><h3>This week</h3><span class="tp-count">{{ $weekTotal }} {{ $weekTotal === 1 ? 'booking' : 'bookings' }}</span></div>
+                <div class="tp-week">
                     @foreach ($week as $d)
-                        <div class="td-day {{ $d['today'] ? 'today' : '' }}" title="{{ $d['count'] }} on {{ $d['label'] }} {{ $d['date'] }}">
+                        <div class="tp-day {{ $d['today'] ? 'today' : '' }}" title="{{ $d['count'] }} on {{ $d['label'] }} {{ $d['date'] }}">
                             <span class="n">{{ $d['count'] ?: '' }}</span>
-                            <i style="height: {{ $d['count'] ? max(8, round($d['count'] / $weekMax * 70)) : 3 }}px"></i>
+                            <i style="height: {{ $d['count'] ? max(8, round($d['count'] / $weekMax * 64)) : 3 }}px"></i>
                             <small>{{ $d['label'] }}</small>
                         </div>
                     @endforeach
@@ -122,20 +117,20 @@
             </section>
 
             @if ($recent->count())
-                <section class="card">
-                    <h3>Recent activity</h3>
+                <section class="tp-panel">
+                    <div class="tp-head"><h3>Recent activity</h3></div>
                     @foreach ($recent as $n)
-                        <a class="td-act" href="{{ $n->url ?: route('inbox') }}"><span class="td-ic">{{ $icons[$n->type] ?? '•' }}</span><span class="td-id"><b>{{ $n->title }}</b><small class="mute">{{ \Illuminate\Support\Str::limit(str_replace(' [sample]', '', (string) $n->body), 48) }}</small></span><time>{{ $n->created_at->diffForHumans(null, true, true) }}</time></a>
+                        <a class="tp-row tp-act" href="{{ $n->url ?: route('inbox') }}"><span class="tp-ic">{{ $icons[$n->type] ?? '•' }}</span><span class="tp-id"><b>{{ $n->title }}</b><small>{{ \Illuminate\Support\Str::limit(str_replace(' [sample]', '', (string) $n->body), 46) }}</small></span><time>{{ $n->created_at->diffForHumans(null, true, true) }}</time></a>
                     @endforeach
                 </section>
             @endif
 
             @if ($aiUsage)
                 @php $pct = min(100, round($aiUsage['used'] / max(1, $aiUsage['limit']) * 100)); @endphp
-                <section class="card">
-                    <div class="bar spread"><h3>AI replies this month</h3><a href="{{ route('billing') }}" class="mute">Plan</a></div>
-                    <div class="bar spread"><span class="mute">{{ number_format($aiUsage['used']) }} of {{ number_format($aiUsage['limit']) }}</span><b>{{ $pct }}%</b></div>
-                    <div class="progress {{ $pct >= 90 ? 'hot' : ($pct >= 70 ? 'warn' : '') }}"><span style="width: {{ $pct }}%"></span></div>
+                <section class="tp-panel">
+                    <div class="tp-head"><h3>AI replies this month</h3><a href="{{ route('billing') }}" class="tp-link">Plan</a></div>
+                    <div class="tp-ai"><div class="bar spread"><span class="mute">{{ number_format($aiUsage['used']) }} of {{ number_format($aiUsage['limit']) }}</span><b>{{ $pct }}%</b></div>
+                        <div class="progress {{ $pct >= 90 ? 'hot' : ($pct >= 70 ? 'warn' : '') }}"><span style="width: {{ $pct }}%"></span></div></div>
                 </section>
             @endif
         </aside>

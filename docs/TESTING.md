@@ -439,3 +439,5 @@ Windows is stopping the app from writing its log file. Usually the file was crea
    `icacls "C:\xampp\htdocs\aichat\storage" /grant Users:(OI)(CI)F /T`
 4. Start the app again. If the Task Scheduler job runs as another user, run it as your own Windows user too.
 Alerts and notifications no longer crash a page when this happens, but nothing can be written to the log (including test emails when `MAIL_MAILER=log`) until it is fixed.
+
+Today page layout (section AO, refreshed): date, greeting and one status line on the left, four buttons on the right (Copy chat link, + Task, Schedule, Open inbox). One white bar with five numbers (waiting for staff, bookings today, open chats, new customers, paid in 7 days). Below, tidy panels with a title, a count and a link: Needs a person (with waiting time and a Reply button), Today's bookings (time, customer, service and a status tag), Tasks (tick the circle), This week, Recent activity and AI use. On a phone everything is one column.

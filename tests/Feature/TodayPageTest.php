@@ -38,7 +38,7 @@ class TodayPageTest extends TestCase
         $u = $this->owner();
         $this->actingAs($u)->get('/admin/today')->assertOk()
             ->assertSee('Sarah')->assertSee('Open inbox')->assertSee('Copy chat link')->assertSee('A quiet day so far')
-            ->assertSee('The bot is handling everything')->assertSee('No bookings today')->assertSee('This week');
+            ->assertSee('All handled by the bot')->assertSee('No bookings today')->assertSee('This week');
     }
 
     public function test_busy_day_shows_waiting_chats_timeline_tasks_and_sales(): void
@@ -56,7 +56,7 @@ class TodayPageTest extends TestCase
         });
 
         $this->actingAs($u)->get('/admin/today')->assertOk()
-            ->assertSee('1 chat needs you')->assertSee('Asked about a refund')->assertSee('Reply')
+            ->assertSee('1 chat needs a reply')->assertSee('Asked about a refund')->assertSee('Reply')
             ->assertSee('Mia Wong')->assertSee('Facial')->assertSee('Call Mia back')->assertSee('Overdue')->assertSee('250');
     }
 }
