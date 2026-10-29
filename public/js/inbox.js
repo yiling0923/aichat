@@ -92,6 +92,8 @@
     }
 
     if (m.from === 'ai') { addAiCard(m); return; }
+    if (m.from === 'customer' && !m.private && m.text) { lastAsk = m.text; askChanged = true; }
+    else if (m.from === 'staff' && !m.private) { lastAsk = ''; askChanged = true; }
 
     var div = document.createElement('div');
     var sys = m.from === 'system' && m.private;
@@ -213,7 +215,7 @@
   function refreshInfo() { lastInfoKey = null; refreshThread(true); }
 
   function openConversation(id) {
-    current = id; seen = {}; lastId = 0; lastDay = ''; unseen = 0; logEl.innerHTML = '';
+    current = id; seen = {}; lastId = 0; lastDay = ''; unseen = 0; logEl.innerHTML = ''; lastAsk = ''; suggest();
     root.classList.add('chat-open');
     refreshThread(false, true);
     loadList();
@@ -232,6 +234,7 @@
       if (force || key !== lastInfoKey) { lastInfoKey = key; renderInfo(data); }
       var before = unseen; unseen = 0;
       data.messages.forEach(addLine);
+      if (askChanged) { askChanged = false; suggest(); }
       if (stick) { toBottom(); }
       else if (unseen > 0) { jumpBtn.textContent = unseen + ' new ' + (unseen === 1 ? 'message' : 'messages') + ' ↓'; jumpBtn.classList.remove('hidden'); }
       unseen = stick ? 0 : unseen + before;
@@ -361,27 +364,44 @@
   });
 
   // ---------- saved replies (in the customer's language, {name} and {business} filled in) ----------
-  var qr = document.getElementById('qr');
+  var qr = document.getElementById('qr'), allReplies = [], lastAsk = '', askChanged = false;
   api('/quick-replies').then(function (d) {
     var groups = {};
     (d.replies || []).forEach(function (r) {
+      allReplies.push({ id: r.id, title: r.title, en: r.body.en || '', zh: r.body.zh || '' });
       var g = r.category || 'Other';
       if (!groups[g]) { groups[g] = document.createElement('optgroup'); groups[g].label = g; qr.appendChild(groups[g]); }
       var o = new Option(r.title, r.id);
       o.dataset.en = r.body.en || ''; o.dataset.zh = r.body.zh || '';
       groups[g].appendChild(o);
     });
+    suggest();
   });
+  // Puts a saved reply in the box: the customer's language, {name} and {business} filled in.
+  function insertReply(r) {
+    var text = (curLang === 'zh' ? (r.zh || r.en) : (r.en || r.zh)) || '';
+    text = (curName ? text.replace(/\{name\}/g, curName) : text.replace(/\{name\}\s*/g, curLang === 'zh' ? '' : 'there ').replace(/there ([,.!?])/g, 'there$1').replace(/there\s*$/, 'there')).replace(/\{business\}/g, businessName);
+    setMode('reply');
+    textEl.value = (textEl.value ? textEl.value + '\n' : '') + text; grow(); textEl.focus();
+  }
   qr.addEventListener('change', function () {
     var o = qr.options[qr.selectedIndex];
-    if (o && o.value) {
-      var text = (curLang === 'zh' ? (o.dataset.zh || o.dataset.en) : (o.dataset.en || o.dataset.zh));
-      text = (curName ? text.replace(/\{name\}/g, curName) : text.replace(/\{name\}\s*/g, curLang === 'zh' ? '' : 'there ').replace(/there ([,.!?])/g, 'there$1').replace(/there\s*$/, 'there')).replace(/\{business\}/g, businessName);
-      setMode('reply');
-      textEl.value = (textEl.value ? textEl.value + '\n' : '') + text; grow(); textEl.focus();
-    }
+    if (o && o.value) { insertReply({ en: o.dataset.en, zh: o.dataset.zh }); }
     qr.value = '';
   });
+
+  // Suggested replies: the saved replies that fit what the customer last wrote (simple word matching, no AI).
+  var suggEl = document.getElementById('qr-sugg');
+  function suggest() {
+    suggEl.querySelectorAll('button').forEach(function (b) { b.remove(); });
+    var list = (lastAsk && window.aichatSuggest) ? window.aichatSuggest.rank(lastAsk, allReplies, 3) : [];
+    suggEl.hidden = list.length === 0;
+    list.forEach(function (r) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = r.title; b.title = (r.en || r.zh || '').slice(0, 160);
+      b.addEventListener('click', function () { insertReply(r); });
+      suggEl.appendChild(b);
+    });
+  }
 
   statusSel.addEventListener('change', loadList);
 

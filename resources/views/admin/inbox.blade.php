@@ -68,6 +68,7 @@
                         <button type="button" data-mode="note">Private note</button>
                         <select id="qr" aria-label="Saved replies"><option value="">Saved replies...</option></select>
                     </div>
+                    <div class="qr-sugg" id="qr-sugg" hidden><span>Suggested</span></div>
                     <textarea id="reply-text" rows="2" placeholder="Write a reply. Enter sends, Shift+Enter starts a new line."></textarea>
                     <div class="row">
                         <span class="mute" id="c-hint">Replying makes you the owner of the chat, so the bot stays quiet.</span>
@@ -95,6 +96,7 @@
     <div class="dlg-foot"><button class="btn primary" id="tpl-send" type="button" disabled>Send template</button></div>
 </dialog>
 <div class="toast" id="toast" hidden></div>
+<script src="{{ asset('js/suggest.js') }}"></script>
 <script src="{{ asset('js/inbox.js') }}"></script>
 <script src="{{ asset('js/push.js') }}"></script>
 <script src="{{ asset('js/notifications.js') }}"></script>

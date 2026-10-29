@@ -539,3 +539,11 @@ Per person and per device:
 1. Saved replies: cards sit in an even grid (two across on a computer, one on a phone). Each card has the title and group at the top, the English and Chinese texts in two speech-bubble boxes, and buttons at the bottom: **Copy English**, **Copy 中文** (only when there is a Chinese text) and **Edit** on the right (owners and managers only).
 2. `{name}` and `{business}` are highlighted so you can see what gets filled in when the reply is used.
 3. The search box and group buttons work as before; "3 replies" shows the count on the right. **+ New reply** opens the same pop-up.
+
+## BL. Suggested saved replies in the Inbox (no AI, free)
+
+1. Add a few saved replies (Saved replies page), for example "Opening hours", "Parking", "Prices", "Aftercare", each with an English text and, if you like, a Chinese text.
+2. As a customer, write to the chat: "What time do you open tomorrow?" (or "where can I park", "how much is a facial", "几点开门", "多少钱", "红肿怎么办").
+3. Open that chat in the Inbox. Above the reply box a **Suggested** row shows up to 3 replies that fit, for example **Opening hours**. Hover to see the start of the text. Click one: it goes into the box in the customer's language with their name filled in. You can edit before sending.
+4. When a person replies, or nothing matches (for example "ok thanks"), the row disappears.
+5. This is plain word matching (English, Malay and Chinese words for prices, hours, location, booking, aftercare, cancel, payment, thanks and hello). It needs no AI and no paid service. The better your saved reply titles, the better the suggestions.

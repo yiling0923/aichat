@@ -115,4 +115,10 @@ class PushAlertsTest extends TestCase
         $this->actingAs($this->owner)->get('/admin/account')->assertOk()->assertSee('Phone alerts')->assertSee('name="push-key"', false);
         $this->assertFileExists(public_path('sw.js'));
     }
+
+    public function test_inbox_loads_the_saved_reply_suggester(): void
+    {
+        $this->actingAs($this->owner)->get('/admin')->assertOk()->assertSee('id="qr-sugg"', false)->assertSee('js/suggest.js', false);
+        $this->assertFileExists(public_path('js/suggest.js'));
+    }
 }
