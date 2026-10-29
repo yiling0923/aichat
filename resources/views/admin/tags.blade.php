@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', 'Tags')
+@section('title', __('Tags'))
 @section('content')
     @php
         $ink = function (string $hex): string {
@@ -10,9 +10,9 @@
         $all = collect($customerTags)->merge($chatTags)->map(fn ($t) => ['id' => $t->id, 'type' => $t->type, 'name' => $t->name, 'color' => $t->color])->values();
     @endphp
     <div class="page-head">
-        <div><h1>Tags</h1><p class="mute">Short labels that help you find things. Tag <b>people</b> (VIP, first visit) and <b>chats</b> (complaint, price question).</p></div>
+        <div><h1>{{ __('Tags') }}</h1><p class="mute">{!! __('Short labels that help you find things. Tag :people (VIP, first visit) and :chats (complaint, price question).', ['people' => '<b>'.e(__('people')).'</b>', 'chats' => '<b>'.e(__('chats')).'</b>']) !!}</p></div>
         <div class="seg" id="tag-tabs">
-            @foreach ($sets as $key => [$name, $list])<a href="{{ route('tags', ['tab' => $key, 'sort' => $sort]) }}" data-tab="{{ $key }}" @class(['on' => $tab === $key])>{{ $name }} ({{ $list->count() }})</a>@endforeach
+            @foreach ($sets as $key => [$name, $list])<a href="{{ route('tags', ['tab' => $key, 'sort' => $sort]) }}" data-tab="{{ $key }}" @class(['on' => $tab === $key])>{{ __($name) }} ({{ $list->count() }})</a>@endforeach
         </div>
     </div>
 
@@ -20,47 +20,47 @@
         <section class="tag-panel" data-panel="{{ $type }}" @if ($tab !== $type) hidden @endif>
             <form method="post" action="{{ url('/admin/tags') }}" class="card tag-new">
                 @csrf
-                <div class="tn-head"><b>New {{ $type === 'customer' ? 'people' : 'chat' }} tag</b><span class="chip tag-prev" style="background: {{ $palette[0] }}; color: {{ $ink($palette[0]) }}">Preview</span></div>
+                <div class="tn-head"><b>{{ $type === 'customer' ? __('New people tag') : __('New chat tag') }}</b><span class="chip tag-prev" style="background: {{ $palette[0] }}; color: {{ $ink($palette[0]) }}">{{ __('Preview') }}</span></div>
                 <input type="hidden" name="type" value="{{ $type }}">
                 <input type="hidden" name="color" value="{{ $palette[0] }}" class="pick-color">
-                <label class="f grow"><span>Name</span>
+                <label class="f grow"><span>{{ __('Tag name') }}</span>
                     <input type="text" name="name" placeholder="{{ $type === 'customer' ? 'VIP' : 'Price question' }}" required maxlength="60"></label>
-                <div class="swatches" role="radiogroup" aria-label="Colour">
+                <div class="swatches" role="radiogroup" aria-label="{{ __('Colour') }}">
                     @foreach ($palette as $i => $c)<button type="button" class="sw {{ $i === 0 ? 'on' : '' }}" data-color="{{ $c }}" style="background: {{ $c }}" aria-label="Colour {{ $c }}"></button>@endforeach
                 </div>
-                <button class="btn primary" type="submit">Add tag</button>
+                <button class="btn primary" type="submit">{{ __('Add tag') }}</button>
             </form>
 
             @if ($list->isNotEmpty())
                 <div class="fbar tag-tools">
-                    <input type="search" class="tag-find" placeholder="Find a tag" aria-label="Find a tag">
-                    <div class="seg"><a href="{{ route('tags', ['tab' => $type, 'sort' => 'name']) }}" @class(['on' => $sort === 'name'])>A to Z</a><a href="{{ route('tags', ['tab' => $type, 'sort' => 'uses']) }}" @class(['on' => $sort === 'uses'])>Most used</a></div>
-                    <span class="f-note">{{ $list->count() }} {{ $list->count() === 1 ? 'tag' : 'tags' }} · {{ $list->sum($count) }} in use</span>
+                    <input type="search" class="tag-find" placeholder="{{ __('Find a tag') }}" aria-label="{{ __('Find a tag') }}">
+                    <div class="seg"><a href="{{ route('tags', ['tab' => $type, 'sort' => 'name']) }}" @class(['on' => $sort === 'name'])>{{ __('A to Z') }}</a><a href="{{ route('tags', ['tab' => $type, 'sort' => 'uses']) }}" @class(['on' => $sort === 'uses'])>{{ __('Most used') }}</a></div>
+                    <span class="f-note">{{ $list->count() === 1 ? __('1 tag') : __(':n tags', ['n' => $list->count()]) }} · {{ __(':n in use', ['n' => $list->sum($count)]) }}</span>
                 </div>
                 @php $max = max(1, (int) $list->max($count)); @endphp
                 <div class="card tag-rows">
                     @foreach ($list as $t)
                         <div class="tag-row" data-name="{{ mb_strtolower($t->name) }}">
-                            <span class="chip" style="background: {{ $t->color }}; color: {{ $ink($t->color) }}">{{ $t->name }}</span>
+                            <span class="chip" style="background: {{ $t->color }}; color: {{ $ink($t->color) }}">{{ __($t->name) }}</span>
                             <span class="tag-uses">
                                 <span class="tag-bar"><span style="width: {{ round($t->$count / $max * 100) }}%; background: {{ $t->color }}"></span></span>
-                                @if ($t->$count > 0)<a href="{{ $type === 'customer' ? route('customers', ['tag' => $t->id]) : route('conversations', ['tag' => $t->id]) }}">{{ $t->$count }} {{ $t->$count === 1 ? \Illuminate\Support\Str::singular($things) : $things }}</a>
-                                @else<span class="mute">Not used yet</span>@endif
+                                @if ($t->$count > 0)<a href="{{ $type === 'customer' ? route('customers', ['tag' => $t->id]) : route('conversations', ['tag' => $t->id]) }}">{{ $type === 'customer' ? ($t->$count === 1 ? __('1 customer') : __(':n customers', ['n' => $t->$count])) : ($t->$count === 1 ? __('1 conversation') : __(':n conversations', ['n' => $t->$count])) }}</a>
+                                @else<span class="mute">{{ __('Not used yet') }}</span>@endif
                             </span>
-                            <button type="button" class="btn small" data-edit="{{ $t->id }}">Edit</button>
+                            <button type="button" class="btn small" data-edit="{{ $t->id }}">{{ __('Edit') }}</button>
                         </div>
                     @endforeach
-                    <p class="mute tag-none" hidden>No tag matches.</p>
+                    <p class="mute tag-none" hidden>{{ __('No tag matches.') }}</p>
                 </div>
             @endif
 
             @php $have = $list->pluck('name')->map(fn ($n) => mb_strtolower($n)); $ideas = collect($suggestions[$type])->reject(fn ($s) => $have->contains(mb_strtolower($s))); @endphp
             @if ($ideas->isNotEmpty())
                 <div class="card ideas">
-                    <b>{{ $list->isEmpty() ? 'Start with a few' : 'Ideas' }}</b><span class="mute"> · tap to add one</span>
+                    <b>{{ $list->isEmpty() ? __('Start with a few') : __('Ideas') }}</b><span class="mute"> {{ __('· tap to add one') }}</span>
                     <div class="idea-row">
                         @foreach ($ideas as $idea)
-                            <form method="post" action="{{ url('/admin/tags') }}">@csrf<input type="hidden" name="type" value="{{ $type }}"><input type="hidden" name="name" value="{{ $idea }}"><input type="hidden" name="color" value="{{ $palette[$loop->index % count($palette)] }}"><button class="btn small" type="submit">+ {{ $idea }}</button></form>
+                            <form method="post" action="{{ url('/admin/tags') }}">@csrf<input type="hidden" name="type" value="{{ $type }}"><input type="hidden" name="name" value="{{ $idea }}"><input type="hidden" name="color" value="{{ $palette[$loop->index % count($palette)] }}"><button class="btn small" type="submit">+ {{ __($idea) }}</button></form>
                         @endforeach
                     </div>
                 </div>
@@ -69,27 +69,27 @@
     @endforeach
 
     <dialog id="tag-dialog" class="dlg">
-        <button type="button" class="dlg-x" aria-label="Close">&times;</button>
-        <h3>Edit tag</h3>
+        <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+        <h3>{{ __('Edit tag') }}</h3>
         <form method="post" id="td-form" action="">
             @csrf
             <input type="hidden" name="color" id="td-color">
-            <label class="f" style="margin-top:12px"><span>Name</span><input type="text" name="name" id="td-name" required maxlength="60"></label>
-            <div class="f"><span>Colour</span>
+            <label class="f" style="margin-top:12px"><span>{{ __('Tag name') }}</span><input type="text" name="name" id="td-name" required maxlength="60"></label>
+            <div class="f"><span>{{ __('Colour') }}</span>
                 <div class="swatches" id="td-swatches">
                     @foreach ($palette as $c)<button type="button" class="sw" data-color="{{ $c }}" style="background: {{ $c }}" aria-label="Colour {{ $c }}"></button>@endforeach
-                    <input type="color" id="td-custom" aria-label="Other colour">
+                    <input type="color" id="td-custom" aria-label="{{ __('Other colour') }}">
                 </div></div>
-            <div class="dlg-foot"><button class="btn primary" type="submit">Save</button></div>
+            <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
         </form>
         <form method="post" id="td-merge" action="" class="td-box">
             @csrf
-            <b>Merge into another tag</b>
-            <p class="mute small-note" style="padding:0">Everything with this tag gets the other one, and this tag is removed.</p>
-            <div class="copy-row"><select name="into" id="td-into"></select><button class="btn small" type="submit" onclick="return confirm('Merge this tag into the chosen one?')">Merge</button></div>
+            <b>{{ __('Merge into another tag') }}</b>
+            <p class="mute small-note" style="padding:0">{{ __('Everything with this tag gets the other one, and this tag is removed.') }}</p>
+            <div class="copy-row"><select name="into" id="td-into"></select><button class="btn small" type="submit" onclick="return confirm('Merge this tag into the chosen one?')">{{ __('Merge') }}</button></div>
         </form>
         <form method="post" id="td-delete" action="" class="td-box" onsubmit="return confirm('Delete this tag? It is removed from everyone who has it.')">
-            @csrf<button class="btn danger small" type="submit">Delete tag</button>
+            @csrf<button class="btn danger small" type="submit">{{ __('Delete tag') }}</button>
         </form>
     </dialog>
 @endsection
@@ -111,7 +111,7 @@
   // The preview chip shows the new tag as it will look.
   function preview(f) {
     var c = f.querySelector('.pick-color').value, h = c.replace('#', ''), l = 0.299 * parseInt(h.substr(0, 2), 16) + 0.587 * parseInt(h.substr(2, 2), 16) + 0.114 * parseInt(h.substr(4, 2), 16), p = f.querySelector('.tag-prev');
-    p.textContent = f.querySelector('input[name=name]').value.trim() || 'Preview'; p.style.background = c; p.style.color = l > 160 ? '#15292a' : '#fff';
+    p.textContent = f.querySelector('input[name=name]').value.trim() || {{ json_encode(__('Preview'), JSON_UNESCAPED_UNICODE) }}; p.style.background = c; p.style.color = l > 160 ? '#15292a' : '#fff';
   }
 
   // Colour swatches in the "new tag" forms.

@@ -15,7 +15,7 @@
         </select>
         <select name="tag" class="small">
             <option value="0">{{ __('Any tag') }}</option>
-            @foreach ($tags as $t)<option value="{{ $t->id }}" @selected($tag === $t->id)>{{ $t->name }}</option>@endforeach
+            @foreach ($tags as $t)<option value="{{ $t->id }}" @selected($tag === $t->id)>{{ __($t->name) }}</option>@endforeach
         </select>
         <button class="btn" type="submit">{{ __('Filter') }}</button>
         @if ($search !== '' || $score || $language || $tag)<a class="btn" href="{{ route('customers') }}">{{ __('Reset') }}</a>@endif

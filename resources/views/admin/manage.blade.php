@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', 'Settings')
+@section('title', __('Settings'))
 @section('content')
     @php
         $icons = [
@@ -14,15 +14,15 @@
             'account' => '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>',
         ];
     @endphp
-    <div class="page-head"><div><h1>Settings</h1><p class="mute">Everything you set up once and rarely change.</p></div></div>
+    <div class="page-head"><div><h1>{{ __('Settings') }}</h1><p class="mute">{{ __('Everything you set up once and rarely change.') }}</p></div></div>
     @foreach ($groups as $title => $items)
-        <h2 class="set-group">{{ $title }}</h2>
+        <h2 class="set-group">{{ __($title) }}</h2>
         <div class="tiles set-tiles">
             @foreach ($items as $item)
                 @php [$name, $route, $text] = $item; $hash = $item[3] ?? ''; @endphp
                 <a class="tile set-tile" href="{{ route($route) }}{{ $hash }}">
                     <span class="set-ico"><svg viewBox="0 0 24 24">{!! $icons[$name === 'Phone alerts' ? 'bell' : $route] ?? '' !!}</svg></span>
-                    <span class="set-txt"><b>{{ $name }}</b><span>{{ $text }}</span></span>
+                    <span class="set-txt"><b>{{ __($name) }}</b><span>{{ __($text) }}</span></span>
                     <svg class="set-go" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
                 </a>
             @endforeach

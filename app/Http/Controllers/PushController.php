@@ -48,15 +48,15 @@ class PushController extends Controller
         $count = PushSubscription::query()->where('user_id', $user->id)->count();
 
         if (! PushSender::configured()) {
-            return response()->json(['ok' => false, 'message' => 'Phone alerts are not set up on this server yet. Ask whoever installed the app to run: php artisan aichat:push-keys']);
+            return response()->json(['ok' => false, 'message' => __('Phone alerts are not set up on this server yet. Ask whoever installed the app to run: php artisan aichat:push-keys')]);
         }
         if ($count === 0) {
-            return response()->json(['ok' => false, 'message' => 'Turn alerts on for this device first.']);
+            return response()->json(['ok' => false, 'message' => __('Turn alerts on for this device first.')]);
         }
 
-        $reached = $push->toUsers([$user->id], 'Test alert', 'If you can read this, alerts reach this device.', route('inbox'), 'test-'.$user->id);
+        $reached = $push->toUsers([$user->id], __('Test alert'), __('If you can read this, alerts reach this device.'), route('inbox'), 'test-'.$user->id);
 
-        return response()->json(['ok' => $reached > 0, 'message' => $reached > 0 ? 'Sent to '.$reached.' '.($reached === 1 ? 'device' : 'devices').'. It should appear in a moment.' : 'It could not be delivered. Turn alerts off and on again on this device.']);
+        return response()->json(['ok' => $reached > 0, 'message' => $reached > 0 ? ($reached === 1 ? __('Sent to 1 device. It should appear in a moment.') : __('Sent to :n devices. It should appear in a moment.', ['n' => $reached])) : __('It could not be delivered. Turn alerts off and on again on this device.')]);
     }
 
     private function device(string $ua): string

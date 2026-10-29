@@ -107,7 +107,12 @@ class StaffLanguageTest extends TestCase
         $need = ['Owner', 'Manager', 'Staff', 'Price question', 'Booking help', 'Cancel or change', 'Location', 'Payment', 'Aftercare', 'Complaint',
             'confirmed', 'completed', 'no show', 'cancelled', 'paid', 'pending', 'refunded', 'open', 'resolved',
             'Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No date', 'All time', 'This month', 'Last month', 'Last 30 days', 'Last 90 days', 'This year',
-            'Cash', 'Card', 'Bank transfer or QR', 'Other', 'Ready to book', 'Interested', 'Just browsing', 'Website'];
+            'Cash', 'Card', 'Bank transfer or QR', 'Other', 'Ready to book', 'Interested', 'Just browsing', 'Website',
+            'Your business', 'Organise', 'You', 'Business and team', 'Plan and billing', 'Backup and export', 'Setup guide', 'Quick start wizard', 'Tags', 'My account', 'Phone alerts', 'Help',
+            'Name, time zone, colour, team members and their roles.', 'Your plan, what you have used, payments.', 'Download your customers, bookings, orders and chats as spreadsheets.', 'Step by step to get ready for real customers.',
+            'Draft your services from a price list, connect, test, go live.', 'Labels for customers and chats.', 'Your name and password.', 'Get a pop-up on this device for new chats and bookings.', 'How the whole system works, in plain words.',
+            'Free trial', 'Starter', 'Growth', 'Internal', 'AI replies this month', 'Team members', 'Practitioners / resources', 'Connected channels',
+            'Never (the chat waits for a person)', '15 minutes', '30 minutes', '1 hour', '2 hours', '4 hours'];
         $missing = array_values(array_filter($need, fn ($k) => ! isset($zh[$k])));
 
         $this->assertSame([], $missing, 'No Chinese for: '.implode(', ', $missing));

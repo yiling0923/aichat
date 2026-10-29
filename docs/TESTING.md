@@ -645,3 +645,13 @@ In Chinese you now see, fully translated:
 7. The standard tag names (VIP, First visit, Regular ...) show in Chinese: VIP, 首次到店, 常客. Tags you create yourself show as you typed them.
 
 Still English: Tags page, Saved replies, Settings, Marketing, Reports, Menu builder, Booking setup, Channels, AI, Billing, My account, Setup guide, Help, sign-in pages and emails. Customer names, service names and notes stay as typed.
+
+## BW. Staff screens in Chinese (part 3: Tags, Saved replies, Settings, Backup, Billing, My account)
+
+Switch with **中文** at the top (or in My account → Language). Fully translated now:
+1. **Settings** hub (tiles), **Business and team** (business details, waiting-customer alerts, smart helpers, chat link, the Team tab with seat meter, role cards and the add/edit pop-up), **Backup and export**, **Plan and billing** (banners, usage, plan cards, payments), **Tags** (new tag, preview, list, ideas, edit pop-up) and **Saved replies** (cards, search, pop-up).
+2. **My account** has a new **Language** card (English / 中文) next to the top-bar button, and the Phone alerts card and its messages are in Chinese, including the test alert messages.
+3. The standard tag names (VIP, First visit ...), reply groups (Greeting, Info) and plan names (Free trial, Starter, Growth) show in Chinese. Names you type yourself stay as typed.
+4. Editing a tag or reply always shows the stored name, so saving never replaces your own wording with a translation.
+
+Still English: Marketing (automations, broadcasts, templates, activity), Reports, Menu builder, Booking setup, Channels, AI assistant, Setup guide, Help, the sign-in pages and the emails.
