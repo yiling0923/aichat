@@ -42,12 +42,15 @@
             @if ($state === 'active' && $business->current_period_ends_at)
                 <p class="mute">{{ $canceling ? 'Works until' : 'Renews' }} {{ $business->current_period_ends_at->format('j M Y') }}</p>
             @endif
+            @if (in_array($business->plan, ['starter', 'growth'], true) && $business->subscription_status === 'active')
+                <form method="post" action="{{ url('/admin/billing/cancel') }}" onsubmit="return confirm('Stop renewing this plan? It keeps working until the paid month ends.')">@csrf<button class="bill-link" type="submit">Cancel renewal</button></form>
+            @endif
         </div>
         <div class="bill-use">
             @foreach ($usage as $kind => $u)
                 @php $pct = $u['limit'] ? min(100, round($u['used'] / $u['limit'] * 100)) : 0; $hot = $u['limit'] && $pct >= 90; $warn = $u['limit'] && $pct >= 70; @endphp
                 <div class="use-row">
-                    <div class="bar spread"><span>{{ config('plans.labels.'.$kind) }}</span><b>{{ number_format($u['used']) }}{{ $u['limit'] === null ? '' : ' of '.number_format($u['limit']) }}</b></div>
+                    <div class="bar spread"><span>{{ config('plans.labels.'.$kind) }}</span><b>{{ number_format($u['used']) }}{{ $u['limit'] === null ? ' · no limit' : ' of '.number_format($u['limit']) }}</b></div>
                     <div class="progress {{ $hot ? 'hot' : ($warn ? 'warn' : '') }}"><span style="width: {{ $u['limit'] === null ? 0 : $pct }}%"></span></div>
                     @if ($hot)<small class="mute">{{ $pct >= 100 ? 'Limit reached.' : 'Almost at the limit.' }} A bigger plan raises it.</small>@endif
                 </div>
@@ -55,7 +58,7 @@
         </div>
     </section>
 
-    <h3 class="bill-h">Choose a plan</h3>
+    <div class="bill-h"><h3>Choose a plan</h3><span class="mute">Prices in US dollars per month</span></div>
     <div class="bill-plans">
         @foreach ($catalog as $key => $p)
             @continue ($key === 'trial')
@@ -76,12 +79,8 @@
             </form>
         @endforeach
     </div>
-    <p class="mute small-note" style="padding:0;margin-top:8px">Prices are in US dollars per month. You can cancel renewal any time and keep the plan until the paid month ends.</p>
-    @if (in_array($business->plan, ['starter', 'growth'], true) && $business->subscription_status === 'active')
-        <form method="post" action="{{ url('/admin/billing/cancel') }}" onsubmit="return confirm('Stop renewing this plan? It keeps working until the paid month ends.')" style="margin-top:6px">@csrf<button class="btn danger small" type="submit">Cancel renewal</button></form>
-    @endif
-
-    <h3 class="bill-h">Payments</h3>
+    <p class="mute small-note" style="padding:0;margin-top:10px">You can cancel renewal any time and keep the plan until the paid month ends.</p>
+    <div class="bill-h"><h3>Payments</h3><span class="mute">{{ $payments->count() }} {{ $payments->count() === 1 ? 'payment' : 'payments' }}</span></div>
     <div class="table-wrap" style="max-height:none">
     <table class="table">
         <thead><tr><th>Date</th><th>Plan</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead>

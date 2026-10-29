@@ -503,3 +503,8 @@ Per person and per device:
 5. **Turn off alerts** stops it for this device only. Dead devices are removed automatically.
 6. iPhone: open the site in Safari, Share → Add to Home Screen, open it from the Home Screen icon, then turn alerts on.
 7. If keys are missing, the card says "Not set up on the server yet".
+
+## BF. My account and Plan & billing, tidied
+
+1. **My account**: a header card with your initials, name, email, role and business. Below it, two cards side by side (stacked on a phone): "Your details" with name and change password (new password and repeat sit next to each other), and "Phone alerts". Save changes still works; a wrong current password still shows the red message.
+2. **Plan & billing**: the plan cards now use the full page width. In "Your plan", a plan with no limit shows "38 · no limit" next to the usage. **Cancel renewal** is now a small red link under the "Renews ..." date (only on a paid, active plan). "Choose a plan" and "Payments" have a small note on the right (prices in US dollars; number of payments).
