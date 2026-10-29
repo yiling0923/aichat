@@ -49,7 +49,7 @@ class EnsureBusinessStaff
         abort_if($business === null || ! $business->isActive(), 403, 'No active business for this account.');
 
         $this->current->set($business);
-        app()->setLocale(\App\Support\Lang::valid($user->locale));
+        app()->setLocale(\App\Support\Lang::valid($user->getAttribute('locale')));
         \Carbon\Carbon::setLocale(app()->getLocale() === 'zh' ? 'zh' : 'en');
 
         return $next($request);

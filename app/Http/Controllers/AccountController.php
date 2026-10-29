@@ -19,6 +19,11 @@ class AccountController extends Controller
     public function language(Request $request): RedirectResponse
     {
         $data = $request->validate(['locale' => ['required', 'in:'.implode(',', array_keys(\App\Support\Lang::LOCALES))]]);
+        // Before the database update (php artisan migrate) has run on this computer there is nowhere to save the choice.
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('users', 'locale')) {
+            return back()->withErrors(['locale' => 'The language setting needs a database update first. Close this page and run: php artisan migrate']);
+        }
+
         $request->user()->forceFill(['locale' => $data['locale']])->save();
 
         return back();
