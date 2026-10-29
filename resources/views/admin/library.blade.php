@@ -1,12 +1,16 @@
 @extends('admin.layout')
 @section('title', 'Saved replies')
 @section('content')
-    @php $cats = $replies->groupBy(fn ($r) => $r->category ?: 'Other')->map->count(); @endphp
+    @php
+        $cats = $replies->groupBy(fn ($r) => $r->category ?: 'Other')->map->count();
+        // {name} and {business} stand out so people see what gets filled in.
+        $show = fn ($t) => new \Illuminate\Support\HtmlString(preg_replace('/\{(name|business)\}/', '<span class="var">{$1}</span>', e((string) $t)));
+    @endphp
     <div class="page-head">
         <div><h1>Saved replies</h1>
-            <p class="mute">Ready-made answers. In the Inbox, choose one under "Insert a saved reply": it goes in the customer's language, and <code>{name}</code> and <code>{business}</code> are filled in.
+            <p class="mute">Ready-made answers for your team. In the Inbox choose one under "Insert a saved reply": it is sent in the customer's language, with <span class="var">{name}</span> and <span class="var">{business}</span> filled in.
                 @unless ($canEdit) Only an owner or manager can change this list. @endunless</p></div>
-        @if ($canEdit)<button type="button" class="btn primary" id="new-reply">New reply</button>@endif
+        @if ($canEdit)<button type="button" class="btn primary" id="new-reply">+ New reply</button>@endif
     </div>
 
     <div class="fbar">
@@ -15,22 +19,26 @@
             <a href="#" data-cat="" class="on">All ({{ $replies->count() }})</a>
             @foreach ($cats as $name => $n)<a href="#" data-cat="{{ $name }}">{{ $name }} ({{ $n }})</a>@endforeach
         </div>
+        <span class="f-note">{{ $replies->count() }} {{ $replies->count() === 1 ? 'reply' : 'replies' }}</span>
     </div>
 
     @if ($replies->isEmpty())
         <div class="card empty-card"><b>No saved replies yet</b><p class="mute">Add the answers your team types again and again: opening hours, prices, directions, aftercare.</p></div>
     @endif
 
-    <div class="masonry" id="lib-list">
+    <div class="reply-grid" id="lib-list">
         @foreach ($replies as $r)
             <div class="card reply" data-cat="{{ $r->category ?: 'Other' }}" data-text="{{ mb_strtolower($r->title.' '.($r->body['en'] ?? '').' '.($r->body['zh'] ?? '')) }}">
                 <div class="reply-top"><b>{{ $r->title }}</b><span class="tag">{{ $r->category ?: 'Other' }}</span></div>
-                <p class="reply-text"><span class="lang">EN</span>{{ $r->body['en'] ?? '' }}</p>
-                @if (! empty($r->body['zh']))<p class="reply-text"><span class="lang">中文</span>{{ $r->body['zh'] }}</p>@endif
+                <div class="reply-bubbles">
+                    <p class="reply-text"><span class="lang">EN</span>{{ $show($r->body['en'] ?? '') }}</p>
+                    @if (! empty($r->body['zh']))<p class="reply-text"><span class="lang">中文</span>{{ $show($r->body['zh']) }}</p>@endif
+                </div>
                 <div class="reply-actions">
                     <button type="button" class="btn small" data-copy-text="{{ $r->body['en'] ?? '' }}">Copy English</button>
+                    @if (! empty($r->body['zh']))<button type="button" class="btn small" data-copy-text="{{ $r->body['zh'] }}">Copy 中文</button>@endif
                     @if ($canEdit)
-                        <button type="button" class="btn small" data-edit
+                        <button type="button" class="btn small push" data-edit
                             data-action="{{ url('/admin/library/'.$r->id) }}" data-delete="{{ url('/admin/library/'.$r->id.'/delete') }}"
                             data-title="{{ $r->title }}" data-category="{{ $r->category }}" data-en="{{ $r->body['en'] ?? '' }}" data-zh="{{ $r->body['zh'] ?? '' }}">Edit</button>
                     @endif

@@ -533,3 +533,9 @@ Per person and per device:
 2. The find / sort bar is the same white bar as other pages (Find a tag, A to Z / Most used) with "4 tags · 34 in use" on the right.
 3. Each row lines up: the coloured tag, a small bar showing how much it is used compared with your busiest tag, the count (click it to see those customers or chats), and **Edit** (rename, colour, merge, delete).
 4. "Ideas" shows one-tap suggestions you do not have yet. On a phone the bars are hidden and the rows stay compact.
+
+## BK. Saved replies page, tidied
+
+1. Saved replies: cards sit in an even grid (two across on a computer, one on a phone). Each card has the title and group at the top, the English and Chinese texts in two speech-bubble boxes, and buttons at the bottom: **Copy English**, **Copy 中文** (only when there is a Chinese text) and **Edit** on the right (owners and managers only).
+2. `{name}` and `{business}` are highlighted so you can see what gets filled in when the reply is used.
+3. The search box and group buttons work as before; "3 replies" shows the count on the right. **+ New reply** opens the same pop-up.
