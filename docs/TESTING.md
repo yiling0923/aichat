@@ -508,3 +508,8 @@ Per person and per device:
 
 1. **My account**: a header card with your initials, name, email, role and business. Below it, two cards side by side (stacked on a phone): "Your details" with name and change password (new password and repeat sit next to each other), and "Phone alerts". Save changes still works; a wrong current password still shows the red message.
 2. **Plan & billing**: the plan cards now use the full page width. In "Your plan", a plan with no limit shows "38 · no limit" next to the usage. **Cancel renewal** is now a small red link under the "Renews ..." date (only on a paid, active plan). "Choose a plan" and "Payments" have a small note on the right (prices in US dollars; number of payments).
+
+## BG. Sidebar user card
+
+1. Bottom of the left menu: a round badge with your initials, your name, your role (Owner, Manager, Staff) and a small sign-out icon on the right. Hover the icon: "Sign out". Click the badge or your name: My account opens.
+2. On a phone the menu is a bar across the top; the badge and sign-out icon sit at its right end (scroll the bar sideways).

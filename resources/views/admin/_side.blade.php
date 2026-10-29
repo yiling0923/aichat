@@ -38,8 +38,10 @@
     @if ($canManage)
     <a @class(['on' => in_array($active, $hubPages)]) href="{{ route('manage') }}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
     @endif
+    @php($meName = auth()->user()->name)
     <div class="me">
-        <a href="{{ route('account') }}" class="me-link">{{ auth()->user()->name }}</a><br><span style="opacity:.7">{{ auth()->user()->role }}</span>
-        <form method="post" action="{{ route('logout') }}">@csrf<button type="submit">Sign out</button></form>
+        <a href="{{ route('account') }}" class="me-av" title="My account">{{ collect(preg_split('/\s+/', trim($meName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('') ?: '?' }}</a>
+        <div class="me-text"><a href="{{ route('account') }}" class="me-link">{{ $meName }}</a><span>{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</span></div>
+        <form method="post" action="{{ route('logout') }}">@csrf<button type="submit" class="me-out" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button></form>
     </div>
 </aside>

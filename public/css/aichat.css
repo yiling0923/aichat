@@ -1336,3 +1336,16 @@ html { scroll-behavior: smooth; }
 .ac-foot { margin-top: 8px; display: flex; justify-content: flex-end; }
 @media (max-width: 900px) { .ac-grid { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .ac-two { grid-template-columns: 1fr; gap: 0; } .ac-me, .ac-form, .ac-alerts { padding: 18px; } }
+
+/* Sidebar user card */
+.side .me { display: flex; align-items: center; gap: 10px; margin: auto 0 0; padding: 12px 6px 4px; }
+.side .me .me-av { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .14); color: #fff; font-size: 13px; font-weight: 700; padding: 0; }
+.side .me .me-av:hover { background: rgba(255, 255, 255, .24); text-decoration: none; }
+.side .me .me-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.side .me .me-text a.me-link { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.side .me .me-text span { font-size: 11.5px; }
+.side .me form { margin: 0; flex: none; }
+.side .me button.me-out { display: grid; place-items: center; width: 32px; height: 32px; margin: 0; border-radius: 8px; color: var(--side-mute); }
+.side .me button.me-out svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.side .me button.me-out:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+@media (max-width: 900px) { .side .me { margin: 0 0 0 auto; padding: 0 4px; gap: 6px; } .side .me .me-text { display: none; } .side .me .me-av { width: 30px; height: 30px; } }
