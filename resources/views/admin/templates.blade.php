@@ -36,10 +36,11 @@
         <div class="card empty-card"><b>Connect a WhatsApp number first</b><p class="mute">Templates belong to a WhatsApp number. Once one is connected you can create and manage them here.</p>
             <a class="btn primary" href="{{ route('channels') }}">Open Channels</a></div>
     @else
-        <div class="filters">
+        <div class="tpl-bar">
             <div class="seg" id="tpl-groups">
                 @foreach ($groups as $k => $label)<a href="#" data-group="{{ $k }}" @class(['on' => $k === 'all'])>{{ $label }} ({{ $k === 'all' ? $templates->count() : ($counts[$k] ?? 0) }})</a>@endforeach
             </div>
+            <input type="search" id="tpl-q" placeholder="Search templates" aria-label="Search templates">
         </div>
 
         @if ($templates->isEmpty())
@@ -49,25 +50,29 @@
             </div>
         @endif
 
-        <div class="masonry" id="tpl-list">
+        <div class="tpl-grid" id="tpl-list">
             @foreach ($templates as $t)
                 @php [$cls, $label, $help] = $statusOf($t); $used = $usage[$t->name] ?? []; @endphp
-                <div class="card tpl" data-group="{{ $groupOf($t) }}">
+                <div class="card tpl" data-group="{{ $groupOf($t) }}" data-s="{{ mb_strtolower($t->name.' '.$t->body) }}">
                     <div class="tpl-top">
-                        <div><b>{{ str_replace('_', ' ', ucfirst($t->name)) }}</b><br><small class="mute"><code>{{ $t->name }}</code></small></div>
+                        <div class="tpl-name"><b>{{ str_replace('_', ' ', ucfirst($t->name)) }}</b><small><code>{{ $t->name }}</code></small></div>
                         <span class="tag {{ $cls }}" title="{{ $help }}">{{ $label }}</span>
                     </div>
                     <div class="wa-bubble">{!! preg_replace('/\{\{(\d+)\}\}/', '<span class="ph">$1</span>', e($t->body)) !!}</div>
-                    <div class="tpl-meta">
-                        <span>{{ $languages[$t->language] ?? $t->language }}</span>
-                        <span>{{ strtoupper($t->category) === 'MARKETING' ? 'Marketing' : 'Utility' }}</span>
-                        <span>{{ $t->channel->name }}</span>
+                    <div class="tpl-chips">
+                        <span class="chip2">{{ $languages[$t->language] ?? $t->language }}</span>
+                        <span class="chip2 {{ strtoupper($t->category) === 'MARKETING' ? 'mk' : '' }}">{{ strtoupper($t->category) === 'MARKETING' ? 'Marketing' : 'Utility' }}</span>
+                        <span class="chip2">{{ $t->channel->name }}</span>
                     </div>
                     <p class="mute tpl-help">{{ $help }}</p>
                     @if ($t->last_error)<div class="note err" style="margin:8px 0 0">{{ $t->last_error }}</div>@endif
                     <div class="tpl-foot">
                         @if ($used)<span class="tpl-used">Used by: {{ implode(', ', $used) }}</span>@else<span class="mute">Not used by anything yet</span>@endif
-                        <form method="post" action="{{ url('/admin/templates/'.$t->id.'/delete') }}" onsubmit="return confirm('Remove this template from the list? It stays in Meta until you delete it there.')">@csrf<button class="btn small danger">Remove</button></form>
+                    </div>
+                    <div class="tpl-actions">
+                        <button type="button" class="btn small" data-copy-name="{{ $t->name }}">Copy name</button>
+                        <button type="button" class="btn small" data-dup data-name="{{ $t->name }}_v2" data-cat="{{ strtoupper($t->category) }}" data-body="{{ $t->body }}" data-lang="{{ $t->language }}" title="Start a new template from this wording">Duplicate</button>
+                        <form method="post" action="{{ url('/admin/templates/'.$t->id.'/delete') }}" class="push" onsubmit="return confirm('Remove this template from the list? It stays in Meta until you delete it there.')">@csrf<button class="btn small danger">Remove</button></form>
                     </div>
                 </div>
             @endforeach
@@ -77,7 +82,7 @@
         <h2>Start from an example</h2>
         <div class="tiles">
             @foreach ($examples as $ex)
-                <button type="button" class="tile ex" data-title="{{ $ex[0] }}" data-name="{{ $ex[1] }}" data-cat="{{ $ex[2] }}" data-body="{{ $ex[3] }}"><b>{{ $ex[0] }}</b><span>{{ $ex[3] }}</span></button>
+                <button type="button" class="tile ex" data-title="{{ $ex[0] }}" data-name="{{ $ex[1] }}" data-cat="{{ $ex[2] }}" data-body="{{ $ex[3] }}"><b>{{ $ex[0] }} <em class="chip2 {{ $ex[2] === 'MARKETING' ? 'mk' : '' }}">{{ $ex[2] === 'MARKETING' ? 'Marketing' : 'Utility' }}</em></b><span>{{ $ex[3] }}</span></button>
             @endforeach
         </div>
 
@@ -93,10 +98,11 @@
                     <label class="f"><span>Name (letters, numbers, underscores)</span><input type="text" name="name" id="tpl-name" value="{{ old('name') }}" placeholder="booking_reminder" required maxlength="80"></label>
                     <label class="f"><span>What is it for?</span><select name="category" id="tpl-cat"><option value="UTILITY">Utility: reminders, confirmations</option><option value="MARKETING">Marketing: offers, win-back</option></select></label>
                 </div>
-                <label class="f"><span>Message</span><textarea name="body" id="tpl-body" rows="4" required maxlength="1024">{{ old('body') }}</textarea></label>
+                <label class="f"><span>Message <em class="mute" style="font-weight:400"><span id="tpl-count">0</span> / 1024</em></span><textarea name="body" id="tpl-body" rows="4" required maxlength="1024">{{ old('body') }}</textarea></label>
                 <div class="var-row" style="margin:6px 0 14px"><span class="mute">Add a part that changes:</span>
                     <button type="button" class="btn small" data-ph="1">1 · name</button><button type="button" class="btn small" data-ph="2">2 · service</button><button type="button" class="btn small" data-ph="3">3 · date and time</button></div>
                 <div class="f"><span>How it will look</span><div class="wa-bubble" id="tpl-preview">Your message appears here.</div></div>
+                <ul class="checks tpl-checks" id="tpl-checks" aria-live="polite"></ul>
                 <div class="dlg-foot"><button class="btn primary" type="submit">Send to Meta for review</button></div>
             </form>
         </dialog>
@@ -108,10 +114,9 @@
   var groups = document.querySelectorAll('#tpl-groups a'), cards = document.querySelectorAll('#tpl-list .tpl');
   groups.forEach(function (a) {
     a.addEventListener('click', function (e) {
-      e.preventDefault(); var g = a.dataset.group, shown = 0;
+      e.preventDefault(); activeGroup = a.dataset.group;
       groups.forEach(function (x) { x.classList.toggle('on', x === a); });
-      cards.forEach(function (c) { var ok = g === 'all' || c.dataset.group === g; c.hidden = !ok; if (ok) { shown++; } });
-      document.getElementById('tpl-none').hidden = shown > 0 || cards.length === 0;
+      applyFilter();
     });
   });
 
@@ -119,6 +124,34 @@
   if (!dlg) { return; }
   var name = document.getElementById('tpl-name'), body = document.getElementById('tpl-body'), cat = document.getElementById('tpl-cat'), prev = document.getElementById('tpl-preview');
   var sample = { 1: 'Amy', 2: 'Hydrating Facial', 3: 'Tue 10:00' };
+  var checks = document.getElementById('tpl-checks'), count = document.getElementById('tpl-count');
+  // Meta rejects templates for a few predictable reasons: tell the person before they send it.
+  function review() {
+    var t = body.value.trim(), nums = (t.match(/\{\{(\d+)\}\}/g) || []).map(function (m) { return parseInt(m.replace(/\D/g, ''), 10); });
+    var inOrder = nums.every(function (n, i) { return n === i + 1; });
+    var rules = [
+      [t.length >= 20, 'At least a short sentence (20 letters or more)'],
+      [!/^\{\{\d+\}\}/.test(t) && !/\{\{\d+\}\}[\s.!?]*$/.test(t), 'Does not start or end with a changing part'],
+      [inOrder, 'Changing parts are numbered 1, 2, 3 in order'],
+      [!/(https?:\/\/\S+){2,}/.test(t) && !/!{2,}|\${2,}|FREE!!!/i.test(t), 'No shouting or piles of links (Meta may call it an advert)']
+    ];
+    checks.innerHTML = t ? rules.map(function (r) { return '<li class="' + (r[0] ? 'ok' : 'bad') + '"><span class="ci">' + (r[0] ? '\u2713' : '!') + '</span><span>' + r[1] + '</span></li>'; }).join('') : '';
+    count.textContent = body.value.length;
+  }
+  body.addEventListener('input', review);
+  document.querySelectorAll('[data-copy-name]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.dataset.copyName, done = function () { var o = b.textContent; b.textContent = 'Copied'; setTimeout(function () { b.textContent = o; }, 1300); };
+      if (navigator.clipboard) { navigator.clipboard.writeText(v).then(done); } else { var i = document.createElement('input'); i.value = v; document.body.appendChild(i); i.select(); document.execCommand('copy'); i.remove(); done(); }
+    });
+  });
+  var q = document.getElementById('tpl-q'), activeGroup = 'all';
+  function applyFilter() {
+    var t = q.value.trim().toLowerCase(), shown = 0;
+    cards.forEach(function (c) { var ok = (activeGroup === 'all' || c.dataset.group === activeGroup) && (!t || c.dataset.s.indexOf(t) > -1); c.hidden = !ok; if (ok) { shown++; } });
+    document.getElementById('tpl-none').hidden = shown > 0 || cards.length === 0;
+  }
+  q.addEventListener('input', applyFilter);
   function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
   function preview() {
     var t = body.value.trim();
@@ -135,10 +168,11 @@
   });
   function open(ex) {
     if (ex) { name.value = ex.name; body.value = ex.body; cat.value = ex.cat; }
-    preview(); dlg.showModal(); (ex ? body : name).focus();
+    preview(); review(); dlg.showModal(); (ex ? body : name).focus();
   }
   document.getElementById('new-tpl').addEventListener('click', function () { open(null); });
   document.querySelectorAll('.ex').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
+  document.querySelectorAll('[data-dup]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); if (b.dataset.lang) { dlg.querySelector('select[name=language]').value = b.dataset.lang; } }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });
   @if ($errors->has('template') || old('body')) open(null); @endif
 })();
