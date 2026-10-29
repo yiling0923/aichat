@@ -22,7 +22,31 @@ class PushKeys extends Command
             return self::SUCCESS;
         }
 
-        $keys = VAPID::createVapidKeys();
+        try {
+            $keys = VAPID::createVapidKeys();
+        } catch (\Throwable $e) {
+            // XAMPP on Windows often cannot find PHP's OpenSSL settings file; point it at the one that ships with XAMPP and retry.
+            $keys = null;
+            $php = dirname(PHP_BINARY);
+            foreach ([$php.'\\extras\\ssl\\openssl.cnf', dirname($php).'\\apache\\conf\\openssl.cnf', $php.'\\openssl.cnf', '/etc/ssl/openssl.cnf'] as $cnf) {
+                if (is_file($cnf)) {
+                    putenv('OPENSSL_CONF='.$cnf);
+                    try {
+                        $keys = VAPID::createVapidKeys();
+
+                        break;
+                    } catch (\Throwable) {
+                        // try the next file
+                    }
+                }
+            }
+            if ($keys === null) {
+                $this->error('PHP could not make the keys: '.$e->getMessage());
+                $this->line('Fix: in C:\\xampp\\php\\php.ini make sure ;extension=openssl has no ; in front, then try again.');
+
+                return self::FAILURE;
+            }
+        }
         $env = preg_replace('/^VAPID_(PUBLIC_KEY|PRIVATE_KEY)=.*\R?/m', '', $env) ?? $env;
         $env = rtrim($env)."\n\nVAPID_PUBLIC_KEY=".$keys['publicKey']."\nVAPID_PRIVATE_KEY=".$keys['privateKey']."\n";
 
