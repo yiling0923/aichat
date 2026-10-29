@@ -375,6 +375,77 @@ class BookingTest extends TestCase
         });
     }
 
+    public function test_customer_can_change_the_time_of_a_booking_in_the_chat(): void
+    {
+        [$token] = $this->bookViaChat('demo', '2026-11-05', '10:00');
+        $before = $this->inBusiness(fn () => Booking::query()->first());
+
+        $r = $this->say('demo', 'x', $token, 'my_booking');
+        $this->assertContains('bk_change', $this->optionIds($r));
+
+        // The day picker for the same service, then the times.
+        $r = $this->say('demo', 'x', $token, 'bk_change');
+        $this->assertContains('day_2026-11-06', $this->optionIds($r));
+        $r = $this->say('demo', 'x', $token, 'day_2026-11-06');
+        $this->assertContains('slot_11:00', $this->optionIds($r));
+        $r = $this->say('demo', 'x', $token, 'slot_11:00');
+
+        $text = implode(' ', array_column($r->json('messages'), 'text'));
+        $this->assertStringContainsString('Done! Your Facial is now', $text);
+        $this->assertStringContainsString('11:00', $text);
+
+        $this->inBusiness(function () use ($before) {
+            $this->assertSame(1, Booking::query()->count());   // moved, not duplicated
+            $b = Booking::query()->first();
+            $this->assertSame($before->id, $b->id);
+            $this->assertSame('confirmed', $b->status);
+            $this->assertSame('2026-11-06 03:00:00', $b->starts_at->format('Y-m-d H:i:s'));   // 11:00 in Kuala Lumpur
+            $this->assertNull($b->reminder_24_sent_at);
+        });
+    }
+
+    public function test_changing_a_booking_inside_the_window_goes_to_staff_and_back_leaves_it_alone(): void
+    {
+        [$token] = $this->bookViaChat('demo', '2026-11-02', '10:00');   // two hours from now: inside the window
+        $this->say('demo', 'x', $token, 'my_booking');
+        $r = $this->say('demo', 'x', $token, 'bk_change');
+        $this->assertSame('human', $r->json('mode'));
+        $this->inBusiness(fn () => $this->assertSame('2026-11-02 02:00:00', Booking::query()->first()->starts_at->format('Y-m-d H:i:s')));
+
+        [$token2] = $this->bookViaChat('demo', '2026-11-09', '10:00', 'Ben Lee', '012-999 8888');
+        $this->say('demo', 'x', $token2, 'my_booking');
+        $this->say('demo', 'x', $token2, 'bk_change');
+        $r = $this->say('demo', 'x', $token2, 'back');   // back from the day picker abandons the change
+        $this->assertContains('book', $this->optionIds($r));
+        $this->inBusiness(fn () => $this->assertSame('2026-11-09 02:00:00', Booking::query()->where('customer_id', '!=', null)->orderByDesc('id')->first()->starts_at->format('Y-m-d H:i:s')));
+    }
+
+    public function test_changing_one_of_several_bookings_moves_only_that_one(): void
+    {
+        [$token] = $this->bookViaChat('demo', '2026-11-05', '10:00');
+        $ids = $this->inBusiness(function () {
+            $first = Booking::query()->first();
+            $second = $first->replicate();
+            $second->starts_at = $first->starts_at->copy()->addDays(7);
+            $second->ends_at = $first->ends_at->copy()->addDays(7);
+            $second->save();
+
+            return [$first->id, $second->id];
+        });
+
+        $r = $this->say('demo', 'x', $token, 'my_booking');
+        $this->assertContains('bk_change:'.$ids[1], $this->optionIds($r));
+        $this->say('demo', 'change', $token);   // typing "change" with two bookings asks which one
+        $this->say('demo', 'x', $token, 'bk_change:'.$ids[1]);
+        $this->say('demo', 'x', $token, 'day_2026-11-16');
+        $this->say('demo', 'x', $token, 'slot_12:00');
+
+        $this->inBusiness(function () use ($ids) {
+            $this->assertSame('2026-11-05 02:00:00', Booking::query()->find($ids[0])->starts_at->format('Y-m-d H:i:s'));
+            $this->assertSame('2026-11-16 04:00:00', Booking::query()->find($ids[1])->starts_at->format('Y-m-d H:i:s'));
+        });
+    }
+
     public function test_cancelling_inside_the_window_goes_to_staff(): void
     {
         // Tomorrow 10:00 is about 26 hours away: allowed. Today 10:00 is 2 hours away: needs staff.

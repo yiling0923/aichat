@@ -137,7 +137,9 @@ class BookingStep
     {
         $id = $optionId ?? $this->matchTyped($c, $state, $b, $text, $language);
 
-        if ($id === 'back' && $b['stage'] === 'service') {
+        if ($id === 'back' && ($b['stage'] === 'service' || (! empty($b['reschedule_id']) && $b['stage'] === 'day'))) {
+            unset($state['booking']);
+
             return $this->result([], 'back');
         }
 
@@ -198,6 +200,11 @@ class BookingStep
     private function afterTime(Conversation $c, array &$state, string $language): array
     {
         $state['misses'] = 0;
+
+        if (! empty($state['booking']['reschedule_id'])) {
+            return $this->finishChange($c, $state, $language);
+        }
+
         $data = $state['data'] ?? [];
 
         if (! empty($data['name']) && ! empty($data['phone'])) {
@@ -299,10 +306,10 @@ class BookingStep
         return $this->result([$c->addMessage('out', 'bot', $text)], 'done');
     }
 
-    /** Show the customer's upcoming bookings (up to five) with cancel / keep buttons. Returns null when there is none. */
+    /** Show the customer's upcoming bookings (up to four) with change / cancel / keep buttons. Returns null when there is none. */
     public function summary(Conversation $c, string $language): ?array
     {
-        $bookings = $this->upcomingList($c);
+        $bookings = $this->upcomingList($c)->take(4);
 
         if ($bookings->isEmpty()) {
             return null;
@@ -315,7 +322,7 @@ class BookingStep
                 'when' => $this->whenLabel($booking, $language),
                 'who' => $booking->practitioner->name,
             ]);
-            $options = [['id' => 'bk_cancel', 'label' => Strings::get('opt_cancel', $language)]];
+            $options = [['id' => 'bk_change', 'label' => Strings::get('opt_change', $language)], ['id' => 'bk_cancel', 'label' => Strings::get('opt_cancel', $language)]];
         } else {
             $lines = $bookings->values()->map(fn (Booking $b, int $i) => Text::fill(Strings::get('booking_summary_line', $language), [
                 'i' => $i + 1,
@@ -324,7 +331,11 @@ class BookingStep
                 'who' => $b->practitioner->name,
             ]))->all();
             $text = Text::fill(Strings::get('booking_summary_many', $language), ['n' => $bookings->count()])."\n".implode("\n", $lines);
-            $options = $bookings->values()->map(fn (Booking $b, int $i) => ['id' => 'bk_cancel:'.$b->id, 'label' => Text::fill(Strings::get('opt_cancel_n', $language), ['i' => $i + 1])])->all();
+            $options = [];
+            foreach ($bookings->values() as $i => $b) {
+                $options[] = ['id' => 'bk_change:'.$b->id, 'label' => Text::fill(Strings::get('opt_change_n', $language), ['i' => $i + 1])];
+                $options[] = ['id' => 'bk_cancel:'.$b->id, 'label' => Text::fill(Strings::get('opt_cancel_n', $language), ['i' => $i + 1])];
+            }
         }
 
         $options[] = ['id' => 'bk_keep', 'label' => Strings::get('opt_keep', $language)];
@@ -333,9 +344,16 @@ class BookingStep
     }
 
     /** Handle Cancel / Keep on the My booking step. */
-    public function handleSummary(Conversation $c, string $text, ?string $optionId, string $language): array
+    public function handleSummary(Conversation $c, array &$state, string $text, ?string $optionId, string $language): array
     {
         $normalized = Text::normalize($text);
+        $change = $optionId === 'bk_change' || str_starts_with((string) $optionId, 'bk_change:')
+            || ($optionId === null && ($normalized === Text::normalize(Strings::get('opt_change', $language)) || in_array($normalized, ['change time', 'change', 'reschedule', 'change booking', '改期', '更改时间', '更改预约'], true)));
+
+        if ($change) {
+            return $this->startChange($c, $state, $optionId, $language);
+        }
+
         $cancel = $optionId === 'bk_cancel' || str_starts_with((string) $optionId, 'bk_cancel:') || $normalized === Text::normalize(Strings::get('opt_cancel', $language));
         $keep = $optionId === 'bk_keep' || $normalized === Text::normalize(Strings::get('opt_keep', $language));
 
@@ -367,6 +385,69 @@ class BookingStep
         }
 
         return $this->result([$c->addMessage('out', 'bot', Strings::get('sorry_choose', $language))], 'retry');
+    }
+
+    /** The customer wants another time for one of their bookings: same service, pick a new day and time. */
+    private function startChange(Conversation $c, array &$state, ?string $optionId, string $language): array
+    {
+        $list = $this->upcomingList($c);
+        $pickedId = str_starts_with((string) $optionId, 'bk_change:') ? (int) substr((string) $optionId, 10) : null;
+
+        if ($pickedId === null && $list->count() > 1) {
+            return $this->result([$c->addMessage('out', 'bot', Strings::get('sorry_choose', $language))], 'retry');
+        }
+
+        $booking = $pickedId !== null ? $list->firstWhere('id', $pickedId) : $list->first();
+        if ($booking === null) {
+            return $this->result([$c->addMessage('out', 'bot', Strings::get('booking_none_upcoming', $language))], 'done');
+        }
+
+        // Same rule as cancelling: close to the visit, the team decides.
+        if (! $this->bookings->customerMayCancel($booking)) {
+            $hours = \App\Booking\BookingRules::for($c->business)['cancel_hours'];
+
+            return $this->handoverResult($c, null, 'Customer asked to change a booking inside the cancellation window', $language, Text::fill(Strings::get('booking_cancel_late', $language), ['hours' => $hours]));
+        }
+
+        $state['awaiting'] = 'booking';
+        $state['booking'] = ['stage' => 'day', 'service_id' => $booking->service_id, 'reschedule_id' => $booking->id, 'offset' => 0, 'page' => 0];
+
+        return $this->prompt($c, $state, $language);
+    }
+
+    private function finishChange(Conversation $c, array &$state, string $language): array
+    {
+        $b = $state['booking'];
+        $booking = $this->upcomingList($c)->firstWhere('id', (int) $b['reschedule_id']);
+        if ($booking === null) {
+            unset($state['booking']);
+
+            return $this->result([$c->addMessage('out', 'bot', Strings::get('booking_none_upcoming', $language))], 'done');
+        }
+
+        $service = $booking->service;
+        $start = Carbon::parse($b['date'].' '.$b['time'], $c->business->timezone ?: 'UTC');
+        $slot = collect($this->availability->slots($c->business, $service, $b['date']))->firstWhere('time', $b['time']);
+        if ($slot === null) {
+            throw new SlotTakenException;
+        }
+
+        $practitioner = $this->availability->practitionersFor($service)->firstWhere('id', $slot['practitioner_id']);
+
+        if ($c->channel !== 'preview') {
+            $this->bookings->reschedule($booking, $start, false, $practitioner);
+            app(\App\Services\Notifier::class)->notify($c->business, 'booking', 'Booking changed by '.($booking->customer?->name ?: 'a customer'),
+                $service->label('en').' · now '.$start->format('D j M, H:i'),
+                route('schedule', ['view' => 'week', 'date' => $start->format('Y-m-d')]));
+        }
+
+        unset($state['booking']);
+
+        return $this->result([$c->addMessage('out', 'bot', Text::fill(Strings::get('booking_changed', $language), [
+            'service' => $service->label($language),
+            'when' => $this->dayLabel($b['date'], $language).', '.$b['time'],
+            'who' => $practitioner->name,
+        ]))], 'done');
     }
 
     private function upcoming(Conversation $c): ?Booking

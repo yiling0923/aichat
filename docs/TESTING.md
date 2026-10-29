@@ -478,3 +478,12 @@ Older notes in this guide that say "Settings → Channels" (or Menu builder, Boo
 ## BC. The same filter bar everywhere
 
 Customers, All conversations, Orders, Reports, Activity log, Saved replies, Tasks and (for the platform owner) the business list all use one white filter bar: search box and lists in a single row, no labels above, the Search or Apply button hidden because everything applies by itself, a **Reset** button only while a filter is on, and a small note on the right where it helps (for example "133 customers"). On a phone each list takes a full row.
+
+## BD. Customers can change the time of a booking
+
+1. In the customer chat, book a visit at least a day ahead (the change rule is the same as cancelling: the "Customers may cancel until (hours before)" setting in Booking setup, 24 hours by default).
+2. Menu → **My booking**. With one booking you see **Change time**, **Cancel booking** and **Keep it**. With several you see **Change 1**, **Cancel 1**, **Change 2**, and so on.
+3. Press **Change time**: the bot shows the days and times that are free for the same service. Choose one: "Done! Your Haircut is now: Sun 1 Nov, 11:00". The booking is moved (not duplicated), reminders are reset, the Google Calendar event moves, and staff get a bell alert "Booking changed by ...".
+4. Press **← Back** on the day list to leave without changing anything.
+5. A booking less than 24 hours away: the bot says changes that close need the team and hands the chat over to staff.
+6. If the person helping is busy at the new time but another practitioner is free, the booking moves to the free one.

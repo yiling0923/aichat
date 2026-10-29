@@ -135,7 +135,7 @@ class MenuBot
         }
 
         if ($state['awaiting'] === 'my_booking') {
-            $result = $this->booking->handleSummary($conversation, $text, $optionId, $conversation->language ?? $language);
+            $result = $this->booking->handleSummary($conversation, $state, $text, $optionId, $conversation->language ?? $language);
 
             if ($result['status'] === 'retry') {
                 return $this->finish($conversation, $state, array_merge($out, $result['out']));

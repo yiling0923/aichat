@@ -111,38 +111,42 @@ class Bookings
     }
 
     /**
-     * Staff move a booking to another time (same practitioner and service). Other bookings of that practitioner
+     * A booking moves to another time (same service; the same practitioner unless another one is given). Other bookings of that practitioner
      * are checked again inside a transaction; Google Calendar events that staff added by hand are not.
      *
      * @return array{notified: bool}
      *
      * @throws SlotTakenException when the practitioner already has a booking at that time
      */
-    public function reschedule(Booking $booking, CarbonInterface $start, bool $notify = false): array
+    public function reschedule(Booking $booking, CarbonInterface $start, bool $notify = false, ?Practitioner $practitioner = null): array
     {
         $start = $start->copy()->utc();
         $end = $start->copy()->addMinutes($booking->service->duration_min);
         $buffer = BookingRules::for($booking->business)['buffer_min'];
+        $target = $practitioner ?? $booking->practitioner;
+        $oldCalendar = $booking->practitioner->google_calendar_id;
+        $oldEvent = $booking->google_event_id;
 
-        DB::transaction(function () use ($booking, $start, $end, $buffer): void {
-            Practitioner::query()->whereKey($booking->practitioner_id)->lockForUpdate()->first();
+        DB::transaction(function () use ($booking, $start, $end, $buffer, $target): void {
+            Practitioner::query()->whereKey($target->id)->lockForUpdate()->first();
 
-            $clash = Booking::query()->where('practitioner_id', $booking->practitioner_id)->where('status', 'confirmed')->whereKeyNot($booking->id)
+            $clash = Booking::query()->where('practitioner_id', $target->id)->where('status', 'confirmed')->whereKeyNot($booking->id)
                 ->where('starts_at', '<', $end->copy()->addMinutes($buffer))->where('ends_at', '>', $start->copy()->subMinutes($buffer))->exists();
 
             if ($clash) {
-                throw new SlotTakenException($booking->practitioner->name.' already has a booking around that time.');
+                throw new SlotTakenException($target->name.' already has a booking around that time.');
             }
 
-            $booking->forceFill(['starts_at' => $start, 'ends_at' => $end, 'reminder_24_sent_at' => null, 'reminder_2_sent_at' => null])->save();
+            $booking->forceFill(['practitioner_id' => $target->id, 'starts_at' => $start, 'ends_at' => $end, 'reminder_24_sent_at' => null, 'reminder_2_sent_at' => null])->save();
         });
+        $booking->load('practitioner');
 
         $calendar = $booking->practitioner->google_calendar_id;
-        if ($booking->google_event_id && $calendar && $this->google->enabled()) {
+        if ($oldEvent && $oldCalendar && $this->google->enabled()) {
             try {
-                $this->google->deleteEvent($calendar, $booking->google_event_id);
-                $eventId = $this->google->createEvent($calendar, $booking->service->label('en').' - '.($booking->customer?->name ?: 'Customer'),
-                    'Phone: '.($booking->customer?->phone ?: '-')."\nBooked through the chat assistant.", $booking->starts_at, $booking->ends_at);
+                $this->google->deleteEvent($oldCalendar, $oldEvent);
+                $eventId = $calendar ? $this->google->createEvent($calendar, $booking->service->label('en').' - '.($booking->customer?->name ?: 'Customer'),
+                    'Phone: '.($booking->customer?->phone ?: '-')."\nBooked through the chat assistant.", $booking->starts_at, $booking->ends_at) : null;
                 $booking->forceFill(['google_event_id' => $eventId])->save();
             } catch (Throwable $e) {
                 $booking->forceFill(['google_event_id' => null])->save();
