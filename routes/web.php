@@ -61,6 +61,8 @@ Route::middleware('staff')->prefix('admin')->group(function () {
 });
 
 Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
+    Route::get('/guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide');
+    Route::post('/guide/{key}', [\App\Http\Controllers\GuideController::class, 'mark'])->where('key', '[a-z]+');
     Route::get('/menu', [\App\Http\Controllers\MenuController::class, 'index'])->name('menu');
     Route::get('/api/menu', [\App\Http\Controllers\MenuController::class, 'show']);
     Route::put('/api/menu', [\App\Http\Controllers\MenuController::class, 'save']);
@@ -90,6 +92,7 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 
 // Phase 3: Today, all conversations, tasks, library (everyone); tags and library edits (owner or manager); settings (owner).
 Route::middleware('staff')->prefix('admin')->group(function () {
+    Route::get('/help', [\App\Http\Controllers\GuideController::class, 'help'])->name('help');
     Route::get('/today', [\App\Http\Controllers\TodayController::class, 'index'])->name('today');
     Route::get('/conversations', [\App\Http\Controllers\ConversationsController::class, 'index'])->name('conversations');
     Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks');

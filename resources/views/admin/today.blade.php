@@ -34,7 +34,7 @@
     @if ($checklist)
         @php $done = collect($checklist)->where('done', true)->count(); @endphp
         <section class="tp-panel tp-setup">
-            <div class="tp-head"><h3>Get set up</h3><span class="tp-count">{{ $done }} of {{ count($checklist) }} done</span></div>
+            <div class="tp-head"><h3>Get set up</h3><span class="tp-count">{{ $done }} of {{ count($checklist) }} done</span><a class="btn small" href="{{ route('guide') }}" style="margin-left:auto">Open the setup guide</a></div>
             <div class="progress" style="margin:0 20px"><span style="width: {{ round($done / count($checklist) * 100) }}%"></span></div>
             @foreach ($checklist as $step)
                 <div class="tp-row">

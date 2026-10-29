@@ -594,3 +594,19 @@ The grey/pink AI label next to the customer ("complaint · angry") no longer rep
 5. **Setup wizard**: after approving services and opening hours, the Chinese menu now shows them in Chinese ("- 面部护理：RM 188（60 分钟）", "周一 10:00 - 19:00", "周日 休息", "请咨询") instead of English words.
 6. **Automatic tags** also understand Traditional Chinese ("多少錢" → Price question, "退款" → Complaint).
 7. The "no-show" and "come back" message templates read more naturally. Templates you already saved keep your own wording.
+
+## BS. Setup guide and Help page
+
+**Setup guide (owner only)**
+1. Left menu → **Setup guide** with a small count like 3/6 (shown until the essential steps are done). It is also in Settings → Setup guide, and Today's "Get set up" card links to it.
+2. The page shows a progress ring, how many minutes are left, and a list of steps: Check your business details, Add services and prices, Set opening hours, Look at your chat menu, Try it as a customer, Go live (essential), then Add your team, Connect a channel, Write saved replies, Turn on phone alerts (nice to have).
+3. Steps tick themselves ("Done automatically") when the app sees them done: for example add a service and its step ticks; set opening hours and that one ticks.
+4. For anything the app cannot see (for example looking at the menu), press **Mark as done**. Press **Mark as not done** to undo.
+5. The **Next up** step is highlighted and its button is also in the top card. When all essential steps are done the card turns green ("You are ready for customers") and the left-menu link goes away.
+6. Staff cannot open the guide.
+
+**Help page (everyone)**
+1. Left menu → **Help** (above your name), or Settings → Help.
+2. Topics on the left (or as buttons on a phone): the big picture, a day with the system, how customers reach you, inbox and handover, chat menu, bookings, customers and tags, orders, marketing, reports, alerts, the AI assistant, team and roles, plan and billing, your data, questions and fixes, words used.
+3. Type in **Search help** to show only the topics that match (for example "template" or "24 hour").
+4. Links inside the text open the real pages. Pages only for owners or managers are marked **Owner** or **Owner and manager** when a staff member reads them.

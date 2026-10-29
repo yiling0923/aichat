@@ -5,6 +5,7 @@
     $canManage = auth()->user()->canManage();
     $hubPages = ['manage', 'tags', 'settings', 'billing', 'setup-guide'];
     $marketingPages = ['automations', 'broadcasts', 'activity', 'templates'];
+    $guideProgress = $isOwner ? app(\App\Support\SetupGuide::class)->cached($business, auth()->user()) : null;
 @endphp
 @if ($accent && preg_match('/^#[0-9a-fA-F]{6}$/', $accent))
     <style>:root { --accent: {{ $accent }}; }</style>
@@ -27,6 +28,9 @@
     <a @class(['on' => $active === 'reports']) href="{{ route('reports') }}"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Reports</a>
     @if ($canManage)
     <div class="sec">Set up</div>
+    @if ($isOwner && $guideProgress && ! $guideProgress['complete'])
+    <a @class(['on' => $active === 'guide']) href="{{ route('guide') }}"><svg viewBox="0 0 24 24"><path d="M5 3v18"/><path d="M5 4h12l-2 4 2 4H5"/></svg>Setup guide <span class="badge guide-badge">{{ $guideProgress['done'] }}/{{ $guideProgress['total'] }}</span></a>
+    @endif
     @if ($isOwner)
     <a @class(['on' => $active === 'menu']) href="{{ route('menu') }}"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Menu builder</a>
     <a @class(['on' => $active === 'setup']) href="{{ route('booking.setup') }}"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Booking setup</a>
@@ -38,6 +42,7 @@
     @if ($canManage)
     <a @class(['on' => in_array($active, $hubPages)]) href="{{ route('manage') }}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
     @endif
+    <a @class(['on' => $active === 'help']) href="{{ route('help') }}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8"/><circle cx="12" cy="17" r=".6"/></svg>Help</a>
     @php($meName = auth()->user()->name)
     <div class="me">
         <a href="{{ route('account') }}" class="me-av" title="My account">{{ collect(preg_split('/\s+/', trim($meName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('') ?: '?' }}</a>
