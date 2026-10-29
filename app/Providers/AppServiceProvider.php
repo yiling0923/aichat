@@ -26,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // XAMPP on Windows often points OPENSSL_CONF at a file that is not there, which stops alert keys and sending.
+        // Before OpenSSL is first used, swap in a minimal settings file of our own.
+        $conf = getenv('OPENSSL_CONF');
+        if ($conf !== false && $conf !== '' && ! is_file($conf)) {
+            $own = storage_path('app/openssl.cnf');
+            if (is_file($own) || @file_put_contents($own, "openssl_conf = default_conf\n[default_conf]\n[req]\ndistinguished_name = dn\n[dn]\n") !== false) {
+                putenv('OPENSSL_CONF='.$own);
+            }
+        }
+
         // Any page list in the app uses the same neat Previous / Next bar.
         Paginator::defaultView('pagination.bar');
         Paginator::defaultSimpleView('pagination.bar');

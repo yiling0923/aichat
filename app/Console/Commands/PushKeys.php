@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Minishlink\WebPush\VAPID;
 
 class PushKeys extends Command
 {
@@ -22,36 +21,20 @@ class PushKeys extends Command
             return self::SUCCESS;
         }
 
-        try {
-            $keys = VAPID::createVapidKeys();
-        } catch (\Throwable $e) {
-            // XAMPP on Windows often cannot find PHP's OpenSSL settings file; point it at the one that ships with XAMPP and retry.
-            $keys = null;
-            $php = dirname(PHP_BINARY);
-            foreach ([$php.'\\extras\\ssl\\openssl.cnf', dirname($php).'\\apache\\conf\\openssl.cnf', $php.'\\openssl.cnf', '/etc/ssl/openssl.cnf'] as $cnf) {
-                if (is_file($cnf)) {
-                    putenv('OPENSSL_CONF='.$cnf);
-                    try {
-                        $keys = VAPID::createVapidKeys();
+        $keys = $this->makeKeys();
 
-                        break;
-                    } catch (\Throwable) {
-                        // try the next file
-                    }
-                }
+        if ($keys === null) {
+            $this->error('PHP could not make the keys.');
+            $this->line('OpenSSL loaded: '.(extension_loaded('openssl') ? 'yes' : 'NO').' | '.(defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : '-').' | PHP '.PHP_VERSION);
+            $this->line('OPENSSL_CONF: '.(getenv('OPENSSL_CONF') ?: '(not set)').' | php.ini: '.(php_ini_loaded_file() ?: '(none)'));
+            while (($err = openssl_error_string()) !== false) {
+                $this->line('OpenSSL says: '.$err);
             }
-            if ($keys === null) {
-                $this->error('PHP could not make the keys: '.$e->getMessage());
-                $this->line('OpenSSL loaded: '.(extension_loaded('openssl') ? 'yes' : 'NO').' | '.(defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : '-').' | PHP '.PHP_VERSION);
-                $this->line('OPENSSL_CONF: '.(getenv('OPENSSL_CONF') ?: '(not set)').' | php.ini: '.(php_ini_loaded_file() ?: '(none)'));
-                while (($err = openssl_error_string()) !== false) {
-                    $this->line('OpenSSL says: '.$err);
-                }
-                $this->line('Fix: in C:\\xampp\\php\\php.ini make sure ;extension=openssl has no ; in front, then try again.');
+            $this->line('Fix: in php.ini make sure ;extension=openssl has no ; in front, then try again.');
 
-                return self::FAILURE;
-            }
+            return self::FAILURE;
         }
+
         $env = preg_replace('/^VAPID_(PUBLIC_KEY|PRIVATE_KEY)=.*\R?/m', '', $env) ?? $env;
         $env = rtrim($env)."\n\nVAPID_PUBLIC_KEY=".$keys['publicKey']."\nVAPID_PRIVATE_KEY=".$keys['privateKey']."\n";
 
@@ -67,5 +50,36 @@ class PushKeys extends Command
         $this->line('Then each person opens My account and turns alerts on for their phone or computer.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * A P-256 key pair in the form browsers want. XAMPP on Windows often has OPENSSL_CONF pointing at a file that is not there,
+     * so each settings file is tried through the "config" option, ending with a minimal one of our own.
+     *
+     * @return array{publicKey: string, privateKey: string}|null
+     */
+    private function makeKeys(): ?array
+    {
+        $php = dirname(PHP_BINARY);
+        $own = storage_path('app/openssl.cnf');
+        @file_put_contents($own, "openssl_conf = default_conf\n[default_conf]\n[req]\ndistinguished_name = dn\n[dn]\n");
+
+        $configs = array_values(array_filter([
+            getenv('OPENSSL_CONF') ?: null, $php.'\\extras\\ssl\\openssl.cnf', dirname($php).'\\apache\\conf\\openssl.cnf', '/etc/ssl/openssl.cnf', $own,
+        ], fn ($f) => $f !== null && is_file($f)));
+        array_unshift($configs, null);
+
+        foreach ($configs as $cnf) {
+            $res = @openssl_pkey_new(['curve_name' => 'prime256v1', 'private_key_type' => OPENSSL_KEYTYPE_EC] + ($cnf === null ? [] : ['config' => $cnf]));
+            $ec = $res === false ? null : (openssl_pkey_get_details($res)['ec'] ?? null);
+
+            if ($ec !== null) {
+                $b64 = fn (string $raw) => rtrim(strtr(base64_encode($raw), '+/', '-_'), '=');
+
+                return ['publicKey' => $b64("\x04".str_pad($ec['x'], 32, "\0", STR_PAD_LEFT).str_pad($ec['y'], 32, "\0", STR_PAD_LEFT)), 'privateKey' => $b64(str_pad($ec['d'], 32, "\0", STR_PAD_LEFT))];
+            }
+        }
+
+        return null;
     }
 }
