@@ -35,6 +35,7 @@
 </div>
 <script src="{{ asset('js/search.js') }}"></script>
 <script src="{{ asset('js/notifications.js') }}"></script>
+<script src="{{ asset('js/autofilter.js') }}"></script>
 @stack('scripts')
 </body>
 </html>

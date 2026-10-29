@@ -117,4 +117,13 @@ class SmartUiTest extends TestCase
             ->assertSee('id="tpl-dialog"', false)->assertSee('id="btn-jump"', false)->assertSee('id="mode-badge"', false)->assertSee('id="btn-back"', false)
             ->assertSee('Enter sends, Shift+Enter');
     }
+
+    public function test_filter_pages_load_the_auto_apply_script(): void
+    {
+        $owner = \App\Models\User::factory()->create(['business_id' => \App\Models\Business::factory()->create()->id, 'role' => 'owner']);
+        foreach (['customers', 'orders', 'reports', 'conversations', 'automations/activity'] as $page) {
+            $this->actingAs($owner)->get('/admin/'.$page)->assertOk()->assertSee('js/autofilter.js', false);
+        }
+        $this->assertFileExists(public_path('js/autofilter.js'));
+    }
 }

@@ -456,3 +456,9 @@ The Settings page is short again. Everything else has its own place:
 - **Set up** (owner and managers): Menu builder, Booking setup and Channels (owner only), AI assistant, Saved replies.
 - **Settings**: Business and team, Plan and billing, Getting started, Tags.
 Older notes in this guide that say "Settings → Channels" (or Menu builder, Booking setup, AI assistant, Saved replies, Message templates) now mean the matching entry in the side menu or Marketing tab.
+
+## AZ. Filters apply by themselves
+
+1. Customers: type in the search box. About half a second after you stop, the list updates and the cursor stays in the box. Change Lead level, Language or Tag: the list updates at once. There is no Search or Filter button any more.
+2. The same on Orders (search, period), Conversations, Reports (period, channel, service, practitioner) and the Activity log. For Reports, pick "Custom dates", then both dates: it updates when both are chosen.
+3. Reset links still clear everything.

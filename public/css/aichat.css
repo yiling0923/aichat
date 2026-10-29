@@ -1297,3 +1297,4 @@ html { scroll-behavior: smooth; }
 .tpl-checks li.bad .ci { background: var(--ambers); color: var(--amber); }
 .tile b .chip2 { margin-left: 6px; vertical-align: middle; }
 @media (max-width: 600px) { .tpl-grid { grid-template-columns: 1fr; } .tpl-bar input[type=search] { max-width: none; margin-left: 0; } }
+.af-hide { display: none !important; }
