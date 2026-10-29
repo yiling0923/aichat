@@ -1729,3 +1729,4 @@ details.au-card[open] > summary::after { content: none; }
   .bk-card .closed-add input { flex: 1; min-width: 0; }
 }
 @media (max-width: 900px) { .wk-arrow { display: none; } .wk-adv { overflow-x: auto; } }
+.bk-row .f { position: relative; }
