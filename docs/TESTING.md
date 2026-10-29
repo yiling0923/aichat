@@ -691,3 +691,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. Orders: press Edit on any order (in English and 中文): the "Edit order" window opens. Same for Tasks, Saved replies, Settings > Team and Tags.
 2. Customers: open a customer. The Spent card shows e.g. "3 paid orders" and no odd text.
 3. Inbox: the header has the title with the bell and 中文 button on top, and the Open filter with "Search all chats" below.
+
+## CC. Marketing page polish
+
+1. Marketing > Automations: a "x / 5 switched on" strip, one icon and an Edit button per automation, and the Run now button on the top right.
+2. Press Edit on a card: it opens with Status, timing, messages and Save. Switch one On and Save: the card gets a green edge and the count goes up.
+3. Check on the phone (narrow window) and in 中文.

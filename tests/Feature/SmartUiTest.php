@@ -107,7 +107,7 @@ class SmartUiTest extends TestCase
     public function test_automations_are_collapsible_and_open_when_switched_on(): void
     {
         $owner = $this->owner;
-        $this->actingAs($owner)->get('/admin/automations')->assertOk()->assertSee('class="card fold"', false)->assertSee('Satisfaction survey');
+        $this->actingAs($owner)->get('/admin/automations')->assertOk()->assertSee('card fold au-card', false)->assertSee('Satisfaction survey');
     }
 
     public function test_the_inbox_chat_screen_has_tabs_dialogs_and_the_jump_button(): void

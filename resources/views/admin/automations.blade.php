@@ -2,27 +2,27 @@
 @section('title', __('Automations'))
 @section('content')
     @include('admin._marketing_tabs', ['tab' => 'automations'])
-    <div class="bar spread">
+    @php $onCount = $automations->where('enabled', true)->count(); @endphp
+    <div class="bar spread au-head">
         <div>
             <h1>{{ __('Automations') }}</h1>
             <p class="mute">{{ __('Messages the app sends by itself. They only go to customers who agreed to be contacted and never sent STOP. Everything starts switched off.') }}</p>
         </div>
-        <div class="bar">
-            <a class="btn" href="{{ route('automations.activity') }}">{{ __('Activity') }}</a>
-            <form method="post" action="{{ url('/admin/automations/run') }}">@csrf<button class="btn primary" onclick="return confirm({{ json_encode(__('Send every message that is due right now?'), JSON_UNESCAPED_UNICODE) }})">{{ __('Run now (test)') }}</button></form>
-        </div>
+        <form method="post" action="{{ url('/admin/automations/run') }}">@csrf<button class="btn primary" onclick="return confirm({{ json_encode(__('Send every message that is due right now?'), JSON_UNESCAPED_UNICODE) }})">{{ __('Run now (test)') }}</button></form>
+    </div>
+    <div class="au-strip">
+        <span class="au-count"><b>{{ $onCount }}</b> / {{ $automations->count() }} <small>{{ __('switched on') }}</small></span>
+        <span class="au-note">{{ __('Checked every 5 minutes. On WhatsApp, Messenger and Instagram a message can only go out within 24 hours of the customer\'s last message, unless you give an approved WhatsApp template name.') }}</span>
     </div>
     @error('automation')<div class="note err">{{ $message }}</div>@enderror
-    <p class="help-line">{{ __('Checked every 5 minutes. On WhatsApp, Messenger and Instagram a message can only go out within 24 hours of the customer\'s last message, unless you give an approved WhatsApp template name.') }}</p>
 
     @foreach ($automations as $a)
         @php $d = $defs[$a->key]; @endphp
-        <details class="card fold" @if ($a->enabled) open @endif>
-        <summary><span><b>{{ __($d['title']) }}</b> <span class="tag {{ $a->enabled ? 'ok' : '' }}">{{ $a->enabled ? __('On') : __('Off') }}</span><small class="mute fold-help">{{ __($d['help']) }}</small></span></summary>
+        <details class="card fold au-card @if ($a->enabled) is-on @endif" @if ($a->enabled) open @endif>
+        <summary><span class="au-ic" aria-hidden="true"><svg viewBox="0 0 24 24">{!! ['survey' => '<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>', 'review_request' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', 'rebooking' => '<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>', 'no_show' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 'hot_lead' => '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z"/>'][$a->key] ?? '<circle cx="12" cy="12" r="9"/>' !!}</svg></span><span class="au-main"><b>{{ __($d['title']) }}</b> <span class="tag {{ $a->enabled ? 'ok' : '' }}">{{ $a->enabled ? __('On') : __('Off') }}</span><small class="mute fold-help">{{ __($d['help']) }}</small></span><span class="au-edit">{{ __('Edit') }}</span></summary>
         <form method="post" action="{{ url('/admin/automations/'.$a->key) }}">
             @csrf
-            <div class="bar spread" style="margin-top:12px">
-                <span></span>
+            <div class="au-status">
                 <label class="f"><span>{{ __('Status') }}</span>
                     <select name="enabled"><option value="0" @selected(! $a->enabled)>{{ __('Off') }}</option><option value="1" @selected($a->enabled)>{{ __('On') }}</option></select></label>
             </div>

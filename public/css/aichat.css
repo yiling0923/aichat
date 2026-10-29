@@ -1639,3 +1639,33 @@ kbd { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); bo
 .ih-sub select { height: 32px; min-width: 104px; border-radius: 10px; font-weight: 600; }
 .ih-sub .mini-link { font-size: 12.5px; font-weight: 600; white-space: nowrap; text-decoration: none; }
 .ih-sub .mini-link:hover { text-decoration: underline; }
+
+/* Automations */
+.au-head { margin-bottom: 14px; }
+.au-strip { display: flex; align-items: center; gap: 14px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.au-count { flex: none; display: flex; align-items: baseline; gap: 5px; font-size: 14px; padding-right: 14px; border-right: 1px solid var(--line); }
+.au-count b { font-size: 22px; color: var(--accent-d); }
+.au-count small { color: var(--mute); font-size: 12.5px; }
+.au-note { font-size: 12.5px; color: var(--mute); line-height: 1.5; }
+details.au-card { margin-bottom: 10px; transition: border-color .12s, box-shadow .12s; }
+details.au-card:hover { border-color: var(--accent-m); }
+details.au-card.is-on { border-left: 3px solid var(--accent); }
+details.au-card > summary { display: flex; align-items: center; gap: 14px; padding: 14px 18px; }
+details.au-card > summary::after { content: none; }
+.au-ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--accent-l); display: grid; place-items: center; }
+.au-ic svg { width: 19px; height: 19px; fill: none; stroke: var(--accent-d); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+details.au-card:not(.is-on) .au-ic { background: #f1f4f4; }
+details.au-card:not(.is-on) .au-ic svg { stroke: var(--mute); }
+.au-main { flex: 1; min-width: 0; display: block; }
+.au-main .fold-help { display: block; margin-top: 3px; line-height: 1.45; }
+.au-edit { flex: none; font-size: 12.5px; font-weight: 600; color: var(--accent-d); padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; }
+details.au-card[open] .au-edit { background: var(--accent-l); border-color: var(--accent-m); }
+.au-status { display: flex; justify-content: flex-end; margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--line-s); }
+details.au-card > form { padding-top: 0; }
+@media (max-width: 640px) {
+  .au-strip { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .au-count { border-right: 0; padding-right: 0; }
+  details.au-card > summary { padding: 12px 14px; gap: 10px; }
+  .au-edit { display: none; }
+}
+@media (min-width: 641px) { .au-head { flex-wrap: nowrap; align-items: flex-start; } .au-head form { flex: none; } }
