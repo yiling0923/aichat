@@ -17,6 +17,6 @@ class VerifyEmailMail extends Mailable
 
     public function build(): static
     {
-        return $this->subject('Confirm your email')->text('mail.verify');
+        return $this->subject(__('Confirm your email'))->text('mail.verify');
     }
 }

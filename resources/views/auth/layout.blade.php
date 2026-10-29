@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ app()->getLocale() === 'zh' ? 'zh-CN' : 'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
 </head>
 <body>
+<div class="auth-lang">@include('_guest_lang')</div>
 <div class="auth-split">
     <aside class="auth-side">
         <a class="auth-brand" href="{{ url('/') }}"><span class="logo">A</span> AI Messaging Sales Assistant</a>
-        <h2>Welcome back.</h2>
+        <h2>{{ __('Welcome back.') }}</h2>
         <ul class="auth-points">
-            <li><b>Your inbox</b> is waiting: new chats, bookings and follow-ups.</li>
-            <li><b>The bot keeps working</b> while you are away and hands over when needed.</li>
+            <li>{!! __(':b is waiting: new chats, bookings and follow-ups.', ['b' => '<b>'.e(__('Your inbox')).'</b>']) !!}</li>
+            <li>{!! __(':b while you are away and hands over when needed.', ['b' => '<b>'.e(__('The bot keeps working')).'</b>']) !!}</li>
         </ul>
     </aside>
     <main class="auth-main">

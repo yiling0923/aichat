@@ -7,8 +7,6 @@ use Illuminate\Contracts\View\View;
 /** Plain-language starter text for the terms and the privacy notice. A lawyer should review it before a public launch. */
 class LegalController extends Controller
 {
-    private const UPDATED = '28 October 2026';
-
     public function terms(): View
     {
         return view('legal.terms', $this->data([
@@ -78,6 +76,6 @@ class LegalController extends Controller
 
     private function data(array $sections): array
     {
-        return ['sections' => $sections, 'updated' => self::UPDATED, 'contact' => config('mail.from.address') ?: 'hello@example.com'];
+        return ['sections' => $sections, 'updated' => \App\Support\Lang::fmt(\Illuminate\Support\Carbon::create(2026, 10, 28), 'j F Y', 'Y年n月j日'), 'contact' => config('mail.from.address') ?: 'hello@example.com'];
     }
 }

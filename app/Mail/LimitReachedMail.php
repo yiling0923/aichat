@@ -11,7 +11,7 @@ class LimitReachedMail extends Mailable
 
     public function build(): static
     {
-        return $this->subject('Plan limit reached: '.$this->business->name)
+        return $this->subject(__('Plan limit reached: :name', ['name' => $this->business->name]))
             ->text('mail.limit-reached');
     }
 }

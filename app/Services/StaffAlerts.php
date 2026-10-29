@@ -41,7 +41,7 @@ class StaffAlerts
         $result = ['email' => false, 'whatsapp' => null];
 
         try {
-            Mail::to($user->email)->send(new WaitingChatMail($business, 'Test customer', 12, false, route('inbox'), 'This is only a test.'));
+            \App\Support\Lang::as($user->getAttribute('locale'), fn () => Mail::to($user->email)->send(new WaitingChatMail($business, __('Test customer'), 12, false, route('inbox'), __('This is only a test.'))));
             $result['email'] = true;
         } catch (Throwable $e) {
             $this->quietly($e);
@@ -66,11 +66,11 @@ class StaffAlerts
 
     private function email(Business $business, string $name, int $minutes, bool $urgent, string $url, ?string $reason): void
     {
-        $to = User::query()->where('business_id', $business->id)->where('active', true)->whereIn('role', ['owner', 'manager'])->pluck('email')->filter()->all();
+        $to = User::query()->where('business_id', $business->id)->where('active', true)->whereIn('role', ['owner', 'manager'])->get()->filter(fn (User $u) => $u->email);
 
-        foreach ($to as $address) {
+        foreach ($to as $user) {
             try {
-                Mail::to($address)->send(new WaitingChatMail($business, $name, $minutes, $urgent, $url, $reason));
+                \App\Support\Lang::as($user->getAttribute('locale'), fn () => Mail::to($user->email)->send(new WaitingChatMail($business, $name, $minutes, $urgent, $url, $reason)));
             } catch (Throwable $e) {
                 $this->quietly($e);
             }

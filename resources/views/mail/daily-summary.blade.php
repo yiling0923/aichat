@@ -1,21 +1,21 @@
-Good morning,
+{{ __('Good morning,') }}
 
-Here is {{ $business->name }} for {{ $s['label'] }}.
+{{ __('Here is :name for :day.', ['name' => $business->name, 'day' => $s['label']]) }}
 
-New chats: {{ $s['new_chats'] }}
-New customers: {{ $s['new_customers'] }}
-Bookings made: {{ $s['bookings_made'] }} ({{ $s['cancelled'] }} cancelled)
-Visits that day: {{ $s['visits'] }}
-Paid: {{ $s['currency'] }} {{ number_format($s['revenue'], 0) }} ({{ $s['orders_paid'] }} orders)
+{{ __('New chats') }}: {{ $s['new_chats'] }}
+{{ __('New customers') }}: {{ $s['new_customers'] }}
+{{ __('Bookings made') }}: {{ $s['bookings_made'] }} ({{ __(':n cancelled', ['n' => $s['cancelled']]) }})
+{{ __('Visits that day') }}: {{ $s['visits'] }}
+{{ __('Paid') }}: {{ $s['currency'] }} {{ number_format($s['revenue'], 0) }} ({{ __(':n orders', ['n' => $s['orders_paid']]) }})
 @if ($s['topics'])
 
-What customers asked about: {{ collect($s['topics'])->map(fn ($t) => $t['name'].' ('.$t['count'].')')->implode(', ') }}
+{{ __('What customers asked about') }}: {{ collect($s['topics'])->map(fn ($t) => __($t['name']).' ('.$t['count'].')')->implode(', ') }}
 @endif
 
-Needs attention now:
-- Chats waiting for a person: {{ $s['waiting_now'] }}
-- Overdue tasks: {{ $s['overdue_tasks'] }}
-- Bookings tomorrow: {{ $s['tomorrow'] }}
+{{ __('Needs attention now') }}:
+- {{ __('Chats waiting for a person') }}: {{ $s['waiting_now'] }}
+- {{ __('Overdue tasks') }}: {{ $s['overdue_tasks'] }}
+- {{ __('Bookings tomorrow') }}: {{ $s['tomorrow'] }}
 
-Open your Today page:
+{{ __('Open your Today page:') }}
 {{ $url }}

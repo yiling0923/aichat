@@ -32,4 +32,19 @@ class Lang
 
         return $locale !== 'en' && is_file($file) ? (array) json_decode((string) file_get_contents($file), true) : [];
     }
+
+    /** Run something (an email, for example) in a person's language, then put the current language back. */
+    public static function as(?string $locale, callable $run): mixed
+    {
+        $before = app()->getLocale();
+        app()->setLocale(self::valid($locale));
+        \Carbon\Carbon::setLocale(app()->getLocale() === 'zh' ? 'zh' : 'en');
+
+        try {
+            return $run();
+        } finally {
+            app()->setLocale($before);
+            \Carbon\Carbon::setLocale($before === 'zh' ? 'zh' : 'en');
+        }
+    }
 }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ app()->getLocale() === 'zh' ? 'zh-CN' : 'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +13,7 @@
         <h1>@yield('title')</h1>
         <p class="mute">@yield('message')</p>
         <div class="err-actions">
-            @hasSection('actions')@yield('actions')@else<a class="btn primary" href="{{ url('/') }}">Go to the home page</a>@endif
+            @hasSection('actions')@yield('actions')@else<a class="btn primary" href="{{ url('/') }}">{{ __('Go to the home page') }}</a>@endif
         </div>
     </div>
 </div>

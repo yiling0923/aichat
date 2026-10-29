@@ -12,7 +12,7 @@ class DailySummaryMail extends Mailable
 
     public function build(): static
     {
-        return $this->subject('Yesterday at '.$this->business->name.': '.$this->s['new_chats'].' new chats, '.$this->s['bookings_made'].' bookings')
+        return $this->subject(__('Yesterday at :name: :chats new chats, :bookings bookings', ['name' => $this->business->name, 'chats' => $this->s['new_chats'], 'bookings' => $this->s['bookings_made']]))
             ->text('mail.daily-summary');
     }
 }

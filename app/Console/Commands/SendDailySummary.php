@@ -31,12 +31,17 @@ class SendDailySummary extends Command
                 return;
             }
 
-            $stats = $summary->forDay($business, $now->copy()->subDay());
             $users = User::query()->where('business_id', $business->id)->where('active', true)->whereIn('role', ['owner', 'manager'])->get();
+
+            $perLanguage = [];
 
             foreach ($users as $user) {
                 try {
-                    Mail::to($user->email)->send(new DailySummaryMail($business, $stats, route('today')));
+                    $locale = \App\Support\Lang::valid($user->getAttribute('locale'));
+                    \App\Support\Lang::as($locale, function () use ($summary, $business, $now, $user, $locale, &$perLanguage) {
+                        $perLanguage[$locale] ??= $summary->forDay($business, $now->copy()->subDay());
+                        Mail::to($user->email)->send(new DailySummaryMail($business, $perLanguage[$locale], route('today')));
+                    });
                     $sent++;
                 } catch (Throwable $e) {
                     $this->warn('Could not email '.$user->email.': '.$e->getMessage());

@@ -1,20 +1,20 @@
 @php $back = (int) (((array) $business->settings)['handover_return_minutes'] ?? 0); @endphp
-Hi,
+{{ __('Hi,') }}
 
-{{ $name }} is waiting for a reply from your team at {{ $business->name }}. Nobody has answered for {{ $minutes }} minutes.
+{{ __(':who is waiting for a reply from your team at :name. Nobody has answered for :n minutes.', ['who' => $name, 'name' => $business->name, 'n' => $minutes]) }}
 @if ($reason)
 
-What they need: {{ $reason }}
+{{ __('What they need') }}: {{ $reason }}
 @endif
 
-Open the chat and reply here:
+{{ __('Open the chat and reply here:') }}
 {{ $url }}
 @if ($urgent)
 
-This is the last reminder.
+{{ __('This is the last reminder.') }}
 @if ($back > 0)
-If nobody answers, the bot takes the chat back after {{ $back }} minutes.
+{{ __('If nobody answers, the bot takes the chat back after :n minutes.', ['n' => $back]) }}
 @else
-The chat stays in "Needs a person" until someone replies.
+{{ __('The chat stays in "Needs a person" until someone replies.') }}
 @endif
 @endif

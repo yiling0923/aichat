@@ -11,7 +11,7 @@ class WaitingChatMail extends Mailable
 
     public function build(): static
     {
-        return $this->subject(($this->urgent ? 'URGENT: ' : '').$this->name.' has waited '.$this->minutes.' minutes ('.$this->business->name.')')
+        return $this->subject(($this->urgent ? __('URGENT:').' ' : '').__(':who has waited :n minutes (:name)', ['who' => $this->name, 'n' => $this->minutes, 'name' => $this->business->name]))
             ->text('mail.waiting-chat');
     }
 }

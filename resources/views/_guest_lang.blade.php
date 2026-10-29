@@ -1,0 +1,1 @@
+<span class="guest-lang" role="group" aria-label="{{ __('Language') }}">@foreach (\App\Support\Lang::LOCALES as $code => $name)<a href="{{ route('lang', $code) }}" @class(['on' => app()->getLocale() === $code]) rel="nofollow">{{ $name }}</a>@endforeach</span>

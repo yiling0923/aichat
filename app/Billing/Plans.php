@@ -110,7 +110,7 @@ class Plans
 
         $owners = User::query()->where('business_id', $business->id)->where('role', 'owner')->where('active', true)->get();
         foreach ($owners as $owner) {
-            Mail::to($owner->email)->send(new LimitReachedMail($business, $kind));
+            \App\Support\Lang::as($owner->getAttribute('locale'), fn () => Mail::to($owner->email)->send(new LimitReachedMail($business, $kind)));
         }
     }
 

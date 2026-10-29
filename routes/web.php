@@ -12,6 +12,14 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+// Language switch for public pages (remembered in a cookie).
+Route::get('/lang/{locale}', function (string $locale) {
+    abort_unless(array_key_exists($locale, \App\Support\Lang::LOCALES), 404);
+    \Illuminate\Support\Facades\Cookie::queue(cookie('locale', $locale, 60 * 24 * 365));
+
+    return redirect(url()->previous(url('/')));
+})->name('lang')->middleware('throttle:60,1');
+
 // Built-in website test chat (visitors, no login).
 Route::middleware('business.slug')->group(function () {
     Route::get('/chat/{slug}', [ChatController::class, 'show'])->name('chat.show');

@@ -678,3 +678,10 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. Press 中文. Open Help: the whole page is Chinese, search works with Chinese words (try 营业时间).
 2. Save something (a tag, a task, Settings): the green message at the top is Chinese. Try a wrong password in My account: the red message is Chinese.
 3. Press English: Help and the messages are English again.
+
+## CA. Chinese, part 7 (sign-in, sign-up, landing, legal, platform console, emails, error pages)
+
+1. Sign out. On the sign-in page press 中文 (top right). The page is Chinese. Open "Forgot password?", "Start a free trial", the home page, Terms and Privacy: all Chinese, and the choice is remembered.
+2. Press English: everything is English again.
+3. Staff screens still follow each person's own language (My account). A person set to 中文 gets the daily summary, plan-limit and waiting-customer emails in Chinese; the confirmation email follows the language chosen on the sign-up page.
+4. The customer chat is not affected: customers still pick English or 中文 inside the chat.
