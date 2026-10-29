@@ -42,6 +42,11 @@ class PushKeys extends Command
             }
             if ($keys === null) {
                 $this->error('PHP could not make the keys: '.$e->getMessage());
+                $this->line('OpenSSL loaded: '.(extension_loaded('openssl') ? 'yes' : 'NO').' | '.(defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : '-').' | PHP '.PHP_VERSION);
+                $this->line('OPENSSL_CONF: '.(getenv('OPENSSL_CONF') ?: '(not set)').' | php.ini: '.(php_ini_loaded_file() ?: '(none)'));
+                while (($err = openssl_error_string()) !== false) {
+                    $this->line('OpenSSL says: '.$err);
+                }
                 $this->line('Fix: in C:\\xampp\\php\\php.ini make sure ;extension=openssl has no ; in front, then try again.');
 
                 return self::FAILURE;
