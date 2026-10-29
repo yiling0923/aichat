@@ -18,13 +18,11 @@
     </div>
 
     @if ($tab === 'messages')
-        <form method="get" class="filters">
-            <label class="grow">Automation
-                <select name="key" onchange="this.form.submit()"><option value="">All automations</option>
-                    @foreach ($defs as $k => $d)<option value="{{ $k }}" @selected($key === $k)>{{ $d['title'] }}</option>@endforeach</select></label>
-            <label>Result
-                <select name="status" onchange="this.form.submit()"><option value="">Any result</option>
-                    @foreach (['sent', 'skipped', 'failed'] as $s)<option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>@endforeach</select></label>
+        <form method="get" class="fbar">
+            <select name="key" aria-label="Automation"><option value="">All automations</option>
+                @foreach ($defs as $k => $d)<option value="{{ $k }}" @selected($key === $k)>{{ $d['title'] }}</option>@endforeach</select>
+            <select name="status" aria-label="Result"><option value="">Any result</option>
+                @foreach (['sent', 'skipped', 'failed'] as $s)<option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>@endforeach</select>
             @if ($msgChips)<a class="btn" href="{{ route('automations.activity') }}">Reset</a>@endif
         </form>
         @if ($msgChips)<div class="result-line">@foreach ($msgChips as [$text, $param])<span class="fchip">{{ $text }} <a href="{{ request()->fullUrlWithQuery([$param => null, 'page' => null]) }}" aria-label="Remove filter">&times;</a></span>@endforeach</div>@endif
@@ -54,11 +52,10 @@
             <div class="kpi"><span class="kpi-l">Low ratings (1 or 2)</span><b>{{ $st['low'] }}</b><span class="kpi-s">{{ $st['low'] ? 'each one made a follow-up task' : 'none, good' }}</span></div>
             <div class="kpi"><span class="kpi-l">Review links sent</span><b>{{ $st['reviews'] }}</b><span class="kpi-s">after a good rating</span></div>
         </div>
-        <form method="get" class="filters">
+        <form method="get" class="fbar">
             <input type="hidden" name="tab" value="surveys">
-            <label class="grow">Show
-                <select name="rating" onchange="this.form.submit()"><option value="">All surveys</option>
-                    @foreach ($ratingLabels as $k => $l)<option value="{{ $k }}" @selected($rating === (string) $k)>{{ $l }}</option>@endforeach</select></label>
+            <select name="rating" aria-label="Show"><option value="">All surveys</option>
+                @foreach ($ratingLabels as $k => $l)<option value="{{ $k }}" @selected($rating === (string) $k)>{{ $l }}</option>@endforeach</select>
             @if ($rating !== '')<a class="btn" href="{{ route('automations.activity', ['tab' => 'surveys']) }}">Reset</a>@endif
         </form>
         <div class="table-wrap" style="max-height:none">

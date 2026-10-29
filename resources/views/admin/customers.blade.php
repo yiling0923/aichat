@@ -3,7 +3,7 @@
 @section('content')
     <h1>Customers</h1>
     <p class="mute">One record per person (matched by phone number). Open a customer to see their chats, bookings and notes. Lead level: Ready to book = booked or ready to buy, Interested = left their details, Just browsing = low interest.</p>
-    <form method="get" class="bar">
+    <form method="get" class="fbar">
         <input type="search" name="q" value="{{ $search }}" placeholder="Search name, phone or interest">
         <select name="score" class="small">
             <option value="">Any lead level</option>
@@ -18,6 +18,8 @@
             @foreach ($tags as $t)<option value="{{ $t->id }}" @selected($tag === $t->id)>{{ $t->name }}</option>@endforeach
         </select>
         <button class="btn" type="submit">Filter</button>
+        @if ($search !== '' || $score || $language || $tag)<a class="btn" href="{{ route('customers') }}">Reset</a>@endif
+        <span class="f-note">{{ number_format($customers->total()) }} {{ $customers->total() === 1 ? 'customer' : 'customers' }}</span>
     </form>
 
     <form method="post" action="{{ url('/admin/customers/bulk') }}">

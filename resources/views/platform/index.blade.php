@@ -42,9 +42,9 @@
     </div>
 
     <section data-panel="businesses">
-        <div class="filters">
-            <label class="grow">Search<input type="search" id="biz-q" placeholder="Business name"></label>
-            <div class="seg" id="biz-filter" style="align-self:end">
+        <div class="fbar">
+            <input type="search" id="biz-q" placeholder="Search business name" aria-label="Search">
+            <div class="seg" id="biz-filter">
                 <a href="#" data-g="all" class="on">All</a>
                 <a href="#" data-g="trial">Trial ({{ $counts['trial'] ?? 0 }})</a>
                 <a href="#" data-g="paying">Paying ({{ $counts['paying'] ?? 0 }})</a>

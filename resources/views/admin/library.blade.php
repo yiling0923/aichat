@@ -9,8 +9,8 @@
         @if ($canEdit)<button type="button" class="btn primary" id="new-reply">New reply</button>@endif
     </div>
 
-    <div class="filters">
-        <label class="grow">Search<input type="search" id="lib-search" placeholder="Search titles and text"></label>
+    <div class="fbar">
+        <input type="search" id="lib-search" placeholder="Search titles and text" aria-label="Search">
         <div class="seg" id="lib-cats">
             <a href="#" data-cat="" class="on">All ({{ $replies->count() }})</a>
             @foreach ($cats as $name => $n)<a href="#" data-cat="{{ $name }}">{{ $name }} ({{ $n }})</a>@endforeach

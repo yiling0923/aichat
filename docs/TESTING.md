@@ -474,3 +474,7 @@ Older notes in this guide that say "Settings → Channels" (or Menu builder, Boo
 1. Tasks has one tidy bar: Open / Done, a search box (task text or customer), an Assigned to list (Everyone, Only me, or a person), and a Due list (Any time, Overdue, Due today, Next 7 days, No date).
 2. Everything applies by itself as you choose or type. A red "5 overdue" button jumps straight to the overdue ones. **Reset** appears only while a filter is on.
 3. With filters on and nothing matching, the page says "No tasks match these filters".
+
+## BC. The same filter bar everywhere
+
+Customers, All conversations, Orders, Reports, Activity log, Saved replies, Tasks and (for the platform owner) the business list all use one white filter bar: search box and lists in a single row, no labels above, the Search or Apply button hidden because everything applies by itself, a **Reset** button only while a filter is on, and a small note on the right where it helps (for example "133 customers"). On a phone each list takes a full row.

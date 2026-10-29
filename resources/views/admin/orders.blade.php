@@ -31,25 +31,21 @@
         <div class="kpi"><span class="kpi-l">Average paid order</span><b>{{ $sums['paid']['n'] ? $money($sums['paid']['total'] / $sums['paid']['n']) : '-' }}</b><span class="kpi-s">{{ $totalCount }} in total</span></div>
     </div>
 
-    <form method="get" class="filters">
+    <form method="get" class="fbar">
         @if ($status)<input type="hidden" name="status" value="{{ $status }}">@endif
         @if ($customerId)<input type="hidden" name="customer" value="{{ $customerId }}">@endif
-        <label class="grow">Search<input type="search" name="q" value="{{ $q }}" placeholder="Customer, item, reference or note"></label>
-        <label>Period
-            <select name="period" onchange="this.form.submit()">@foreach ($periods as $k => $name)<option value="{{ $k }}" @selected($period === $k)>{{ $name }}</option>@endforeach</select></label>
-        <button class="btn primary" type="submit">Search</button>
-        @if ($chips || $status)<a class="btn" href="{{ route('orders') }}">Reset</a>@endif
-    </form>
-
-    <div class="result-line">
         <div class="seg">
             <a href="{{ route('orders', $keep) }}" @class(['on' => $status === ''])>All ({{ $totalCount }})</a>
             @foreach ($statuses as $s)<a href="{{ route('orders', $keep + ['status' => $s]) }}" @class(['on' => $status === $s])>{{ $label[$s] }} ({{ $sums[$s]['n'] }})</a>@endforeach
         </div>
-        @foreach ($chips as [$text, $param])
-            <span class="fchip">{{ $text }} <a href="{{ request()->fullUrlWithQuery([$param => null, 'page' => null]) }}" aria-label="Remove filter">&times;</a></span>
-        @endforeach
-    </div>
+        <input type="search" name="q" value="{{ $q }}" placeholder="Search orders" aria-label="Search orders: customer, item, reference or note">
+        <select name="period" aria-label="Period">@foreach ($periods as $k => $name)<option value="{{ $k }}" @selected($period === $k)>{{ $name }}</option>@endforeach</select>
+        <button class="btn primary" type="submit">Search</button>
+        @if ($chips || $status)<a class="btn" href="{{ route('orders') }}">Reset</a>@endif
+    </form>
+    @if ($chips)
+        <div class="result-line">@foreach ($chips as [$text, $param])<span class="fchip">{{ $text }} <a href="{{ request()->fullUrlWithQuery([$param => null, 'page' => null]) }}" aria-label="Remove filter">&times;</a></span>@endforeach</div>
+    @endif
 
     <div class="table-wrap" style="max-height:none">
     <table class="table">

@@ -1301,9 +1301,14 @@ html { scroll-behavior: smooth; }
 #task-dialog .f { margin-top: 10px; } #td-quick { margin-top: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12.5px; }
 
 /* Tasks toolbar */
-.tk-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin-bottom: 16px; box-shadow: var(--shadow); }
-.tk-bar input[type=search] { flex: 1 1 200px; min-width: 160px; }
-.tk-bar select { width: auto; min-width: 130px; }
+.fbar, .tk-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.fbar input[type=search], .fbar input[type=text].fq, .tk-bar input[type=search] { flex: 1 1 220px; min-width: 160px; width: auto; }
+.fbar select, .tk-bar select { width: auto; min-width: 130px; max-width: 100%; }
+.fbar input[type=date] { width: auto; }
+.fbar .f-dates { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mute); }
+.fbar .f-note { margin-left: auto; font-size: 12.5px; color: var(--mute); white-space: nowrap; }
+.fbar .seg { flex: none; }
 .tk-overdue { margin-left: auto; font-size: 12.5px; font-weight: 700; color: var(--red); background: var(--reds); padding: 5px 12px; border-radius: 999px; }
 .tk-overdue:hover { text-decoration: none; background: #fbd9d4; }
-@media (max-width: 700px) { .tk-bar select, .tk-bar input[type=search] { flex: 1 1 100%; width: 100%; } .tk-overdue { margin-left: 0; } }
+@media (max-width: 700px) { .fbar select, .fbar input[type=search], .fbar input[type=text].fq, .tk-bar select, .tk-bar input[type=search] { flex: 1 1 100%; width: 100%; } .tk-overdue, .fbar .f-note { margin-left: 0; } .fbar .f-dates { flex: 1 1 100%; } }
+.fbar input[type=search] { flex: 1 1 150px; }

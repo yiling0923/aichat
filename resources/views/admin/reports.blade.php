@@ -21,19 +21,14 @@
         </details>
     </div>
 
-    <form method="get" action="{{ route('reports') }}" class="filters" id="filters">
-        <label>Period
-            <select name="period" id="period">@foreach ($periods as $k => $name)<option value="{{ $k }}" @selected($r->period === (string) $k)>{{ $name }}</option>@endforeach</select></label>
-        <span id="custom-dates" @if ($r->period !== 'custom') hidden @endif>
-            <label>From <input type="date" name="from" value="{{ request('from', $r->from->format('Y-m-d')) }}"></label>
-            <label>To <input type="date" name="to" value="{{ request('to', $r->to->format('Y-m-d')) }}"></label>
+    <form method="get" action="{{ route('reports') }}" class="fbar" id="filters">
+        <select name="period" id="period" aria-label="Period">@foreach ($periods as $k => $name)<option value="{{ $k }}" @selected($r->period === (string) $k)>{{ $name }}</option>@endforeach</select>
+        <span class="f-dates" id="custom-dates" @if ($r->period !== 'custom') hidden @endif>
+            <input type="date" name="from" value="{{ request('from', $r->from->format('Y-m-d')) }}" aria-label="From"> to <input type="date" name="to" value="{{ request('to', $r->to->format('Y-m-d')) }}" aria-label="To">
         </span>
-        <label>Channel
-            <select name="channel"><option value="">All channels</option>@foreach ($channels as $k => $name)<option value="{{ $k }}" @selected($r->channel === $k)>{{ $name }}</option>@endforeach</select></label>
-        <label>Service
-            <select name="service"><option value="">All services</option>@foreach ($services as $svc)<option value="{{ $svc->id }}" @selected($r->serviceId === $svc->id)>{{ $svc->label('en') }}</option>@endforeach</select></label>
-        <label>Practitioner
-            <select name="practitioner"><option value="">Everyone</option>@foreach ($practitioners as $p)<option value="{{ $p->id }}" @selected($r->practitionerId === $p->id)>{{ $p->name }}</option>@endforeach</select></label>
+        <select name="channel" aria-label="Channel"><option value="">All channels</option>@foreach ($channels as $k => $name)<option value="{{ $k }}" @selected($r->channel === $k)>{{ $name }}</option>@endforeach</select>
+        <select name="service" aria-label="Service"><option value="">All services</option>@foreach ($services as $svc)<option value="{{ $svc->id }}" @selected($r->serviceId === $svc->id)>{{ $svc->label('en') }}</option>@endforeach</select>
+        <select name="practitioner" aria-label="Practitioner"><option value="">Everyone</option>@foreach ($practitioners as $p)<option value="{{ $p->id }}" @selected($r->practitionerId === $p->id)>{{ $p->name }}</option>@endforeach</select>
         <button class="btn primary" type="submit">Apply</button>
         @if ($r->filtered() || $r->period !== '30')<a class="btn" href="{{ route('reports') }}">Reset</a>@endif
     </form>

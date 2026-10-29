@@ -16,7 +16,7 @@
         $narrowed = $due !== '' || $q !== '' || ! in_array($who, ['all', 'me'], true);
         $keep = array_filter(['who' => $who === 'all' ? null : $who, 'due' => $due ?: null, 'q' => $q ?: null]);
     @endphp
-    <form method="get" class="tk-bar">
+    <form method="get" class="fbar">
         <div class="seg">
             <a href="{{ route('tasks', $keep) }}" @class(['on' => $show === 'open'])>Open ({{ $counts['open'] }})</a>
             <a href="{{ route('tasks', ['show' => 'done'] + $keep) }}" @class(['on' => $show === 'done'])>Done ({{ $counts['done'] }})</a>

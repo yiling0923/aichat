@@ -3,7 +3,7 @@
 @section('content')
     <h1>All conversations</h1>
     <p class="mute">Every chat, including resolved ones. Search looks inside the messages too.</p>
-    <form method="get" class="bar">
+    <form method="get" class="fbar">
         <input type="search" name="q" value="{{ $q }}" placeholder="Search messages, name or phone">
         <select name="status" class="small">
             @foreach (['all' => 'Any status', 'open' => 'Open', 'resolved' => 'Resolved'] as $v => $l)<option value="{{ $v }}" @selected($status === $v)>{{ $l }}</option>@endforeach
@@ -16,6 +16,7 @@
             @foreach ($tags as $t)<option value="{{ $t->id }}" @selected($tag === $t->id)>{{ $t->name }}</option>@endforeach
         </select>
         <button class="btn" type="submit">Search</button>
+        @if ($q !== '' || $status !== 'all' || $mode !== 'all' || $tag)<a class="btn" href="{{ route('conversations') }}">Reset</a>@endif
     </form>
     <table class="table">
         <thead><tr><th>Customer</th><th>Channel</th><th>Last message</th><th>Handled by</th><th>Tags</th><th>Status</th></tr></thead>
