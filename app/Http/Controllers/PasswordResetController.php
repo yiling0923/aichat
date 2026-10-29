@@ -23,7 +23,7 @@ class PasswordResetController extends Controller
 
         Password::sendResetLink($data);
 
-        return back()->with('status', 'If that email has an account, we sent a link to choose a new password.');
+        return back()->with('status', __('If that email has an account, we sent a link to choose a new password.'));
     }
 
     public function form(Request $request, string $token): View
@@ -44,7 +44,7 @@ class PasswordResetController extends Controller
         });
 
         return $status === Password::PasswordReset
-            ? redirect()->route('login')->with('status', 'Password changed. Sign in with the new one.')
-            : back()->withErrors(['email' => 'This link is not valid any more. Ask for a new one.'])->withInput($request->only('email'));
+            ? redirect()->route('login')->with('status', __('Password changed. Sign in with the new one.'))
+            : back()->withErrors(['email' => __('This link is not valid any more. Ask for a new one.')])->withInput($request->only('email'));
     }
 }

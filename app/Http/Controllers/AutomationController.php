@@ -57,7 +57,7 @@ class AutomationController extends Controller
             $settings['min_rating'] = (int) ($data['min_rating'] ?? 4);
 
             if ((bool) $data['enabled'] && $settings['review_url'] === '') {
-                return back()->withErrors(['automation' => 'Add your review link before switching Review request on.']);
+                return back()->withErrors(['automation' => __('Add your review link before switching Review request on.')]);
             }
         }
         if ($key === 'rebooking') {
@@ -72,7 +72,7 @@ class AutomationController extends Controller
             'settings' => $settings,
         ]);
 
-        return back()->with('status', 'Saved.');
+        return back()->with('status', __('Saved.'));
     }
 
     /** For testing: run everything that is due right now instead of waiting for the scheduler. */
@@ -83,20 +83,20 @@ class AutomationController extends Controller
         $total = array_sum($sent);
 
         if ($total > 0) {
-            return back()->with('status', $total.' message(s) sent. See the Activity log for what happened to each customer.');
+            return back()->with('status', __(':n message(s) sent. See the Activity log for what happened to each customer.', ['n' => $total]));
         }
 
         // Nothing went out: say why, so it does not look broken.
         if ($on->isEmpty()) {
-            return back()->with('status', '0 messages sent: no automation is switched on. Open a card below, set Status to On and press Save. Then run again.');
+            return back()->with('status', __('0 messages sent: no automation is switched on. Open a card below, set Status to On and press Save. Then run again.'));
         }
 
         $skipped = AutomationLog::query()->where('created_at', '>=', now()->subMinute())->where('status', 'skipped')->count();
         $hint = $skipped > 0
-            ? $skipped.' customer(s) were skipped, for example because they never agreed to be contacted or sent STOP. The Activity log shows the reason for each.'
-            : 'Nobody is due yet. The satisfaction survey needs a visit that ended at least '.($on->firstWhere('key', 'survey')?->delay_hours ?? 2).' hours ago (and within the last 7 days). Use "Send a test" on the survey card to try it right now.';
+            ? __(':n customer(s) were skipped, for example because they never agreed to be contacted or sent STOP. The Activity log shows the reason for each.', ['n' => $skipped])
+            : __('Nobody is due yet. The satisfaction survey needs a visit that ended at least :n hours ago (and within the last 7 days). Use "Send a test" on the survey card to try it right now.', ['n' => $on->firstWhere('key', 'survey')?->delay_hours ?? 2]);
 
-        return back()->with('status', '0 messages sent. '.$hint);
+        return back()->with('status', __('0 messages sent.').' '.$hint);
     }
 
     public function testSurvey(Request $request, AutomationRunner $runner): RedirectResponse
@@ -109,7 +109,7 @@ class AutomationController extends Controller
         $result = $runner->testSurvey($automation, $request->user()->business, $customer);
 
         return back()->with('status', $result['status'] === 'sent'
-            ? 'Test survey sent to '.($customer->name ?: 'the customer').'. Open their chat to rate it: tap a number, then check the Activity log and the survey answers.'
+            ? __('Test survey sent to :who. Open their chat to rate it: tap a number, then check the Activity log and the survey answers.', ['who' => $customer->name ?: __('the customer')])
             : 'The test was not sent: '.($result['reason'] ?? $result['status']).'.');
     }
 

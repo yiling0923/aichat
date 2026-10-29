@@ -56,7 +56,7 @@ class PlatformController extends Controller
         $data = $request->validate(['email' => ['nullable', 'email', 'max:150'], 'note' => ['nullable', 'string', 'max:120']]);
         $invite = Invite::generate($data['email'] ?? null, $data['note'] ?? null);
 
-        return back()->with('status', 'Invitation code: '.$invite->code.' (send them '.url('/signup?invite='.$invite->code).')');
+        return back()->with('status', __('Invitation code: :code (send them :url)', ['code' => $invite->code, 'url' => url('/signup?invite='.$invite->code)]));
     }
 
     public function pause(Request $request, int $id): RedirectResponse
@@ -64,13 +64,13 @@ class PlatformController extends Controller
         $data = $request->validate(['reason' => ['nullable', 'string', 'max:150']]);
         Business::query()->findOrFail($id)->forceFill(['status' => 'paused', 'paused_reason' => $data['reason'] ?? null])->save();
 
-        return back()->with('status', 'Business paused. Its chat and staff area are switched off.');
+        return back()->with('status', __('Business paused. Its chat and staff area are switched off.'));
     }
 
     public function resume(int $id): RedirectResponse
     {
         Business::query()->findOrFail($id)->forceFill(['status' => 'active', 'paused_reason' => null])->save();
 
-        return back()->with('status', 'Business is active again.');
+        return back()->with('status', __('Business is active again.'));
     }
 }

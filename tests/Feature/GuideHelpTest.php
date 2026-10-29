@@ -98,4 +98,14 @@ class GuideHelpTest extends TestCase
         }
         $this->actingAs($this->owner)->get('/admin/manage')->assertSee('Setup guide')->assertSee('Help');
     }
+
+    public function test_help_page_is_chinese_for_chinese_staff(): void
+    {
+        $this->owner->forceFill(['locale' => 'zh'])->save();
+
+        $this->actingAs($this->owner)->get('/admin/help')->assertOk()->assertSee('需要什么帮助？')->assertSee('整体介绍')->assertDontSee('How can we help?');
+
+        $this->owner->forceFill(['locale' => 'en'])->save();
+        $this->actingAs($this->owner)->get('/admin/help')->assertOk()->assertSee('How can we help?');
+    }
 }

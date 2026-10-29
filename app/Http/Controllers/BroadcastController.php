@@ -54,7 +54,7 @@ class BroadcastController extends Controller
             'created_by' => $request->user()->id,
         ]);
 
-        return back()->with('status', 'Saved as a draft. Check the number of people, then press Send.');
+        return back()->with('status', __('Saved as a draft. Check the number of people, then press Send.'));
     }
 
     /** How many people a draft with these filters would reach, for the live count in the form. */
@@ -85,7 +85,7 @@ class BroadcastController extends Controller
     {
         $broadcast = $service->send(Broadcast::query()->findOrFail($id));
 
-        return redirect()->route('broadcasts.show', $broadcast->id)->with('status', 'Sent to '.$broadcast->sent_count.' customer(s), skipped '.$broadcast->skipped_count.', failed '.$broadcast->failed_count.'.');
+        return redirect()->route('broadcasts.show', $broadcast->id)->with('status', __('Sent to :sent customer(s), skipped :skipped, failed :failed.', ['sent' => $broadcast->sent_count, 'skipped' => $broadcast->skipped_count, 'failed' => $broadcast->failed_count]));
     }
 
     public function destroy(int $id): RedirectResponse
@@ -94,6 +94,6 @@ class BroadcastController extends Controller
         abort_if($broadcast->status === 'sent', 422, 'A sent broadcast is kept for your records.');
         $broadcast->delete();
 
-        return back()->with('status', 'Draft deleted.');
+        return back()->with('status', __('Draft deleted.'));
     }
 }

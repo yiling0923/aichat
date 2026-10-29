@@ -49,17 +49,17 @@ class ChannelController extends Controller
         ]);
 
         if (! app(\App\Billing\Plans::class)->canAdd($request->user()->business, 'channels')) {
-            return back()->withErrors(['type' => 'Your plan has reached its limit of connected channels. Upgrade under Plan & billing.'])->withInput();
+            return back()->withErrors(['type' => __('Your plan has reached its limit of connected channels. Upgrade under Plan & billing.')])->withInput();
         }
 
         // Ids are unique across all businesses, so nobody can take over another business's number or page.
         if (Channel::query()->withoutGlobalScopes()->where('type', $data['type'])->where('external_id', $data['external_id'])->exists()) {
-            return back()->withErrors(['external_id' => 'This '.Channel::TYPES[$data['type']].' account is already connected.'])->withInput();
+            return back()->withErrors(['external_id' => __('This :type account is already connected.', ['type' => Channel::TYPES[$data['type']]])])->withInput();
         }
 
         Channel::create($data + ['active' => true]);
 
-        return back()->with('status', 'Channel added. Next: copy the webhook address into Meta, then press "Check connection".');
+        return back()->with('status', __('Channel added. Next: copy the webhook address into Meta, then press "Check connection".'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
@@ -82,14 +82,14 @@ class ChannelController extends Controller
         $channel->settings = $settings;
         $channel->save();
 
-        return back()->with('status', 'Channel saved.');
+        return back()->with('status', __('Channel saved.'));
     }
 
     public function destroy(int $id): RedirectResponse
     {
         Channel::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Channel removed. Old chats stay in the inbox but can no longer be answered there.');
+        return back()->with('status', __('Channel removed. Old chats stay in the inbox but can no longer be answered there.'));
     }
 
     /** Asks Meta who this token belongs to, to prove the id and token work. */
@@ -103,11 +103,11 @@ class ChannelController extends Controller
             $channel->forceFill(['last_error' => null])->save();
             $who = $info['display_phone_number'] ?? $info['name'] ?? $channel->external_id;
 
-            return back()->with('status', 'Connected to '.$who.'.');
+            return back()->with('status', __('Connected to :who.', ['who' => $who]));
         } catch (Throwable $e) {
             $channel->forceFill(['last_error' => $e->getMessage()])->save();
 
-            return back()->withErrors(['channel' => 'Meta says: '.$e->getMessage()]);
+            return back()->withErrors(['channel' => __('Meta says: :why', ['why' => $e->getMessage()])]);
         }
     }
 
@@ -121,7 +121,7 @@ class ChannelController extends Controller
             return back()->withErrors(['channel' => $e->getMessage()]);
         }
 
-        return back()->with('status', 'Webhook saved in Meta for '.implode(', ', $done).'. Now press "Subscribe to messages" on the channel and send a test.');
+        return back()->with('status', __('Webhook saved in Meta for :list. Now press "Subscribe to messages" on the channel and send a test.', ['list' => implode(', ', $done)]));
     }
 
     /** Tells Meta to send this account's messages to our webhook. */
@@ -132,16 +132,16 @@ class ChannelController extends Controller
 
         if (! $target) {
             return back()->withErrors(['channel' => $channel->type === 'instagram'
-                ? 'Add the linked Facebook Page ID first.' : 'Add the WhatsApp Business Account ID first.']);
+                ? __('Add the linked Facebook Page ID first.') : __('Add the WhatsApp Business Account ID first.')]);
         }
 
         try {
             $graph->orFail($graph->post($target.'/subscribed_apps', $channel->access_token, $channel->type === 'whatsapp'
                 ? [] : ['subscribed_fields' => ['messages', 'messaging_postbacks']]));
 
-            return back()->with('status', 'Subscribed. New customer messages will now reach this app.');
+            return back()->with('status', __('Subscribed. New customer messages will now reach this app.'));
         } catch (Throwable $e) {
-            return back()->withErrors(['channel' => 'Meta says: '.$e->getMessage()]);
+            return back()->withErrors(['channel' => __('Meta says: :why', ['why' => $e->getMessage()])]);
         }
     }
 
@@ -158,9 +158,9 @@ class ChannelController extends Controller
                 'template' => ['name' => 'hello_world', 'language' => ['code' => 'en_US']],
             ]));
 
-            return back()->with('status', 'Test message sent to '.$to.'. Check that phone.');
+            return back()->with('status', __('Test message sent to :to. Check that phone.', ['to' => $to]));
         } catch (Throwable $e) {
-            return back()->withErrors(['channel' => 'Meta says: '.$e->getMessage()]);
+            return back()->withErrors(['channel' => __('Meta says: :why', ['why' => $e->getMessage()])]);
         }
     }
 }

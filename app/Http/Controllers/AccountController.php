@@ -21,7 +21,7 @@ class AccountController extends Controller
         $data = $request->validate(['locale' => ['required', 'in:'.implode(',', array_keys(\App\Support\Lang::LOCALES))]]);
         // Before the database update (php artisan migrate) has run on this computer there is nowhere to save the choice.
         if (! \Illuminate\Support\Facades\Schema::hasColumn('users', 'locale')) {
-            return back()->withErrors(['locale' => 'The language setting needs a database update first. Close this page and run: php artisan migrate']);
+            return back()->withErrors(['locale' => __('The language setting needs a database update first. Close this page and run: php artisan migrate')]);
         }
 
         $request->user()->forceFill(['locale' => $data['locale']])->save();
@@ -40,7 +40,7 @@ class AccountController extends Controller
 
         if (! empty($data['password'])) {
             if (! Hash::check((string) ($data['current_password'] ?? ''), $user->password)) {
-                return back()->withErrors(['current_password' => 'Your current password is not right.']);
+                return back()->withErrors(['current_password' => __('Your current password is not right.')]);
             }
             $user->password = $data['password'];
         }
@@ -48,6 +48,6 @@ class AccountController extends Controller
         $user->name = $data['name'];
         $user->save();
 
-        return back()->with('status', empty($data['password']) ? 'Saved.' : 'Saved. Your password is changed.');
+        return back()->with('status', empty($data['password']) ? __('Saved.') : __('Saved. Your password is changed.'));
     }
 }

@@ -93,7 +93,7 @@ class OrderController extends Controller
             'ordered_at' => ! empty($data['ordered_at']) ? \Carbon\Carbon::parse($data['ordered_at'], $tz)->utc() : now(),
         ]);
 
-        return back()->with('status', 'Order added.');
+        return back()->with('status', __('Order added.'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
@@ -128,13 +128,13 @@ class OrderController extends Controller
 
         $order->update($data);
 
-        return back()->with('status', ($data['status'] ?? null) === 'paid' && count($data) === 1 ? 'Marked as paid.' : 'Order updated.');
+        return back()->with('status', ($data['status'] ?? null) === 'paid' && count($data) === 1 ? __('Marked as paid.') : __('Order updated.'));
     }
 
     public function destroy(int $id): RedirectResponse
     {
         Order::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Order deleted.');
+        return back()->with('status', __('Order deleted.'));
     }
 }

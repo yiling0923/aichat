@@ -42,7 +42,7 @@ class SignupController extends Controller
             $invite = $code === '' ? null : Invite::query()->where('code', $code)->whereNull('used_at')->first();
 
             if ($invite === null || ($invite->email !== null && $invite->email !== Str::lower((string) $request->input('email')))) {
-                return back()->withErrors(['invite' => 'This sign-up is by invitation. Check your invitation code and use the email it was made for.'])->withInput();
+                return back()->withErrors(['invite' => __('This sign-up is by invitation. Check your invitation code and use the email it was made for.')])->withInput();
             }
         }
 
@@ -109,7 +109,7 @@ class SignupController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('setup')->with('status', 'Email confirmed. Welcome!');
+        return redirect()->route('setup')->with('status', __('Email confirmed. Welcome!'));
     }
 
     public function resend(Request $request): RedirectResponse
@@ -120,7 +120,7 @@ class SignupController extends Controller
             Mail::to($user->email)->send(new VerifyEmailMail($user));
         }
 
-        return back()->with('status', 'We sent the email again.');
+        return back()->with('status', __('We sent the email again.'));
     }
 
     private function uniqueSlug(string $name): string

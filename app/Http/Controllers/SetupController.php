@@ -49,8 +49,8 @@ class SetupController extends Controller
         $found = count($draft['services']) + count($draft['faqs']);
 
         return back()->with('status', $found > 0
-            ? 'Here is a draft. Check it, fix anything wrong, and approve it. Nothing is saved to your business until you approve.'
-            : 'We could not find prices in that text. Put one service per line, like "Facial - RM 188 (60 min)", or add them in Booking setup.');
+            ? __('Here is a draft. Check it, fix anything wrong, and approve it. Nothing is saved to your business until you approve.')
+            : __('We could not find prices in that text. Put one service per line, like "Facial - RM 188 (60 min)", or add them in Booking setup.'));
     }
 
     public function approve(Request $request, SetupApplier $applier): RedirectResponse
@@ -82,7 +82,7 @@ class SetupController extends Controller
         $settings['address'] = $data['address'] ?? ($settings['address'] ?? '');
         $business->forceFill(['settings' => $settings])->save();
 
-        return back()->with('status', "Saved {$result['services']} services and {$result['faqs']} answers, and updated your chat menu.");
+        return back()->with('status', __('Saved :s services and :f answers, and updated your chat menu.', ['s' => $result['services'], 'f' => $result['faqs']]));
     }
 
     public function discard(Request $request): RedirectResponse
@@ -92,13 +92,13 @@ class SetupController extends Controller
         unset($settings['setup_draft']);
         $business->forceFill(['settings' => $settings])->save();
 
-        return back()->with('status', 'Draft discarded.');
+        return back()->with('status', __('Draft discarded.'));
     }
 
     public function goLive(Request $request): RedirectResponse
     {
         $request->user()->business->forceFill(['setup_done_at' => now()])->save();
 
-        return back()->with('status', 'You are live. Share your chat link with customers.');
+        return back()->with('status', __('You are live. Share your chat link with customers.'));
     }
 }

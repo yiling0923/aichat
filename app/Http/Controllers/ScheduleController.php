@@ -126,7 +126,7 @@ class ScheduleController extends Controller
     {
         $bookings->cancel(Booking::query()->findOrFail($id), 'staff');
 
-        return back()->with('status', 'Booking cancelled (and removed from Google Calendar if it was there).');
+        return back()->with('status', __('Booking cancelled (and removed from Google Calendar if it was there).'));
     }
 
     /** Move a booking to another time (drag and drop on the calendar, or the form in the pop-up). */
@@ -140,12 +140,12 @@ class ScheduleController extends Controller
             : back()->withErrors(['starts_at' => $message]);
 
         if ($booking->status !== 'confirmed') {
-            return $fail('Only confirmed bookings can be moved.');
+            return $fail(__('Only confirmed bookings can be moved.'));
         }
 
         $start = Carbon::createFromFormat('Y-m-d H:i', $data['starts_at'], $tz);
         if ($start->lte(Carbon::now($tz))) {
-            return $fail('Choose a time in the future.');
+            return $fail(__('Choose a time in the future.'));
         }
 
         try {
@@ -154,7 +154,7 @@ class ScheduleController extends Controller
             return $fail($e->getMessage());
         }
 
-        $message = 'Moved to '.$start->format('D j M, H:i').'.'.(! empty($data['notify']) ? ($result['notified'] ? ' The customer was told in the chat.' : ' The customer could not be told (the chat window is closed).') : '');
+        $message = __('Moved to :when.', ['when' => \App\Support\Lang::fmt($start, 'D j M, H:i', 'n月j日 D H:i')]).(! empty($data['notify']) ? ' '.($result['notified'] ? __('The customer was told in the chat.') : __('The customer could not be told (the chat window is closed).')) : '');
 
         return $request->expectsJson() ? response()->json(['ok' => true, 'message' => $message]) : back()->with('status', $message);
     }
@@ -163,7 +163,7 @@ class ScheduleController extends Controller
     {
         $data = $request->validate(['status' => ['required', 'in:completed,no_show']]);
         $booking = Booking::query()->with(['service', 'customer'])->findOrFail($id);
-        $message = 'Booking updated.';
+        $message = __('Booking updated.');
         $order = null;
 
         if ($booking->status === 'confirmed') {
@@ -173,7 +173,7 @@ class ScheduleController extends Controller
                 $order = $this->orderForVisit($booking);
                 if ($order !== null) {
                     $cur = $request->user()->business->settings['currency'] ?? 'RM';
-                    $message = 'Marked done. Collect the payment of '.$cur.' '.number_format((float) $order->amount, 2).' below, or close this and mark it paid later.';
+                    $message = __('Marked done. Collect the payment of :amount below, or close this and mark it paid later.', ['amount' => $cur.' '.number_format((float) $order->amount, 2)]);
                 }
             }
         }

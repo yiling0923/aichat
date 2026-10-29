@@ -51,12 +51,12 @@ class TagController extends Controller
         $name = trim($data['name']);
 
         if (Tag::query()->where('type', $data['type'])->where('name', $name)->exists()) {
-            return back()->withErrors(['name' => 'A '.$data['type'].' tag called "'.$name.'" already exists.']);
+            return back()->withErrors(['name' => __('A :type tag called ":name" already exists.', ['type' => $data['type'], 'name' => $name])]);
         }
 
         Tag::create(['name' => $name, 'type' => $data['type'], 'color' => $data['color'] ?? '#0f766e']);
 
-        return back()->with('status', 'Tag added.');
+        return back()->with('status', __('Tag added.'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
@@ -69,12 +69,12 @@ class TagController extends Controller
         $name = trim($data['name']);
 
         if (Tag::query()->where('type', $tag->type)->where('name', $name)->where('id', '!=', $tag->id)->exists()) {
-            return back()->withErrors(['name' => 'There is already a tag called "'.$name.'". Use Merge to combine them.']);
+            return back()->withErrors(['name' => __('There is already a tag called ":name". Use Merge to combine them.', ['name' => $name])]);
         }
 
         $tag->update(['name' => $name, 'color' => $data['color']]);
 
-        return back()->with('status', 'Tag saved.');
+        return back()->with('status', __('Tag saved.'));
     }
 
     public function merge(Request $request, int $id): RedirectResponse
@@ -89,13 +89,13 @@ class TagController extends Controller
         $source->conversations()->get()->each(fn ($c) => $c->tags()->syncWithoutDetaching([$target->id]));
         $source->delete();
 
-        return back()->with('status', 'Merged "'.$source->name.'" into "'.$target->name.'".');
+        return back()->with('status', __('Merged ":a" into ":b".', ['a' => $source->name, 'b' => $target->name]));
     }
 
     public function destroy(int $id): RedirectResponse
     {
         Tag::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Tag deleted.');
+        return back()->with('status', __('Tag deleted.'));
     }
 }

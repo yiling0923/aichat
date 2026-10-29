@@ -110,7 +110,7 @@ class CustomerController extends Controller
         $customer->update(collect($data)->except('tags')->all());
         $customer->tags()->sync(Tag::query()->where('type', 'customer')->whereIn('id', array_map('intval', $data['tags'] ?? []))->pluck('id'));
 
-        return back()->with('status', 'Customer saved.');
+        return back()->with('status', __('Customer saved.'));
     }
 
     /** Everything we hold about one customer, as a file (for a customer who asks for their data). */
@@ -141,7 +141,7 @@ class CustomerController extends Controller
         $customer->conversations()->delete();   // their messages go with them
         $customer->delete();
 
-        return redirect()->route('customers')->with('status', 'The customer and their chats were deleted.');
+        return redirect()->route('customers')->with('status', __('The customer and their chats were deleted.'));
     }
 
     /** Add or remove one tag for the ticked customers on the list. */
@@ -160,6 +160,6 @@ class CustomerController extends Controller
             $data['action'] === 'add' ? $c->tags()->syncWithoutDetaching([$tag->id]) : $c->tags()->detach($tag->id);
         }
 
-        return back()->with('status', ($data['action'] === 'add' ? 'Added' : 'Removed').' "'.$tag->name.'" for '.$customers->count().' customer(s).');
+        return back()->with('status', ($data['action'] === 'add' ? __('Added ":tag" for :n customer(s).', ['tag' => $tag->name, 'n' => $customers->count()]) : __('Removed ":tag" for :n customer(s).', ['tag' => $tag->name, 'n' => $customers->count()])));
     }
 }

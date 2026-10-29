@@ -102,7 +102,7 @@ class TaskController extends Controller
             app(\App\Services\Notifier::class)->notify($business, 'task', 'New task for you: '.$task->title, $request->user()->name.' assigned it to you.', route('tasks'), null, $assignee);
         }
 
-        return $request->expectsJson() ? response()->json(['task' => $task->id]) : back()->with('status', 'Task added.');
+        return $request->expectsJson() ? response()->json(['task' => $task->id]) : back()->with('status', __('Task added.'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
@@ -122,7 +122,7 @@ class TaskController extends Controller
             app(\App\Services\Notifier::class)->notify($business, 'task', 'New task for you: '.$task->title, $request->user()->name.' assigned it to you.', route('tasks'), null, $assignee);
         }
 
-        return back()->with('status', 'Task saved.');
+        return back()->with('status', __('Task saved.'));
     }
 
     public function toggle(int $id): RedirectResponse
@@ -137,7 +137,7 @@ class TaskController extends Controller
     {
         Task::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Task deleted.');
+        return back()->with('status', __('Task deleted.'));
     }
 
     /** Only people of this business can be assigned. */

@@ -52,14 +52,14 @@ class BillingController extends Controller
         $result = $billing->subscribe($request->user()->business, $data['plan']);
 
         return $result['ok']
-            ? back()->with('status', 'Your plan is now '.config('plans.plans.'.$data['plan'].'.name').'.')
-            : back()->withErrors(['plan' => 'Payment failed: '.$result['error']]);
+            ? back()->with('status', __('Your plan is now :plan.', ['plan' => __(config('plans.plans.'.$data['plan'].'.name'))]))
+            : back()->withErrors(['plan' => __('Payment failed: :why', ['why' => $result['error']])]);
     }
 
     public function cancel(Request $request, Billing $billing): RedirectResponse
     {
         $billing->cancel($request->user()->business);
 
-        return back()->with('status', 'Your plan will not renew. It keeps working until the paid month ends.');
+        return back()->with('status', __('Your plan will not renew. It keeps working until the paid month ends.'));
     }
 }

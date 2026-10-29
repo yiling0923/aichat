@@ -67,7 +67,7 @@ class BookingSetupController extends Controller
 
         $business->update(['settings' => $settings]);
 
-        return back()->with('status', 'Hours and booking rules saved.');
+        return back()->with('status', __('Hours and booking rules saved.'));
     }
 
     public function storeService(Request $request): RedirectResponse
@@ -75,7 +75,7 @@ class BookingSetupController extends Controller
         $service = Service::create($this->serviceData($request));
         $service->practitioners()->sync($this->practitionerIds($request));
 
-        return back()->with('status', 'Service added.');
+        return back()->with('status', __('Service added.'));
     }
 
     public function updateService(Request $request, int $id): RedirectResponse
@@ -84,25 +84,25 @@ class BookingSetupController extends Controller
         $service->update($this->serviceData($request));
         $service->practitioners()->sync($this->practitionerIds($request));
 
-        return back()->with('status', 'Service saved.');
+        return back()->with('status', __('Service saved.'));
     }
 
     public function storePractitioner(Request $request): RedirectResponse
     {
         if (! app(Plans::class)->canAdd($request->user()->business, 'practitioners')) {
-            return back()->withErrors(['name' => 'Your plan has reached its limit of practitioners. Upgrade under Plan & billing to add more.']);
+            return back()->withErrors(['name' => __('Your plan has reached its limit of practitioners. Upgrade under Plan & billing to add more.')]);
         }
 
         Practitioner::create($this->practitionerData($request));
 
-        return back()->with('status', 'Practitioner added.');
+        return back()->with('status', __('Practitioner added.'));
     }
 
     public function updatePractitioner(Request $request, int $id): RedirectResponse
     {
         Practitioner::query()->findOrFail($id)->update($this->practitionerData($request));
 
-        return back()->with('status', 'Practitioner saved.');
+        return back()->with('status', __('Practitioner saved.'));
     }
 
     /** @return array<string, mixed> */

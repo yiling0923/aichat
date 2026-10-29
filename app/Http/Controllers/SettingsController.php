@@ -73,7 +73,7 @@ class SettingsController extends Controller
         }
         $business->update(['name' => $data['name'], 'timezone' => $data['timezone'], 'settings' => $settings]);
 
-        return back()->with('status', 'Settings saved.');
+        return back()->with('status', __('Settings saved.'));
     }
 
     public function saveAlerts(Request $request): RedirectResponse
@@ -93,7 +93,7 @@ class SettingsController extends Controller
         $settings['alert_whatsapp_template'] = $data['alert_whatsapp_template'] ?: null;
         $business->update(['settings' => $settings]);
 
-        return back()->with('status', 'Waiting-chat settings saved.');
+        return back()->with('status', __('Waiting-chat settings saved.'));
     }
 
     public function saveSmart(Request $request): RedirectResponse
@@ -104,19 +104,19 @@ class SettingsController extends Controller
         $settings['daily_email'] = $request->boolean('daily_email');
         $business->update(['settings' => $settings]);
 
-        return back()->with('status', 'Saved.');
+        return back()->with('status', __('Saved.'));
     }
 
     public function testAlerts(Request $request, \App\Services\StaffAlerts $alerts): RedirectResponse
     {
         $result = $alerts->test($request->user()->business, $request->user());
 
-        $parts = [$result['email'] ? 'An email was sent to '.$request->user()->email.'.' : 'The email could not be sent.'];
+        $parts = [$result['email'] ? __('An email was sent to :email.', ['email' => $request->user()->email]) : __('The email could not be sent.')];
         if ($result['whatsapp'] !== null) {
-            $parts[] = $result['whatsapp'] === 'sent' ? 'A WhatsApp message was sent.' : 'WhatsApp failed: '.$result['whatsapp'];
+            $parts[] = $result['whatsapp'] === 'sent' ? __('A WhatsApp message was sent.') : __('WhatsApp failed: :why', ['why' => $result['whatsapp']]);
         }
 
-        return back()->with('status', 'Test alert: '.implode(' ', $parts));
+        return back()->with('status', __('Test alert:').' '.implode(' ', $parts));
     }
 
     public function storeUser(Request $request): RedirectResponse
@@ -130,12 +130,12 @@ class SettingsController extends Controller
 
         $plans = app(Plans::class);
         if (! $plans->canAdd($request->user()->business, 'staff')) {
-            return back()->withErrors(['email' => 'Your plan has reached its limit of team members. Upgrade under Plan & billing to add more.']);
+            return back()->withErrors(['email' => __('Your plan has reached its limit of team members. Upgrade under Plan & billing to add more.')]);
         }
 
         User::create($data + ['business_id' => $request->user()->business_id, 'active' => true, 'email_verified_at' => now()]);
 
-        return back()->with('status', 'Team member added.');
+        return back()->with('status', __('Team member added.'));
     }
 
     public function updateUser(Request $request, int $id): RedirectResponse
@@ -150,7 +150,7 @@ class SettingsController extends Controller
         // Keep at least one active owner, and never lock yourself out by accident.
         $demoting = $user->role === 'owner' && ($data['role'] !== 'owner' || ! $data['active']);
         if ($demoting && User::query()->where('business_id', $user->business_id)->where('role', 'owner')->where('active', true)->count() < 2) {
-            return back()->withErrors(['role' => 'The business needs at least one active owner.']);
+            return back()->withErrors(['role' => __('The business needs at least one active owner.')]);
         }
 
         $user->role = $data['role'];
@@ -160,6 +160,6 @@ class SettingsController extends Controller
         }
         $user->save();
 
-        return back()->with('status', 'Team member saved.');
+        return back()->with('status', __('Team member saved.'));
     }
 }

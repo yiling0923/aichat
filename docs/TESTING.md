@@ -672,3 +672,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 2. Everything you read there should be Chinese (names you typed yourself stay as typed).
 3. In Menu builder, break a step on purpose (empty text) and press Publish: the red messages are in Chinese.
 4. Press English: all six pages look as before.
+
+## BZ. Chinese, part 6 (Help page, green and red messages)
+
+1. Press 中文. Open Help: the whole page is Chinese, search works with Chinese words (try 营业时间).
+2. Save something (a tag, a task, Settings): the green message at the top is Chinese. Try a wrong password in My account: the red message is Chinese.
+3. Press English: Help and the messages are English again.

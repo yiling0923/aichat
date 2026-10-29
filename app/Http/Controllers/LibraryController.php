@@ -36,21 +36,21 @@ class LibraryController extends Controller
     {
         QuickReply::create($this->data($request));
 
-        return back()->with('status', 'Reply added.');
+        return back()->with('status', __('Reply added.'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
     {
         QuickReply::query()->findOrFail($id)->update($this->data($request));
 
-        return back()->with('status', 'Reply saved.');
+        return back()->with('status', __('Reply saved.'));
     }
 
     public function destroy(int $id): RedirectResponse
     {
         QuickReply::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Reply deleted.');
+        return back()->with('status', __('Reply deleted.'));
     }
 
     /** @return array<string, mixed> */

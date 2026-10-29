@@ -22,7 +22,7 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($credentials + ['active' => true], $request->boolean('remember'))) {
-            return back()->withErrors(['email' => 'These details do not match our records.'])->onlyInput('email');
+            return back()->withErrors(['email' => __('These details do not match our records.')])->onlyInput('email');
         }
 
         $request->session()->regenerate();

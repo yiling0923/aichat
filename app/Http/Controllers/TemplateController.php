@@ -63,10 +63,10 @@ class TemplateController extends Controller
         try {
             $templates->create($channel, $data['name'], $data['language'], $data['category'], $data['body']);
         } catch (Throwable $e) {
-            return back()->withErrors(['template' => 'Meta says: '.$e->getMessage()])->withInput();
+            return back()->withErrors(['template' => __('Meta says: :why', ['why' => $e->getMessage()])])->withInput();
         }
 
-        return back()->with('status', 'Sent to Meta for review. Press "Refresh status" in a few minutes.');
+        return back()->with('status', __('Sent to Meta for review. Press "Refresh status" in a few minutes.'));
     }
 
     public function sync(Templates $templates): RedirectResponse
@@ -82,7 +82,7 @@ class TemplateController extends Controller
             }
         }
 
-        $back = back()->with('status', 'Refreshed '.$total.' template(s).');
+        $back = back()->with('status', __('Refreshed :n template(s).', ['n' => $total]));
 
         return $errors === [] ? $back : $back->withErrors(['template' => implode(' ', $errors)]);
     }
@@ -91,7 +91,7 @@ class TemplateController extends Controller
     {
         MessageTemplate::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Removed from this list. Delete it in Meta too if you no longer want it there.');
+        return back()->with('status', __('Removed from this list. Delete it in Meta too if you no longer want it there.'));
     }
 
     /** Send an approved template into a chat (used when the 24-hour window is closed). */

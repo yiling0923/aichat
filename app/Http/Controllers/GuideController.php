@@ -44,6 +44,6 @@ class GuideController extends Controller
 
     public function help(Request $request): View
     {
-        return view('admin.help', ['business' => $request->user()->business, 'active' => 'help', 'role' => $request->user()->role]);
+        return view(app()->getLocale() === 'zh' ? 'admin.help-zh' : 'admin.help', ['business' => $request->user()->business, 'active' => 'help', 'role' => $request->user()->role]);
     }
 }

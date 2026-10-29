@@ -66,7 +66,7 @@ class AiSettingsController extends Controller
         $settings['ai'] = ['mode' => $data['mode'], 'instructions' => $data['instructions'] ?? '', 'monthly_cap' => (int) $data['monthly_cap']];
         $business->update(['settings' => $settings]);
 
-        return back()->with('status', 'Saved.');
+        return back()->with('status', __('Saved.'));
     }
 
     /** The test box: ask like a customer would. Nothing is sent to anyone. */
@@ -84,21 +84,21 @@ class AiSettingsController extends Controller
     {
         KnowledgeEntry::create($this->entryData($request));
 
-        return back()->with('status', 'Answer added. The AI can use it from now on.');
+        return back()->with('status', __('Answer added. The AI can use it from now on.'));
     }
 
     public function updateEntry(Request $request, int $id): RedirectResponse
     {
         KnowledgeEntry::query()->findOrFail($id)->update($this->entryData($request));
 
-        return back()->with('status', 'Answer saved.');
+        return back()->with('status', __('Answer saved.'));
     }
 
     public function destroyEntry(int $id): RedirectResponse
     {
         KnowledgeEntry::query()->findOrFail($id)->delete();
 
-        return back()->with('status', 'Answer deleted.');
+        return back()->with('status', __('Answer deleted.'));
     }
 
     /** @return array<string, mixed> */
