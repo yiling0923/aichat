@@ -86,7 +86,7 @@ class FlowValidator
         $limits = config('aichat.limits');
 
         if (($flow['languages'] ?? []) === []) {
-            $errors[] = 'Choose at least one language.';
+            $errors[] = __('Choose at least one language.');
         }
 
         if ($nodes === []) {
@@ -94,100 +94,100 @@ class FlowValidator
         }
 
         if (! $flowObj->hasNode($flowObj->start())) {
-            $errors[] = 'The start step "'.$flowObj->start().'" does not exist.';
+            $errors[] = __('The start step ":id" does not exist.', ['id' => $flowObj->start()]);
         }
 
         foreach ($nodes as $id => $node) {
-            $where = 'Step "'.$id.'"';
+            $where = __('Step ":id"', ['id' => $id]);
 
             if (! preg_match('/^[a-z0-9_]{1,40}$/', (string) $id)) {
-                $errors[] = $where.': the id may only use lower case letters, numbers and underscores (up to 40).';
+                $errors[] = $where.': '.__('the id may only use lower case letters, numbers and underscores (up to 40).');
             }
 
             $type = $node['type'] ?? '';
             if (! in_array($type, self::TYPES, true)) {
-                $errors[] = $where.': unknown type "'.$type.'".';
+                $errors[] = $where.': '.__('unknown type ":type".', ['type' => $type]);
 
                 continue;
             }
 
             $text = $node['text'] ?? [];
             if (trim((string) ($text[$default] ?? '')) === '' && ! in_array($type, ['handover', 'booking', 'my_booking'], true)) {
-                $errors[] = $where.': add the message text in '.strtoupper($default).'.';
+                $errors[] = $where.': '.__('add the message text in :lang.', ['lang' => strtoupper($default)]);
             }
             foreach ($languages as $code) {
                 if ($code !== $default && trim((string) ($text[$code] ?? '')) === '' && trim((string) ($text[$default] ?? '')) !== '') {
-                    $warnings[] = $where.': no text in '.strtoupper($code).'. Customers who choose it will see '.strtoupper($default).'.';
+                    $warnings[] = $where.': '.__('no text in :lang. Customers who choose it will see :default.', ['lang' => strtoupper($code), 'default' => strtoupper($default)]);
                 }
             }
             foreach ($text as $code => $value) {
                 if (mb_strlen((string) $value) > $limits['text']) {
-                    $warnings[] = $where.': the '.strtoupper((string) $code).' text is longer than '.$limits['text'].' characters, which WhatsApp may cut.';
+                    $warnings[] = $where.': '.__('the :lang text is longer than :n characters, which WhatsApp may cut.', ['lang' => strtoupper((string) $code), 'n' => $limits['text']]);
                 }
             }
 
             if (isset($node['goto']) && $node['goto'] !== '' && ! $flowObj->hasNode($node['goto'])) {
-                $errors[] = $where.': "goes to" points at a step that does not exist ("'.$node['goto'].'").';
+                $errors[] = $where.': '.__('"goes to" points at a step that does not exist (":id").', ['id' => $node['goto']]);
             }
 
             if ($type === 'options') {
                 $options = $node['options'] ?? [];
                 if ($options === []) {
-                    $errors[] = $where.': add at least one option.';
+                    $errors[] = $where.': '.__('add at least one option.');
                 }
                 if (count($options) > $limits['options_per_node']) {
-                    $errors[] = $where.': more than '.$limits['options_per_node'].' options. WhatsApp lists show at most '.$limits['options_per_node'].'.';
+                    $errors[] = $where.': '.__('more than :n options. WhatsApp lists show at most :n.', ['n' => $limits['options_per_node']]);
                 }
 
                 $seen = [];
                 foreach ($options as $i => $option) {
                     $optId = (string) ($option['id'] ?? '');
                     $label = (string) ($option['label'][$default] ?? '');
-                    $which = $where.', option '.($i + 1);
+                    $which = $where.', '.__('option :n', ['n' => $i + 1]);
 
                     if (! preg_match('/^[a-z0-9_]{1,40}$/', $optId)) {
-                        $errors[] = $which.': the option id may only use lower case letters, numbers and underscores.';
+                        $errors[] = $which.': '.__('the option id may only use lower case letters, numbers and underscores.');
                     } elseif (isset($seen[$optId])) {
-                        $errors[] = $which.': the option id "'.$optId.'" is used twice in this step.';
+                        $errors[] = $which.': '.__('the option id ":id" is used twice in this step.', ['id' => $optId]);
                     }
                     $seen[$optId] = true;
 
                     if (trim($label) === '') {
-                        $errors[] = $which.': add the button text in '.strtoupper($default).'.';
+                        $errors[] = $which.': '.__('add the button text in :lang.', ['lang' => strtoupper($default)]);
                     }
                     foreach ((array) ($option['label'] ?? []) as $code => $value) {
                         $max = count($options) <= 3 ? $limits['label_button'] : $limits['label_list'];
                         if (mb_strlen((string) $value) > $max) {
-                            $warnings[] = $which.': the '.strtoupper((string) $code).' label is longer than '.$max.' characters, which WhatsApp will cut.';
+                            $warnings[] = $which.': '.__('the :lang label is longer than :n characters, which WhatsApp will cut.', ['lang' => strtoupper((string) $code), 'n' => $max]);
                         }
                     }
 
                     $target = $option['goto'] ?? '';
                     $hasAction = ($option['action'] ?? '') === 'handover';
                     if ($target === '' && ! $hasAction) {
-                        $errors[] = $which.': choose where this option goes, or make it hand over to staff.';
+                        $errors[] = $which.': '.__('choose where this option goes, or make it hand over to staff.');
                     } elseif ($target !== '' && ! $flowObj->hasNode($target)) {
-                        $errors[] = $which.': "goes to" points at a step that does not exist ("'.$target.'").';
+                        $errors[] = $which.': '.__('"goes to" points at a step that does not exist (":id").', ['id' => $target]);
                     }
                 }
             }
 
             if ($type === 'ask') {
                 if (! in_array($node['field'] ?? '', self::FIELDS, true)) {
-                    $errors[] = $where.': choose what this question collects (name, phone, ...).';
+                    $errors[] = $where.': '.__('choose what this question collects (name, phone, ...).');
                 }
                 if (($node['goto'] ?? '') === '') {
-                    $errors[] = $where.': choose the next step.';
+                    $errors[] = $where.': '.__('choose the next step.');
                 }
             }
 
             if ($type === 'save_lead' && ! in_array($node['score'] ?? 'warm', ['hot', 'warm', 'cold'], true)) {
-                $errors[] = $where.': the lead score must be hot, warm or cold.';
+                $errors[] = $where.': '.__('the lead score must be hot, warm or cold.');
             }
         }
 
         foreach ($this->unreachable($flowObj) as $id) {
-            $warnings[] = 'Step "'.$id.'" cannot be reached from the start.';
+            $warnings[] = __('Step ":id" cannot be reached from the start.', ['id' => $id]);
         }
 
         return ['errors' => $errors, 'warnings' => $warnings];

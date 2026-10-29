@@ -665,3 +665,10 @@ Switch with **中文** at the top. Fully translated now:
 4. WhatsApp message templates you create keep the wording you wrote (they are sent to Meta as written).
 
 Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide, Help, the setup wizard, sign-in and sign-up pages, the landing page, the emails, and the green "Saved." style messages after saving.
+
+## BY. Chinese, part 5 (Menu builder, Booking setup, Channels, AI assistant, Setup wizard, Setup guide)
+
+1. Press 中文 at the top. Open Menu builder, Booking setup, Channels, AI assistant, Setup wizard and Setup guide.
+2. Everything you read there should be Chinese (names you typed yourself stay as typed).
+3. In Menu builder, break a step on purpose (empty text) and press Publish: the red messages are in Chinese.
+4. Press English: all six pages look as before.
