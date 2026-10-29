@@ -462,3 +462,9 @@ Older notes in this guide that say "Settings → Channels" (or Menu builder, Boo
 1. Customers: type in the search box. About half a second after you stop, the list updates and the cursor stays in the box. Change Lead level, Language or Tag: the list updates at once. There is no Search or Filter button any more.
 2. The same on Orders (search, period), Conversations, Reports (period, channel, service, practitioner) and the Activity log. For Reports, pick "Custom dates", then both dates: it updates when both are chosen.
 3. Reset links still clear everything.
+
+## BA. Add task as a small pop-up
+
+1. Tasks: press **+ Add task** (top right). A small pop-up asks what needs doing, when (with quick buttons Today 5pm, Tomorrow 10am, Next week) and who does it (you by default). Press **Add task**.
+2. Edit uses the same pop-up with Save and Delete. Delete only shows when editing.
+3. On Today, **+ Task** opens that same pop-up straight away.

@@ -25,7 +25,7 @@
         </div>
         <div class="tp-actions">
             <button type="button" class="btn ghost" id="td-copy" data-link="{{ $chatUrl }}" title="Copy your customer chat link">Copy chat link</button>
-            <a class="btn" href="{{ route('tasks') }}">+ Task</a>
+            <a class="btn" href="{{ route('tasks', ['new' => 1]) }}">+ Task</a>
             <a class="btn" href="{{ route('schedule') }}">Schedule</a>
             <a class="btn primary" href="{{ route('inbox') }}">Open inbox</a>
         </div>

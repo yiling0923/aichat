@@ -1298,3 +1298,4 @@ html { scroll-behavior: smooth; }
 .tile b .chip2 { margin-left: 6px; vertical-align: middle; }
 @media (max-width: 600px) { .tpl-grid { grid-template-columns: 1fr; } .tpl-bar input[type=search] { max-width: none; margin-left: 0; } }
 .af-hide { display: none !important; }
+#task-dialog .f { margin-top: 10px; } #td-quick { margin-top: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12.5px; }

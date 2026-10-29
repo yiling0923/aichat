@@ -7,16 +7,9 @@
     @endphp
     <div class="page-head">
         <div><h1>Tasks</h1><p class="mute">Follow-ups for your team: call back, send a quote, check a payment. You can also add one from a chat or a customer.</p></div>
+        <button type="button" class="btn primary" id="new-task">+ Add task</button>
     </div>
 
-    <form method="post" action="{{ url('/admin/tasks') }}" class="card task-new">
-        @csrf
-        <input type="text" name="title" id="nt-title" placeholder="What needs doing? e.g. Call Amy about her facial" required maxlength="200">
-        <input type="datetime-local" name="due_at" id="nt-due" aria-label="Due">
-        <select name="assigned_to" aria-label="Assign to"><option value="">Anyone</option>@foreach ($team as $u)<option value="{{ $u->id }}" @selected($u->id === auth()->id())>{{ $u->name }}</option>@endforeach</select>
-        <button class="btn primary" type="submit">Add task</button>
-        <div class="task-quick"><span class="mute">Due:</span>@foreach ($quick as $label => $when)<button type="button" class="btn small" data-due="{{ $when->format('Y-m-d\TH:i') }}">{{ $label }}</button>@endforeach</div>
-    </form>
 
     <div class="filters">
         <div class="seg">
@@ -67,34 +60,37 @@
 
     <dialog id="task-dialog" class="dlg">
         <button type="button" class="dlg-x" aria-label="Close">&times;</button>
-        <h3>Edit task</h3>
-        <form method="post" id="td-form" action="">
+        <h3 id="td-heading">Add task</h3>
+        <form method="post" id="td-form" action="{{ url('/admin/tasks') }}">
             @csrf
-            <label class="f" style="margin-top:12px"><span>Task</span><input type="text" name="title" id="td-title" required maxlength="200"></label>
+            <label class="f" style="margin-top:12px"><span>What needs doing?</span><input type="text" name="title" id="td-title" required maxlength="200" placeholder="Call Amy about her facial"></label>
             <label class="f"><span>Due</span><input type="datetime-local" name="due_at" id="td-due"></label>
+            <div class="task-quick" id="td-quick"><span class="mute">Quick:</span>@foreach ($quick as $label => $when)<button type="button" class="btn small" data-due="{{ $when->format('Y-m-d\TH:i') }}">{{ $label }}</button>@endforeach</div>
             <label class="f"><span>Assigned to</span><select name="assigned_to" id="td-assignee"><option value="">Anyone</option>@foreach ($team as $u)<option value="{{ $u->id }}">{{ $u->name }}</option>@endforeach</select></label>
-            <div class="dlg-foot"><button class="btn primary" type="submit">Save</button><button class="btn danger push" type="submit" id="td-delete" onclick="return confirm('Delete this task?')">Delete</button></div>
+            <div class="dlg-foot"><button class="btn primary" type="submit" id="td-save">Add task</button><button class="btn danger push" type="submit" id="td-delete" hidden onclick="return confirm('Delete this task?')">Delete</button></div>
         </form>
     </dialog>
 @endsection
 @push('scripts')
 <script>
 (function () {
-  document.querySelectorAll('.task-quick [data-due]').forEach(function (b) {
-    b.addEventListener('click', function () { document.getElementById('nt-due').value = b.dataset.due; });
-  });
-  var dlg = document.getElementById('task-dialog'), form = document.getElementById('td-form');
-  document.querySelectorAll('[data-edit]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      form.action = b.dataset.action;
-      document.getElementById('td-title').value = b.dataset.title;
-      document.getElementById('td-due').value = b.dataset.due || '';
-      document.getElementById('td-assignee').value = b.dataset.assignee || '';
-      document.getElementById('td-delete').setAttribute('formaction', b.dataset.delete);
-      dlg.showModal(); document.getElementById('td-title').focus();
-    });
-  });
+  var dlg = document.getElementById('task-dialog'), form = document.getElementById('td-form'), me = {{ auth()->id() }};
+  var title = document.getElementById('td-title'), due = document.getElementById('td-due'), who = document.getElementById('td-assignee'), del = document.getElementById('td-delete');
+  function open(d) {
+    var edit = d && d.action;
+    document.getElementById('td-heading').textContent = edit ? 'Edit task' : 'Add task';
+    document.getElementById('td-save').textContent = edit ? 'Save' : 'Add task';
+    form.action = edit ? d.action : '{{ url('/admin/tasks') }}';
+    title.value = edit ? d.title : ''; due.value = edit ? (d.due || '') : ''; who.value = edit ? (d.assignee || '') : String(me);
+    del.hidden = !edit; if (edit) { del.setAttribute('formaction', d.delete); }
+    dlg.showModal(); title.focus();
+  }
+  document.getElementById('new-task').addEventListener('click', function () { open(null); });
+  document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
+  document.querySelectorAll('#td-quick [data-due]').forEach(function (b) { b.addEventListener('click', function () { due.value = b.dataset.due; }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });
+  @if (request()->boolean('new')) history.replaceState(null, '', location.pathname); @endif
+  @if ($errors->any() || request()->boolean('new')) open(null); @endif
 })();
 </script>
 @endpush
