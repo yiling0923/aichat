@@ -112,7 +112,12 @@ class StaffLanguageTest extends TestCase
             'Name, time zone, colour, team members and their roles.', 'Your plan, what you have used, payments.', 'Download your customers, bookings, orders and chats as spreadsheets.', 'Step by step to get ready for real customers.',
             'Draft your services from a price list, connect, test, go live.', 'Labels for customers and chats.', 'Your name and password.', 'Get a pop-up on this device for new chats and bookings.', 'How the whole system works, in plain words.',
             'Free trial', 'Starter', 'Growth', 'Internal', 'AI replies this month', 'Team members', 'Practitioners / resources', 'Connected channels',
-            'Never (the chat waits for a person)', '15 minutes', '30 minutes', '1 hour', '2 hours', '4 hours'];
+            'Never (the chat waits for a person)', '15 minutes', '30 minutes', '1 hour', '2 hours', '4 hours',
+            'Last 7 days', 'Custom dates', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Confirmed', 'Completed', 'No show', 'Pending', 'Rejected', 'Disabled', 'Paused',
+            'Summary numbers', 'Bookings (detail)', 'New customers (detail)', 'Orders (detail)', 'Survey answers (detail)',
+            'Satisfaction survey', 'Review request', 'Rebooking reminder', 'No-show recovery', 'Follow-up for people ready to book',
+            'opted out', 'no consent', 'no conversation', 'staff are handling the chat', 'empty message', 'the 24-hour window is closed and no approved template is set',
+            'Prices', 'Book an appointment', 'My booking', 'Promotions', 'Talk to staff', 'Booking reminder', 'Thank you and feedback', 'We miss you'];
         $missing = array_values(array_filter($need, fn ($k) => ! isset($zh[$k])));
 
         $this->assertSame([], $missing, 'No Chinese for: '.implode(', ', $missing));

@@ -655,3 +655,13 @@ Switch with **中文** at the top (or in My account → Language). Fully transla
 4. Editing a tag or reply always shows the stored name, so saving never replaces your own wording with a translation.
 
 Still English: Marketing (automations, broadcasts, templates, activity), Reports, Menu builder, Booking setup, Channels, AI assistant, Setup guide, Help, the sign-in pages and the emails.
+
+## BX. Staff screens in Chinese (part 4: Marketing and Reports)
+
+Switch with **中文** at the top. Fully translated now:
+1. **Marketing** tabs: 自动消息 (automations: titles, help texts, wait times, message boxes, test), 群发消息 (broadcasts: summary boxes, list, new-broadcast pop-up with live "how many people can receive it", send confirmation, details page with who got it and why people were skipped), 消息模板 (message templates: status words, groups, examples, the new-template pop-up and its checks), 动态记录 (activity log: messages and survey answers).
+2. **Reports**: the period line (最近 30 天, 9月30日 至 2026年10月29日), filters, the four top boxes, the health strip (转交给员工, 问卷得分, 未到店比例 ...), the tabs (概览, 预约, 客户, 收入), the day-by-day chart with its tooltip, all the ranked lists (热门服务, 最忙的星期 with 周一 ... 周日), and the CSV export menu names.
+3. Reasons recorded by the system (for example "opted out", "no consent") show in Chinese. CSV files keep the English column names so they stay easy to compare.
+4. WhatsApp message templates you create keep the wording you wrote (they are sent to Meta as written).
+
+Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide, Help, the setup wizard, sign-in and sign-up pages, the landing page, the emails, and the green "Saved." style messages after saving.

@@ -1,18 +1,18 @@
 @extends('admin.layout')
-@section('title', 'Message templates')
+@section('title', __('Message templates'))
 @section('content')
     @include('admin._marketing_tabs', ['tab' => 'templates'])
     @php
-        $languages = ['en' => 'English', 'zh_CN' => '中文（简体）', 'zh_HK' => '中文（香港）', 'ms' => 'Malay'];
+        $languages = ['en' => 'English', 'zh_CN' => '中文（简体）', 'zh_HK' => '中文（香港）', 'ms' => __('Malay')];
         $statusOf = function ($t) {
             $s = strtoupper($t->status);
             return match (true) {
-                $s === 'APPROVED' => ['ok', 'Approved', 'Ready to use.'],
-                in_array($s, ['REJECTED', 'DISABLED', 'PAUSED']) => ['hot', ucfirst(strtolower($s)), 'Meta will not let you use it. Fix the wording and send a new one.'],
-                default => ['warn', 'Waiting for Meta', 'Meta is reviewing it. Usually a few minutes, sometimes a day.'],
+                $s === 'APPROVED' => ['ok', __('Approved'), __('Ready to use.')],
+                in_array($s, ['REJECTED', 'DISABLED', 'PAUSED']) => ['hot', __(ucfirst(strtolower($s))), __('Meta will not let you use it. Fix the wording and send a new one.')],
+                default => ['warn', __('Waiting for Meta'), __('Meta is reviewing it. Usually a few minutes, sometimes a day.')],
             };
         };
-        $groups = ['all' => 'All', 'approved' => 'Approved', 'waiting' => 'Waiting', 'problem' => 'Problem'];
+        $groups = ['all' => __('All'), 'approved' => __('Approved'), 'waiting' => __('Waiting'), 'problem' => __('Problem')];
         $groupOf = fn ($t) => $t->isApproved() ? 'approved' : (in_array(strtoupper($t->status), ['REJECTED', 'DISABLED', 'PAUSED']) ? 'problem' : 'waiting');
         $counts = collect($templates)->countBy($groupOf);
         $examples = [
@@ -22,32 +22,32 @@
         ];
     @endphp
     <div class="page-head">
-        <div><h1>Message templates</h1>
-            <p class="mute">WhatsApp lets you message someone more than 24 hours after their last message only with a template that Meta has approved. Reminders and follow-ups use them.</p></div>
+        <div><h1>{{ __('Message templates') }}</h1>
+            <p class="mute">{{ __('WhatsApp lets you message someone more than 24 hours after their last message only with a template that Meta has approved. Reminders and follow-ups use them.') }}</p></div>
         @if ($channels->isNotEmpty())
             <div class="bar">
-                <form method="post" action="{{ url('/admin/templates/sync') }}">@csrf<button class="btn">Refresh status</button></form>
-                <button type="button" class="btn primary" id="new-tpl">New template</button>
+                <form method="post" action="{{ url('/admin/templates/sync') }}">@csrf<button class="btn">{{ __('Refresh status') }}</button></form>
+                <button type="button" class="btn primary" id="new-tpl">{{ __('New template') }}</button>
             </div>
         @endif
     </div>
     @error('template')<div class="note err">{{ $message }}</div>@enderror
 
     @if ($channels->isEmpty())
-        <div class="card empty-card"><b>Connect a WhatsApp number first</b><p class="mute">Templates belong to a WhatsApp number. Once one is connected you can create and manage them here.</p>
-            <a class="btn primary" href="{{ route('channels') }}">Open Channels</a></div>
+        <div class="card empty-card"><b>{{ __('Connect a WhatsApp number first') }}</b><p class="mute">{{ __('Templates belong to a WhatsApp number. Once one is connected you can create and manage them here.') }}</p>
+            <a class="btn primary" href="{{ route('channels') }}">{{ __('Open Channels') }}</a></div>
     @else
         <div class="tpl-bar">
             <div class="seg" id="tpl-groups">
                 @foreach ($groups as $k => $label)<a href="#" data-group="{{ $k }}" @class(['on' => $k === 'all'])>{{ $label }} ({{ $k === 'all' ? $templates->count() : ($counts[$k] ?? 0) }})</a>@endforeach
             </div>
-            <input type="search" id="tpl-q" placeholder="Search templates" aria-label="Search templates">
+            <input type="search" id="tpl-q" placeholder="{{ __('Search templates') }}" aria-label="{{ __('Search templates') }}">
         </div>
 
         @if ($templates->isEmpty())
             <div class="card empty-card">
-                <b>No templates yet</b>
-                <p class="mute">Start from an example below, or press <b>Refresh status</b> to load the ones already in Meta.</p>
+                <b>{{ __('No templates yet') }}</b>
+                <p class="mute">{!! __('Start from an example below, or press :btn to load the ones already in Meta.', ['btn' => '<b>'.e(__('Refresh status')).'</b>']) !!}</p>
             </div>
         @endif
 
@@ -62,49 +62,49 @@
                     <div class="wa-bubble">{!! preg_replace('/\{\{(\d+)\}\}/', '<span class="ph">$1</span>', e($t->body)) !!}</div>
                     <div class="tpl-chips">
                         <span class="chip2">{{ $languages[$t->language] ?? $t->language }}</span>
-                        <span class="chip2 {{ strtoupper($t->category) === 'MARKETING' ? 'mk' : '' }}">{{ strtoupper($t->category) === 'MARKETING' ? 'Marketing' : 'Utility' }}</span>
+                        <span class="chip2 {{ strtoupper($t->category) === 'MARKETING' ? 'mk' : '' }}">{{ strtoupper($t->category) === 'MARKETING' ? __('Marketing') : __('Utility') }}</span>
                         <span class="chip2">{{ $t->channel->name }}</span>
                     </div>
                     <p class="mute tpl-help">{{ $help }}</p>
                     @if ($t->last_error)<div class="note err" style="margin:8px 0 0">{{ $t->last_error }}</div>@endif
                     <div class="tpl-foot">
-                        @if ($used)<span class="tpl-used">Used by: {{ implode(', ', $used) }}</span>@else<span class="mute">Not used by anything yet</span>@endif
+                        @if ($used)<span class="tpl-used">{{ __('Used by: :list', ['list' => implode(', ', array_map(fn ($u) => __($u), $used))]) }}</span>@else<span class="mute">{{ __('Not used by anything yet') }}</span>@endif
                     </div>
                     <div class="tpl-actions">
-                        <button type="button" class="btn small" data-copy-name="{{ $t->name }}">Copy name</button>
-                        <button type="button" class="btn small" data-dup data-name="{{ $t->name }}_v2" data-cat="{{ strtoupper($t->category) }}" data-body="{{ $t->body }}" data-lang="{{ $t->language }}" title="Start a new template from this wording">Duplicate</button>
-                        <form method="post" action="{{ url('/admin/templates/'.$t->id.'/delete') }}" class="push" onsubmit="return confirm('Remove this template from the list? It stays in Meta until you delete it there.')">@csrf<button class="btn small danger">Remove</button></form>
+                        <button type="button" class="btn small" data-copy-name="{{ $t->name }}">{{ __('Copy name') }}</button>
+                        <button type="button" class="btn small" data-dup data-name="{{ $t->name }}_v2" data-cat="{{ strtoupper($t->category) }}" data-body="{{ $t->body }}" data-lang="{{ $t->language }}" title="{{ __('Start a new template from this wording') }}">{{ __('Duplicate') }}</button>
+                        <form method="post" action="{{ url('/admin/templates/'.$t->id.'/delete') }}" class="push" onsubmit="return confirm({{ json_encode(__('Remove this template from the list? It stays in Meta until you delete it there.'), JSON_UNESCAPED_UNICODE) }})">@csrf<button class="btn small danger">{{ __('Remove') }}</button></form>
                     </div>
                 </div>
             @endforeach
         </div>
-        <p class="mute" id="tpl-none" hidden style="text-align:center;margin-top:14px">Nothing in this group.</p>
+        <p class="mute" id="tpl-none" hidden style="text-align:center;margin-top:14px">{{ __('Nothing in this group.') }}</p>
 
-        <h2>Start from an example</h2>
+        <h2>{{ __('Start from an example') }}</h2>
         <div class="tiles">
             @foreach ($examples as $ex)
-                <button type="button" class="tile ex" data-title="{{ $ex[0] }}" data-name="{{ $ex[1] }}" data-cat="{{ $ex[2] }}" data-body="{{ $ex[3] }}"><b>{{ $ex[0] }} <em class="chip2 {{ $ex[2] === 'MARKETING' ? 'mk' : '' }}">{{ $ex[2] === 'MARKETING' ? 'Marketing' : 'Utility' }}</em></b><span>{{ $ex[3] }}</span></button>
+                <button type="button" class="tile ex" data-title="{{ $ex[0] }}" data-name="{{ $ex[1] }}" data-cat="{{ $ex[2] }}" data-body="{{ $ex[3] }}"><b>{{ $ex[0] }} <em class="chip2 {{ $ex[2] === 'MARKETING' ? 'mk' : '' }}">{{ $ex[2] === 'MARKETING' ? __('Marketing') : __('Utility') }}</em></b><span>{{ $ex[3] }}</span></button>
             @endforeach
         </div>
 
         <dialog id="tpl-dialog" class="dlg wide">
-            <button type="button" class="dlg-x" aria-label="Close">&times;</button>
-            <h3>New template</h3>
-            <p class="mute" style="margin-top:4px">Meta reviews it before you can use it.</p>
+            <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+            <h3>{{ __('New template') }}</h3>
+            <p class="mute" style="margin-top:4px">{{ __('Meta reviews it before you can use it.') }}</p>
             <form method="post" action="{{ url('/admin/templates') }}">
                 @csrf
                 <div class="grid2" style="margin-top:12px">
-                    <label class="f"><span>WhatsApp number</span><select name="channel_id">@foreach ($channels as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></label>
-                    <label class="f"><span>Language</span><select name="language">@foreach ($languages as $v => $l)<option value="{{ $v }}">{{ $l }}</option>@endforeach</select></label>
-                    <label class="f"><span>Name (letters, numbers, underscores)</span><input type="text" name="name" id="tpl-name" value="{{ old('name') }}" placeholder="booking_reminder" required maxlength="80"></label>
-                    <label class="f"><span>What is it for?</span><select name="category" id="tpl-cat"><option value="UTILITY">Utility: reminders, confirmations</option><option value="MARKETING">Marketing: offers, win-back</option></select></label>
+                    <label class="f"><span>{{ __('WhatsApp number') }}</span><select name="channel_id">@foreach ($channels as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></label>
+                    <label class="f"><span>{{ __('Language') }}</span><select name="language">@foreach ($languages as $v => $l)<option value="{{ $v }}">{{ $l }}</option>@endforeach</select></label>
+                    <label class="f"><span>{{ __('Name (letters, numbers, underscores)') }}</span><input type="text" name="name" id="tpl-name" value="{{ old('name') }}" placeholder="{{ __('booking_reminder') }}" required maxlength="80"></label>
+                    <label class="f"><span>{{ __('What is it for?') }}</span><select name="category" id="tpl-cat"><option value="UTILITY">{{ __('Utility: reminders, confirmations') }}</option><option value="MARKETING">{{ __('Marketing: offers, win-back') }}</option></select></label>
                 </div>
-                <label class="f"><span>Message <em class="mute" style="font-weight:400"><span id="tpl-count">0</span> / 1024</em></span><textarea name="body" id="tpl-body" rows="4" required maxlength="1024">{{ old('body') }}</textarea></label>
-                <div class="var-row" style="margin:6px 0 14px"><span class="mute">Add a part that changes:</span>
-                    <button type="button" class="btn small" data-ph="1">1 · name</button><button type="button" class="btn small" data-ph="2">2 · service</button><button type="button" class="btn small" data-ph="3">3 · date and time</button></div>
-                <div class="f"><span>How it will look</span><div class="wa-bubble" id="tpl-preview">Your message appears here.</div></div>
+                <label class="f"><span>{{ __('Message') }} <em class="mute" style="font-weight:400"><span id="tpl-count">0</span> / 1024</em></span><textarea name="body" id="tpl-body" rows="4" required maxlength="1024">{{ old('body') }}</textarea></label>
+                <div class="var-row" style="margin:6px 0 14px"><span class="mute">{{ __('Add a part that changes:') }}</span>
+                    <button type="button" class="btn small" data-ph="1">{{ __('1 · name') }}</button><button type="button" class="btn small" data-ph="2">{{ __('2 · service') }}</button><button type="button" class="btn small" data-ph="3">{{ __('3 · date and time') }}</button></div>
+                <div class="f"><span>{{ __('How it will look') }}</span><div class="wa-bubble" id="tpl-preview">{{ __('Your message appears here.') }}</div></div>
                 <ul class="checks tpl-checks" id="tpl-checks" aria-live="polite"></ul>
-                <div class="dlg-foot"><button class="btn primary" type="submit">Send to Meta for review</button></div>
+                <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Send to Meta for review') }}</button></div>
             </form>
         </dialog>
     @endif
@@ -131,10 +131,10 @@
     var t = body.value.trim(), nums = (t.match(/\{\{(\d+)\}\}/g) || []).map(function (m) { return parseInt(m.replace(/\D/g, ''), 10); });
     var inOrder = nums.every(function (n, i) { return n === i + 1; });
     var rules = [
-      [t.length >= 20, 'At least a short sentence (20 letters or more)'],
-      [!/^\{\{\d+\}\}/.test(t) && !/\{\{\d+\}\}[\s.!?]*$/.test(t), 'Does not start or end with a changing part'],
-      [inOrder, 'Changing parts are numbered 1, 2, 3 in order'],
-      [!/(https?:\/\/\S+){2,}/.test(t) && !/!{2,}|\${2,}|FREE!!!/i.test(t), 'No shouting or piles of links (Meta may call it an advert)']
+      [t.length >= 20, @json(__('At least a short sentence (20 letters or more)'))],
+      [!/^\{\{\d+\}\}/.test(t) && !/\{\{\d+\}\}[\s.!?]*$/.test(t), @json(__('Does not start or end with a changing part'))],
+      [inOrder, @json(__('Changing parts are numbered 1, 2, 3 in order'))],
+      [!/(https?:\/\/\S+){2,}/.test(t) && !/!{2,}|\${2,}|FREE!!!/i.test(t), @json(__('No shouting or piles of links (Meta may call it an advert)'))]
     ];
     checks.innerHTML = t ? rules.map(function (r) { return '<li class="' + (r[0] ? 'ok' : 'bad') + '"><span class="ci">' + (r[0] ? '\u2713' : '!') + '</span><span>' + r[1] + '</span></li>'; }).join('') : '';
     count.textContent = body.value.length;
@@ -142,7 +142,7 @@
   body.addEventListener('input', review);
   document.querySelectorAll('[data-copy-name]').forEach(function (b) {
     b.addEventListener('click', function () {
-      var v = b.dataset.copyName, done = function () { var o = b.textContent; b.textContent = 'Copied'; setTimeout(function () { b.textContent = o; }, 1300); };
+      var v = b.dataset.copyName, done = function () { var o = b.textContent; b.textContent = @json(__('Copied')); setTimeout(function () { b.textContent = o; }, 1300); };
       if (navigator.clipboard) { navigator.clipboard.writeText(v).then(done); } else { var i = document.createElement('input'); i.value = v; document.body.appendChild(i); i.select(); document.execCommand('copy'); i.remove(); done(); }
     });
   });
@@ -156,7 +156,7 @@
   function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
   function preview() {
     var t = body.value.trim();
-    prev.innerHTML = t ? esc(t).replace(/\{\{(\d+)\}\}/g, function (m, n) { return '<span class="ph">' + (sample[n] || ('Value ' + n)) + '</span>'; }) : 'Your message appears here.';
+    prev.innerHTML = t ? esc(t).replace(/\{\{(\d+)\}\}/g, function (m, n) { return '<span class="ph">' + (sample[n] || (@json(__('Value')) + ' ' + n)) + '</span>'; }) : @json(__('Your message appears here.'));
   }
   body.addEventListener('input', preview);
   name.addEventListener('input', function () { name.value = name.value.toLowerCase().replace(/[^a-z0-9_]+/g, '_'); });
