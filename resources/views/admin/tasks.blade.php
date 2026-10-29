@@ -11,22 +11,35 @@
     </div>
 
 
-    <div class="filters">
+    @php
+        $filtered = $who !== 'all' || $due !== '' || $q !== '';
+        $narrowed = $due !== '' || $q !== '' || ! in_array($who, ['all', 'me'], true);
+        $keep = array_filter(['who' => $who === 'all' ? null : $who, 'due' => $due ?: null, 'q' => $q ?: null]);
+    @endphp
+    <form method="get" class="tk-bar">
         <div class="seg">
-            <a href="{{ route('tasks', ['mine' => $mine ? 1 : 0]) }}" @class(['on' => $show === 'open'])>Open ({{ $counts['open'] }})</a>
-            <a href="{{ route('tasks', ['show' => 'done', 'mine' => $mine ? 1 : 0]) }}" @class(['on' => $show === 'done'])>Done ({{ $counts['done'] }})</a>
+            <a href="{{ route('tasks', $keep) }}" @class(['on' => $show === 'open'])>Open ({{ $counts['open'] }})</a>
+            <a href="{{ route('tasks', ['show' => 'done'] + $keep) }}" @class(['on' => $show === 'done'])>Done ({{ $counts['done'] }})</a>
         </div>
-        <div class="seg">
-            <a href="{{ route('tasks', ['show' => $show, 'mine' => 0]) }}" @class(['on' => ! $mine])>Everyone</a>
-            <a href="{{ route('tasks', ['show' => $show, 'mine' => 1]) }}" @class(['on' => $mine])>Only mine</a>
-        </div>
-        <span class="grow"></span>
-        @if ($counts['overdue'] > 0 && $show === 'open')<span class="tag hot">{{ $counts['overdue'] }} overdue</span>@endif
-    </div>
+        <input type="hidden" name="show" value="{{ $show }}">
+        <input type="search" name="q" value="{{ $q }}" placeholder="Search tasks or customers" aria-label="Search">
+        <select name="who" aria-label="Assigned to">
+            <option value="all" @selected($who === 'all')>Everyone</option>
+            <option value="me" @selected($who === 'me')>Only me</option>
+            @foreach ($team as $u)@if ($u->id !== auth()->id())<option value="{{ $u->id }}" @selected($who === (string) $u->id)>{{ $u->name }}</option>@endif @endforeach
+        </select>
+        @if ($show === 'open')
+            <select name="due" aria-label="Due">
+                @foreach (['' => 'Any time', 'overdue' => 'Overdue', 'today' => 'Due today', 'week' => 'Next 7 days', 'none' => 'No date'] as $k => $l)<option value="{{ $k }}" @selected($due === $k)>{{ $l }}</option>@endforeach
+            </select>
+        @endif
+        @if ($filtered)<a class="btn" href="{{ route('tasks', ['show' => $show === 'done' ? 'done' : null]) }}">Reset</a>@endif
+        @if ($counts['overdue'] > 0 && $show === 'open' && $due !== 'overdue')<a class="tk-overdue" href="{{ route('tasks', ['due' => 'overdue'] + array_diff_key($keep, ['due' => 1])) }}">{{ $counts['overdue'] }} overdue</a>@endif
+    </form>
 
     @if ($tasks->isEmpty())
-        <div class="card empty-card"><b>{{ $show === 'done' ? 'Nothing finished yet' : ($mine ? 'Nothing assigned to you' : 'You are all caught up') }}</b>
-            <p class="mute">{{ $show === 'done' ? 'Tasks you tick off appear here.' : 'Add a follow-up above when something needs doing.' }}</p></div>
+        <div class="card empty-card"><b>{{ $narrowed ? 'No tasks match these filters' : ($show === 'done' ? 'Nothing finished yet' : ($mine ? 'Nothing assigned to you' : 'You are all caught up')) }}</b>
+            <p class="mute">{{ $narrowed ? 'Change or reset the filters above.' : ($show === 'done' ? 'Tasks you tick off appear here.' : 'Press + Add task when something needs doing.') }}</p></div>
     @endif
 
     @php $sections = $show === 'open' ? $groups : ['Done' => $tasks->all()]; @endphp

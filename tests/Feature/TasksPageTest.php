@@ -113,4 +113,21 @@ class TasksPageTest extends TestCase
         $this->task('Has an edit button');
         $this->actingAs($this->staff)->get('/admin/tasks')->assertSee('Today 5pm')->assertSee('Tomorrow 10am')->assertSee('Next week')->assertSee('id="task-dialog"', false)->assertSee('data-edit', false);
     }
+
+    public function test_toolbar_filters_by_person_due_and_search_and_shows_reset_only_when_filtered(): void
+    {
+        $this->task('Call Amy about facial', now()->subDay(), ['assigned_to' => $this->staff->id]);
+        $this->task('Order masks', now()->addDays(3), ['assigned_to' => $this->owner->id]);
+        $this->task('Someday idea');
+
+        $r = $this->actingAs($this->owner)->get('/admin/tasks');
+        $r->assertOk()->assertSee('Search tasks or customers')->assertSee('Any time')->assertSee('Everyone')->assertDontSee('>Reset<', false);
+
+        $this->get('/admin/tasks?who='.$this->staff->id)->assertSee('Call Amy')->assertDontSee('Order masks')->assertSee('Reset');
+        $this->get('/admin/tasks?due=overdue')->assertSee('Call Amy')->assertDontSee('Order masks')->assertDontSee('Someday idea');
+        $this->get('/admin/tasks?due=none')->assertSee('Someday idea')->assertDontSee('Call Amy');
+        $this->get('/admin/tasks?q=masks')->assertSee('Order masks')->assertDontSee('Call Amy');
+        $this->get('/admin/tasks?q=zzz')->assertSee('No tasks match these filters');
+        $this->get('/admin/tasks?who=9999')->assertSee('Order masks');   // an unknown person is ignored
+    }
 }

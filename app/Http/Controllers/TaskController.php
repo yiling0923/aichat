@@ -19,12 +19,28 @@ class TaskController extends Controller
     public function index(Request $request): View
     {
         $show = $request->query('show', 'open') === 'done' ? 'done' : 'open';
-        $mine = $request->boolean('mine');
         $business = $request->user()->business;
         $tz = $business->timezone ?: 'UTC';
         $me = $request->user()->id;
+        $team = User::query()->where('business_id', $business->id)->where('active', true)->orderBy('name')->get();
 
-        $scoped = fn () => Task::query()->when($mine, fn ($q) => $q->where('assigned_to', $me));
+        // Who: everyone, only me, or one person ("mine=1" from older links still works).
+        $who = (string) $request->query('who', $request->boolean('mine') ? 'me' : 'all');
+        $who = $who === 'all' || $who === 'me' || $team->contains('id', (int) $who) ? $who : 'all';
+        $mine = $who === 'me';
+        $assignee = $who === 'me' ? $me : ($who === 'all' ? null : (int) $who);
+        $dueFilter = in_array($request->query('due'), ['overdue', 'today', 'week', 'none'], true) ? (string) $request->query('due') : '';
+        $q = trim((string) $request->query('q', ''));
+        $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q).'%';
+        $endToday = \Carbon\Carbon::now($tz)->endOfDay()->utc();
+
+        $scoped = fn () => Task::query()
+            ->when($assignee !== null, fn ($w) => $w->where('assigned_to', $assignee))
+            ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('title', 'like', $like)->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $like)->orWhere('phone', 'like', $like))))
+            ->when($dueFilter === 'overdue', fn ($w) => $w->where('due_at', '<', now()))
+            ->when($dueFilter === 'today', fn ($w) => $w->whereBetween('due_at', [\Carbon\Carbon::now($tz)->startOfDay()->utc(), $endToday]))
+            ->when($dueFilter === 'week', fn ($w) => $w->whereBetween('due_at', [now(), \Carbon\Carbon::now($tz)->addDays(7)->endOfDay()->utc()]))
+            ->when($dueFilter === 'none', fn ($w) => $w->whereNull('due_at'));
 
         $tasks = $scoped()->with(['assignee', 'customer'])
             ->when($show === 'done', fn ($q) => $q->whereNotNull('done_at')->orderByDesc('done_at'), fn ($q) => $q->whereNull('done_at')->orderByRaw('due_at is null')->orderBy('due_at'))
@@ -50,10 +66,10 @@ class TaskController extends Controller
         }
 
         return view('admin.tasks', [
-            'business' => $business, 'active' => 'tasks', 'tasks' => $tasks, 'show' => $show, 'mine' => $mine, 'groups' => $groups,
+            'business' => $business, 'active' => 'tasks', 'tasks' => $tasks, 'show' => $show, 'mine' => $mine, 'who' => $who, 'due' => $dueFilter, 'q' => $q, 'groups' => $groups,
             'counts' => ['open' => $scoped()->whereNull('done_at')->count(), 'done' => $scoped()->whereNotNull('done_at')->count(),
                 'overdue' => $scoped()->whereNull('done_at')->where('due_at', '<', now())->count()],
-            'team' => User::query()->where('business_id', $business->id)->where('active', true)->orderBy('name')->get(),
+            'team' => $team,
             'tz' => $tz,
         ]);
     }

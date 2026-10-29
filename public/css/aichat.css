@@ -1299,3 +1299,11 @@ html { scroll-behavior: smooth; }
 @media (max-width: 600px) { .tpl-grid { grid-template-columns: 1fr; } .tpl-bar input[type=search] { max-width: none; margin-left: 0; } }
 .af-hide { display: none !important; }
 #task-dialog .f { margin-top: 10px; } #td-quick { margin-top: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12.5px; }
+
+/* Tasks toolbar */
+.tk-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.tk-bar input[type=search] { flex: 1 1 200px; min-width: 160px; }
+.tk-bar select { width: auto; min-width: 130px; }
+.tk-overdue { margin-left: auto; font-size: 12.5px; font-weight: 700; color: var(--red); background: var(--reds); padding: 5px 12px; border-radius: 999px; }
+.tk-overdue:hover { text-decoration: none; background: #fbd9d4; }
+@media (max-width: 700px) { .tk-bar select, .tk-bar input[type=search] { flex: 1 1 100%; width: 100%; } .tk-overdue { margin-left: 0; } }

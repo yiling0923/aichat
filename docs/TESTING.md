@@ -468,3 +468,9 @@ Older notes in this guide that say "Settings → Channels" (or Menu builder, Boo
 1. Tasks: press **+ Add task** (top right). A small pop-up asks what needs doing, when (with quick buttons Today 5pm, Tomorrow 10am, Next week) and who does it (you by default). Press **Add task**.
 2. Edit uses the same pop-up with Save and Delete. Delete only shows when editing.
 3. On Today, **+ Task** opens that same pop-up straight away.
+
+## BB. Tasks filter bar
+
+1. Tasks has one tidy bar: Open / Done, a search box (task text or customer), an Assigned to list (Everyone, Only me, or a person), and a Due list (Any time, Overdue, Due today, Next 7 days, No date).
+2. Everything applies by itself as you choose or type. A red "5 overdue" button jumps straight to the overdue ones. **Reset** appears only while a filter is on.
+3. With filters on and nothing matching, the page says "No tasks match these filters".
