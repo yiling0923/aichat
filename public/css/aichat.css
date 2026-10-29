@@ -1605,3 +1605,12 @@ kbd { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); bo
 .hp-stuck { background: var(--accent-l, #f1f8f7); }
 .hp .hp-toc { margin-top: 0; }
 @media (max-width: 900px) { .hp-pipe { grid-template-columns: 1fr; } .hp-pipe > div:not(:last-child)::after, .hp-pipe > div:not(:last-child)::before { display: none; } .hp-hero { padding: 26px 18px; } .hp-hero h2 { font-size: 23px; } .hp-toc { display: none; } }
+
+/* Language switch in the top bar */
+.lang-sw { margin: 0; flex: none; }
+.lang-sw button { height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.lang-sw button:hover { border-color: var(--accent); color: var(--accent-d); }
+.list-head { gap: 6px; }
+.list-head > span { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.list-head .mini-link { font-size: 12px; font-weight: 500; }
+.list-head .lang-sw button { height: 32px; padding: 0 8px; font-size: 12px; border-radius: 8px; }

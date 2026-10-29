@@ -43,7 +43,7 @@ class InboxController extends Controller
 
                 return [
                     'id' => $c->id,
-                    'name' => $c->contact_name ?: 'Visitor '.$c->id,
+                    'name' => $c->contact_name ?: __('Visitor :n', ['n' => $c->id]),
                     'channel' => $c->channel,
                     'mode' => $c->mode,
                     'status' => $c->status,
@@ -76,7 +76,7 @@ class InboxController extends Controller
         return response()->json([
             'conversation' => [
                 'id' => $conversation->id,
-                'name' => $conversation->contact_name ?: 'Visitor '.$conversation->id,
+                'name' => $conversation->contact_name ?: __('Visitor :n', ['n' => $conversation->id]),
                 'channel' => $conversation->channel,
                 'language' => $conversation->language ?? $conversation->customer?->language,
                 'mode' => $conversation->mode,

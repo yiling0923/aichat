@@ -36,7 +36,7 @@ class DailySummary
             $paid = Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from, $to]);
 
             return [
-                'label' => $day->copy()->setTimezone($tz)->format('l, j M'),
+                'label' => $day->copy()->setTimezone($tz)->translatedFormat(app()->getLocale() === 'zh' ? 'n月j日 l' : 'l, j M'),
                 'new_chats' => $real(Conversation::query())->whereBetween('created_at', [$from, $to])->count(),
                 'chats_with_messages' => $chatIds->count(),
                 'bookings_made' => Booking::query()->whereBetween('created_at', [$from, $to])->count(),

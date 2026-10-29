@@ -619,3 +619,14 @@ The grey/pink AI label next to the customer ("complaint · angry") no longer rep
 4. **Browse by topic** is a grid of all topics; click one to jump to it.
 5. Yellow **Tip** boxes give small tricks (Ctrl+K search, Enter to send, Publish after editing, phone alerts). A **Still stuck?** box ends the page.
 6. When you type in the search box, the top blocks hide and only the matching topics show. Clear the box to come back.
+
+## BU. Staff screens in Chinese (part 1: switch, menu, bell, Today, Inbox)
+
+Run `php artisan migrate` once (adds a language setting per person).
+
+1. At the top of every page (next to the bell, and in the Inbox list header) there is a small button: **中文** when you are in English, **English** when you are in Chinese. Press it: the page reloads in the other language. The choice is saved for you only; other team members keep their own language.
+2. In Chinese you now see: the whole left menu (今天, 收件箱, 日程, 客户 ...), the bell and its messages, the search box, the trial banner, the whole **Today** page (greeting, numbers, 每日摘要, 需要人工, 今日预约, 任务, 本周), and the whole **Inbox** (list, chat header, tags, reply box, 快捷回复, buttons, pop-ups and messages). Dates read like 2026年10月29日 星期四, times like "5 分钟".
+3. Not translated yet (still English): the other pages (Schedule, Customers, Tasks, Orders, Marketing, Reports, Settings, Menu builder, Booking setup, Channels, AI, Saved replies, Tags, Billing, My account, Setup guide, Help), the sign-in pages and the emails. They will follow page by page.
+4. Things your business typed stay as typed (customer names, task titles, service names, saved replies). The tags that the system creates itself (Price question, Complaint ...) and the usual hand-over reasons show in Chinese.
+5. Bell messages that were created before the switch are stored in English and stay English.
+6. Simplified Chinese only. If a phrase is missing a translation it simply shows in English.

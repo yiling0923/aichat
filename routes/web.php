@@ -93,6 +93,7 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 // Phase 3: Today, all conversations, tasks, library (everyone); tags and library edits (owner or manager); settings (owner).
 Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/help', [\App\Http\Controllers\GuideController::class, 'help'])->name('help');
+    Route::post('/language', [\App\Http\Controllers\AccountController::class, 'language'])->name('language')->middleware('throttle:20,1');
     Route::get('/today', [\App\Http\Controllers\TodayController::class, 'index'])->name('today');
     Route::get('/conversations', [\App\Http\Controllers\ConversationsController::class, 'index'])->name('conversations');
     Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks');

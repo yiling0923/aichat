@@ -1,0 +1,2 @@
+@php($__other = app()->getLocale() === 'zh' ? 'en' : 'zh')
+<form method="post" action="{{ route('language') }}" class="lang-sw">@csrf<input type="hidden" name="locale" value="{{ $__other }}"><button type="submit" title="{{ app()->getLocale() === 'zh' ? 'Switch to English' : '切换到中文' }}" aria-label="{{ app()->getLocale() === 'zh' ? 'Switch to English' : '切换到中文' }}">{{ \App\Support\Lang::LOCALES[$__other] }}</button></form>

@@ -10,7 +10,7 @@
   function render(data) {
     box.innerHTML = '';
     items = [];
-    [['Customers', data.customers], ['Chats', data.chats]].forEach(function (g) {
+    [[__t('Customers'), data.customers], [__t('Chats'), data.chats]].forEach(function (g) {
       if (!g[1].length) { return; }
       var h = document.createElement('div'); h.className = 'gh'; h.textContent = g[0]; box.appendChild(h);
       g[1].forEach(function (r) {
@@ -20,7 +20,7 @@
         box.appendChild(a); items.push(a);
       });
     });
-    if (!items.length) { var n = document.createElement('div'); n.className = 'gn'; n.textContent = 'Nothing found'; box.appendChild(n); }
+    if (!items.length) { var n = document.createElement('div'); n.className = 'gn'; n.textContent = __t('Nothing found'); box.appendChild(n); }
     box.hidden = false; active = -1;
   }
 

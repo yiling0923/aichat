@@ -28,7 +28,7 @@
     });
     return true;
   }
-  function soundLabel() { snd.textContent = soundOn ? 'Sound is on' : 'Sound is off'; snd.classList.toggle('off', !soundOn); }
+  function soundLabel() { snd.textContent = soundOn ? __t('Sound is on') : __t('Sound is off'); snd.classList.toggle('off', !soundOn); }
   snd.addEventListener('click', function () {
     soundOn = !soundOn; try { localStorage.setItem('aichat-sound', soundOn ? 'on' : 'off'); } catch (e) { /* ignore */ }
     soundLabel(); if (soundOn) { chime(false); }
@@ -39,8 +39,8 @@
 
   function ago(iso) {
     var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-    if (s < 60) { return 'now'; } if (s < 3600) { return Math.floor(s / 60) + 'm'; }
-    if (s < 86400) { return Math.floor(s / 3600) + 'h'; } return Math.floor(s / 86400) + 'd';
+    if (s < 60) { return __t('now'); } if (s < 3600) { return __t(':n m', { n: Math.floor(s / 60) }); }
+    if (s < 86400) { return __t(':n h', { n: Math.floor(s / 3600) }); } return __t(':n d', { n: Math.floor(s / 86400) });
   }
 
   function post(path) { return fetch(url + path, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf } }); }
@@ -50,7 +50,7 @@
     badge.textContent = d.unread > 9 ? '9+' : d.unread;
     document.title = (d.unread ? '(' + d.unread + ') ' : '') + baseTitle.replace(/^\(\d+\) /, '');
     list.innerHTML = '';
-    if (!d.items.length) { list.innerHTML = '<p class="bell-empty">Nothing yet. New chats, bookings and tasks show up here.</p>'; }
+    if (!d.items.length) { list.innerHTML = ''; var em = document.createElement('p'); em.className = 'bell-empty'; em.textContent = __t('Nothing yet. New chats, bookings and tasks show up here.'); list.appendChild(em); }
     d.items.forEach(function (n) {
       var a = document.createElement('a');
       a.href = n.url || '#'; a.className = 'bell-item' + (n.read ? '' : ' unread');
@@ -104,14 +104,14 @@
     if (P && P.configured && P.supported()) {
       P.state().then(function (st) {
         desk.hidden = false;
-        desk.textContent = { on: 'Phone alerts are on (turn off)', off: 'Turn on phone alerts', blocked: 'Alerts are blocked in your browser', unsupported: 'Alerts not supported here', error: 'Turn on phone alerts' }[st] || 'Turn on phone alerts';
+        desk.textContent = { on: __t('Phone alerts are on (turn off)'), off: __t('Turn on phone alerts'), blocked: __t('Alerts are blocked in your browser'), unsupported: __t('Alerts not supported here'), error: __t('Turn on phone alerts') }[st] || __t('Turn on phone alerts');
         desk.disabled = st === 'blocked' || st === 'unsupported';
         desk.dataset.state = st;
       });
       return;
     }
     if (!('Notification' in window)) { desk.hidden = true; return; }
-    desk.textContent = Notification.permission === 'granted' ? 'Desktop alerts are on' : (Notification.permission === 'denied' ? 'Desktop alerts are blocked in your browser' : 'Turn on desktop alerts');
+    desk.textContent = Notification.permission === 'granted' ? __t('Desktop alerts are on') : (Notification.permission === 'denied' ? __t('Desktop alerts are blocked in your browser') : __t('Turn on desktop alerts'));
     desk.disabled = Notification.permission !== 'default';
   }
   desk.addEventListener('click', function () {

@@ -43,7 +43,7 @@ class TodayController extends Controller
             ->whereBetween('starts_at', [$weekStart->copy()->utc(), $weekStart->copy()->endOfWeek()->utc()])->pluck('starts_at');
         for ($i = 0; $i < 7; $i++) {
             $day = $weekStart->copy()->addDays($i);
-            $week[] = ['label' => $day->format('D'), 'date' => $day->format('j'), 'today' => $day->isToday(), 'count' => $weekBookings->filter(fn ($d) => $d->copy()->setTimezone($tz)->isSameDay($day))->count()];
+            $week[] = ['label' => $day->translatedFormat('D'), 'date' => $day->format('j'), 'today' => $day->isToday(), 'count' => $weekBookings->filter(fn ($d) => $d->copy()->setTimezone($tz)->isSameDay($day))->count()];
         }
 
         $paid = fn ($from, $to) => (float) Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from->copy()->utc(), $to->copy()->utc()])->sum('amount');

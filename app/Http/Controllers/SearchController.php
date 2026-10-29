@@ -22,14 +22,14 @@ class SearchController extends Controller
 
         $customers = Customer::query()->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('phone', 'like', $like)->orWhere('email', 'like', $like))
             ->orderBy('name')->limit(6)->get()
-            ->map(fn (Customer $c) => ['title' => $c->name ?: '(no name)', 'sub' => $c->phone, 'url' => route('customers.show', $c->id)]);
+            ->map(fn (Customer $c) => ['title' => $c->name ?: __('(no name)'), 'sub' => $c->phone, 'url' => route('customers.show', $c->id)]);
 
         $chats = Conversation::query()->where('channel', '!=', 'preview')
             ->where(fn ($w) => $w->where('contact_name', 'like', $like)
                 ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $like)->orWhere('phone', 'like', $like))
                 ->orWhereHas('messages', fn ($m) => $m->where('is_private', false)->where('body', 'like', $like)))
             ->orderByDesc('last_message_at')->limit(6)->get()
-            ->map(fn (Conversation $c) => ['title' => $c->contact_name ?: 'Visitor '.$c->id, 'sub' => ucfirst($c->channel).' · '.($c->last_message_at?->diffForHumans() ?? ''), 'url' => route('inbox', ['c' => $c->id])]);
+            ->map(fn (Conversation $c) => ['title' => $c->contact_name ?: __('Visitor :n', ['n' => $c->id]), 'sub' => ucfirst($c->channel).' · '.($c->last_message_at?->diffForHumans() ?? ''), 'url' => route('inbox', ['c' => $c->id])]);
 
         return response()->json(['customers' => $customers, 'chats' => $chats]);
     }

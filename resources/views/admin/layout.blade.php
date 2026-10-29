@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ app()->getLocale() === 'zh' ? 'zh-CN' : 'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
     <title>@yield('title'): {{ $business->name }}</title>
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
     @include('admin._push')
+    @include('admin._i18n')
 </head>
 <body>
 <div class="shell">
@@ -14,21 +15,22 @@
     <main class="page">
         <div class="topbar">
             @include('admin._bell')
+            @include('admin._lang_switch')
             <div class="gsearch">
-                <input id="gsearch" type="search" placeholder="Search customers and chats" autocomplete="off" aria-label="Search" data-url="{{ url('/admin/api/search') }}">
+                <input id="gsearch" type="search" placeholder="{{ __('Search customers and chats') }}" autocomplete="off" aria-label="{{ __('Search') }}" data-url="{{ url('/admin/api/search') }}">
                 <kbd>Ctrl K</kbd>
                 <div id="gresults" class="gresults" hidden></div>
             </div>
         </div>
         @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
         @if (in_array($active, ['tags', 'settings', 'billing']) && auth()->user()->canManage())
-            <a class="crumb" href="{{ route('manage') }}">&larr; Settings</a>
+            <a class="crumb" href="{{ route('manage') }}">&larr; {{ __('Settings') }}</a>
         @endif
         @php($planState = app(\App\Billing\Plans::class)->state($business))
         @if (in_array($planState, ['trial_expired', 'past_due', 'canceled'], true))
-            <div class="note err">Your plan is not active, so the AI is paused. Messages still reach your inbox. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Plan &amp; billing</a>@endif</div>
+            <div class="note err">{{ __('Your plan is not active, so the AI is paused. Messages still reach your inbox.') }} @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">{{ __('Plan & billing') }}</a>@endif</div>
         @elseif ($planState === 'trial')
-            <div class="note warn">Free trial: @php($dl = app(\App\Billing\Plans::class)->daysLeftInTrial($business)){{ $dl }} {{ $dl === 1 ? 'day' : 'days' }} left. @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">Choose a plan</a>@endif</div>
+            <div class="note warn">@php($dl = app(\App\Billing\Plans::class)->daysLeftInTrial($business)){{ $dl === 1 ? __('Free trial: 1 day left.') : __('Free trial: :n days left.', ['n' => $dl]) }} @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">{{ __('Choose a plan') }}</a>@endif</div>
         @endif
         @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
         @yield('content')

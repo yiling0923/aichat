@@ -10,7 +10,7 @@
   var jumpBtn = document.getElementById('btn-jump');
   var current = null, seen = {}, lastId = 0, lastDay = '', lastInfoKey = null, mode = 'reply', unseen = 0, lastTemplates = [];
   var curLang = null, curName = '', businessName = root.dataset.business || '', toastTimer = null;
-  var CHANNELS = { web: 'Website', whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram' };
+  var CHANNELS = { web: __t('Website'), whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram' };
 
   function api(path, opts) {
     opts = opts || {};
@@ -31,19 +31,19 @@
   function ago(iso) {
     if (!iso) { return ''; }
     var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-    if (s < 60) { return 'now'; }
-    if (s < 3600) { return Math.floor(s / 60) + 'm'; }
-    if (s < 86400) { return Math.floor(s / 3600) + 'h'; }
-    return Math.floor(s / 86400) + 'd';
+    if (s < 60) { return __t('now'); }
+    if (s < 3600) { return __t(':n m', { n: Math.floor(s / 60) }); }
+    if (s < 86400) { return __t(':n h', { n: Math.floor(s / 3600) }); }
+    return __t(':n d', { n: Math.floor(s / 86400) });
   }
 
   function dayLabel(d) {
     var today = new Date(); today.setHours(0, 0, 0, 0);
     var that = new Date(d); that.setHours(0, 0, 0, 0);
     var diff = Math.round((today - that) / 86400000);
-    if (diff === 0) { return 'Today'; }
-    if (diff === 1) { return 'Yesterday'; }
-    return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    if (diff === 0) { return __t('Today'); }
+    if (diff === 1) { return __t('Yesterday'); }
+    return d.toLocaleDateString(window.LOCALE === 'zh' ? 'zh-CN' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
   // ---------- list ----------
@@ -51,7 +51,7 @@
     api('/conversations?status=' + encodeURIComponent(statusSel.value)).then(function (data) {
       listEl.innerHTML = '';
       if (!data.conversations.length) {
-        listEl.innerHTML = '<div class="empty">No conversations yet.<br>Open the test chat and send a message.</div>';
+        listEl.innerHTML = '<div class="empty">' + __t('No conversations yet.') + '<br>' + __t('Open the test chat and send a message.') + '</div>';
         return;
       }
       data.conversations.forEach(function (c) {
@@ -61,11 +61,11 @@
         d.querySelector('.av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
         d.querySelector('b').textContent = c.name;
         d.querySelector('time').textContent = ago(c.last_message_at);
-        d.querySelector('p').textContent = c.preview || 'No messages yet';
+        d.querySelector('p').textContent = c.preview || __t('No messages yet');
         var meta = d.querySelector('.cm');
         var ch = document.createElement('span'); ch.className = 'chan'; ch.textContent = CHANNELS[c.channel] || c.channel; meta.appendChild(ch);
-        if (c.needs_reply) { var n = document.createElement('span'); n.className = 'tag warn'; n.textContent = 'Needs a person'; meta.appendChild(n); }
-        else if (c.mode === 'human') { var h = document.createElement('span'); h.className = 'tag'; h.textContent = 'Staff'; meta.appendChild(h); }
+        if (c.needs_reply) { var n = document.createElement('span'); n.className = 'tag warn'; n.textContent = __t('Needs a person'); meta.appendChild(n); }
+        else if (c.mode === 'human') { var h = document.createElement('span'); h.className = 'tag'; h.textContent = __t('Staff'); meta.appendChild(h); }
         d.addEventListener('click', function () { openConversation(c.id); });
         listEl.appendChild(d);
       });
@@ -99,17 +99,17 @@
     var sys = m.from === 'system' && m.private;
     div.className = 'm ' + (sys ? 'system' : (m.private ? 'private' : m.from));
     var body = document.createElement('div'); body.className = 'mt'; body.textContent = m.text || '';
-    if (m.private && !sys) { var lock = document.createElement('span'); lock.className = 'lock'; lock.textContent = 'Private note'; div.appendChild(lock); }
+    if (m.private && !sys) { var lock = document.createElement('span'); lock.className = 'lock'; lock.textContent = __t('Private note'); div.appendChild(lock); }
     div.appendChild(body);
     if (!sys) {
       var t = document.createElement('small');
-      var who = m.private ? '' : (m.from === 'bot' ? 'Bot' : (m.from === 'staff' ? 'Staff' : ''));
+      var who = m.private ? '' : (m.from === 'bot' ? __t('Bot') : (m.from === 'staff' ? __t('Staff') : ''));
       t.textContent = [who, when ? when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''].filter(Boolean).join(' · ');
       div.appendChild(t);
     }
     if (m.delivery === 'failed') {
       var f = document.createElement('small'); f.className = 'fail';
-      f.textContent = 'Not delivered: ' + (m.delivery_error || 'unknown problem');
+      f.textContent = __t('Not delivered:') + ' ' + (m.delivery_error || __t('unknown problem'));
       div.appendChild(f);
     }
     logEl.appendChild(div);
@@ -120,7 +120,7 @@
     var card = document.createElement('div');
     card.className = 'm ai-card';
     var head = document.createElement('b');
-    head.textContent = 'AI suggestion' + (m.ai && m.ai.intent ? ' (' + m.ai.intent + (m.ai.mood ? ', ' + m.ai.mood : '') + ')' : '');
+    head.textContent = __t('AI suggestion') + (m.ai && m.ai.intent ? ' (' + m.ai.intent + (m.ai.mood ? ', ' + m.ai.mood : '') + ')' : '');
     var body = document.createElement('div');
     body.style.margin = '6px 0 8px'; body.textContent = m.text;
     var row = document.createElement('div');
@@ -130,14 +130,14 @@
       b.type = 'button'; b.className = 'btn small ' + cls; b.textContent = label;
       b.addEventListener('click', fn); row.appendChild(b);
     }
-    button('Send now', 'primary', function () {
+    button(__t('Send now'), 'primary', function () {
       post('/ai/' + m.id + '/send', {}).then(function (d) {
         if (d && d.error) { toast(d.error, true); return; }
         card.remove(); refreshThread(); loadList();
       });
     });
-    button('Edit first', '', function () { setMode('reply'); textEl.value = m.text; grow(); textEl.focus(); });
-    button('Dismiss', '', function () { post('/ai/' + m.id + '/dismiss', {}).then(function () { card.remove(); }); });
+    button(__t('Edit first'), '', function () { setMode('reply'); textEl.value = m.text; grow(); textEl.focus(); });
+    button(__t('Dismiss'), '', function () { post('/ai/' + m.id + '/dismiss', {}).then(function () { card.remove(); }); });
     card.appendChild(head); card.appendChild(body); card.appendChild(row);
     logEl.appendChild(card);
   }
@@ -147,15 +147,15 @@
     document.getElementById('btn-summarize').style.display = c.ai_on ? '' : 'none';
     document.getElementById('thread-title').textContent = c.name;
     document.getElementById('thread-av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
-    document.getElementById('thread-meta').textContent = [c.channel_label || c.channel, c.status === 'open' ? 'open' : 'resolved'].filter(Boolean).join(' · ');
+    document.getElementById('thread-meta').textContent = [c.channel_label || c.channel, c.status === 'open' ? __t('open') : __t('resolved')].filter(Boolean).join(' · ');
     var badge = document.getElementById('mode-badge');
-    badge.textContent = c.mode === 'human' ? 'You are handling this' : 'Bot is answering';
+    badge.textContent = c.mode === 'human' ? __t('You are handling this') : __t('Bot is answering');
     badge.className = 'tag ' + (c.mode === 'human' ? 'warn' : 'ok');
     badge.title = c.handover_reason || '';
     document.getElementById('btn-give-back').style.display = c.mode === 'human' ? '' : 'none';
     document.getElementById('more').style.display = (c.ai_on || c.mode === 'human') ? '' : 'none';
     var rb = document.getElementById('btn-resolve');
-    rb.textContent = c.status === 'resolved' ? 'Reopen' : 'Resolve';
+    rb.dataset.state = c.status; rb.textContent = c.status === 'resolved' ? __t('Reopen') : __t('Resolve');
     rb.classList.toggle('primary', c.status !== 'resolved');
     document.getElementById('thread').classList.remove('hidden');
     document.getElementById('thread-empty').style.display = 'none';
@@ -167,8 +167,8 @@
     if (c.window_open) { el.classList.add('hidden'); return; }
     el.classList.remove('hidden');
     document.getElementById('window-text').textContent = c.can_template
-      ? 'The 24-hour window is closed. You can only send an approved template.'
-      : 'The 24-hour window is closed. You can reply once the customer messages you again.';
+      ? __t('The 24-hour window is closed. You can only send an approved template.')
+      : __t('The 24-hour window is closed. You can reply once the customer messages you again.');
     document.getElementById('btn-template').style.display = c.can_template && lastTemplates.length ? '' : 'none';
   }
 
@@ -180,31 +180,31 @@
     if (c.customer) {
       var a = document.createElement('a');
       a.href = c.customer.url; a.className = 'cust-link';
-      a.textContent = (c.customer.name || 'Customer') + (c.customer.phone ? ' · ' + c.customer.phone : '');
+      a.textContent = (c.customer.name || __t('Customer')) + (c.customer.phone ? ' · ' + c.customer.phone : '');
       cust.appendChild(a);
-    } else { cust.textContent = 'No customer details yet'; }
+    } else { cust.textContent = __t('No customer details yet'); }
     var tagsEl = document.getElementById('info-tags');
     tagsEl.innerHTML = '';
     // One label for an upset customer (the AI's reading); everything else the AI notices is already a tag.
     if (['angry', 'upset', 'frustrated', 'annoyed', 'negative'].indexOf(String(c.ai_mood || '').toLowerCase()) !== -1) {
-      var up = document.createElement('span'); up.className = 'tag hot'; up.textContent = 'Upset customer'; up.title = 'The AI thinks the customer is upset'; tagsEl.appendChild(up);
+      var up = document.createElement('span'); up.className = 'tag hot'; up.textContent = __t('Upset customer'); up.title = __t('The AI thinks the customer is upset'); tagsEl.appendChild(up);
     }
     var have = {};
     c.tags.forEach(function (t) {
       have[t.id] = true;
       var chip = document.createElement('span');
       chip.className = 'chip'; chip.style.background = t.color; chip.style.cursor = 'pointer';
-      chip.title = 'Click to remove'; chip.textContent = t.name + ' ×';
+      chip.title = __t('Click to remove'); chip.textContent = __t(t.name) + ' ×';
       chip.addEventListener('click', function () { post('/tag', { tag_id: t.id, on: false }).then(refreshInfo); });
       tagsEl.appendChild(chip);
     });
     var sel = document.getElementById('tag-add');
-    sel.innerHTML = '<option value="">+ Tag</option>';
-    (data.all_tags || []).forEach(function (t) { if (!have[t.id]) { sel.appendChild(new Option(t.name, t.id)); } });
+    sel.innerHTML = ''; sel.appendChild(new Option(__t('+ Tag'), ''));
+    (data.all_tags || []).forEach(function (t) { if (!have[t.id]) { sel.appendChild(new Option(__t(t.name), t.id)); } });
     sel.style.display = (data.all_tags || []).length ? '' : 'none';
 
     var as = document.getElementById('assign');
-    as.innerHTML = '<option value="">Unassigned</option>';
+    as.innerHTML = ''; as.appendChild(new Option(__t('Unassigned'), ''));
     (data.team || []).forEach(function (u) { as.appendChild(new Option(u.name, u.id)); });
     as.value = c.assigned_to || '';
   }
@@ -233,7 +233,7 @@
       data.messages.forEach(addLine);
       if (askChanged) { askChanged = false; suggest(); }
       if (stick) { toBottom(); }
-      else if (unseen > 0) { jumpBtn.textContent = unseen + ' new ' + (unseen === 1 ? 'message' : 'messages') + ' ↓'; jumpBtn.classList.remove('hidden'); }
+      else if (unseen > 0) { jumpBtn.textContent = (unseen === 1 ? __t('1 new message') : __t(':n new messages', { n: unseen })) + ' ↓'; jumpBtn.classList.remove('hidden'); }
       unseen = stick ? 0 : unseen + before;
     });
   }
@@ -249,9 +249,9 @@
     mode = m;
     document.querySelectorAll('.c-tabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === m); });
     document.getElementById('composer').classList.toggle('note-mode', m === 'note');
-    document.getElementById('btn-send').textContent = m === 'note' ? 'Save note' : 'Send reply';
-    document.getElementById('c-hint').textContent = m === 'note' ? 'Only your team sees private notes. The customer never does.' : 'Replying makes you the owner of the chat, so the bot stays quiet.';
-    textEl.placeholder = m === 'note' ? 'Write a private note for your team' : 'Write a reply. Enter sends, Shift+Enter starts a new line.';
+    document.getElementById('btn-send').textContent = m === 'note' ? __t('Save note') : __t('Send reply');
+    document.getElementById('c-hint').textContent = m === 'note' ? __t('Only your team sees private notes. The customer never does.') : __t('Replying makes you the owner of the chat, so the bot stays quiet.');
+    textEl.placeholder = m === 'note' ? __t('Write a private note for your team') : __t('Write a reply. Enter sends, Shift+Enter starts a new line.');
   }
   function send() {
     var text = textEl.value.trim();
@@ -278,25 +278,25 @@
   document.addEventListener('click', function () { moreMenu.hidden = true; });
   moreMenu.addEventListener('click', function () { moreMenu.hidden = true; });
   document.getElementById('btn-give-back').addEventListener('click', function () {
-    post('/give-back').then(function () { toast('The bot is answering this chat again.'); refreshThread(); loadList(); });
+    post('/give-back').then(function () { toast(__t('The bot is answering this chat again.')); refreshThread(); loadList(); });
   });
   document.getElementById('btn-summarize').addEventListener('click', function () {
-    var b = this; b.disabled = true; b.textContent = 'Summarising...';
+    var b = this; b.disabled = true; b.textContent = __t('Summarising...');
     post('/summarize', {}).then(function (d) {
-      b.disabled = false; b.textContent = 'Summarise (AI)';
+      b.disabled = false; b.textContent = __t('Summarise with AI');
       if (d && d.error) { toast(d.error, true); return; }
       refreshThread(false, true);
     });
   });
   document.getElementById('btn-resolve').addEventListener('click', function () {
-    var resolved = this.textContent === 'Reopen';
-    post(resolved ? '/reopen' : '/resolve').then(function () { toast(resolved ? 'Chat reopened.' : 'Chat resolved.'); refreshThread(); loadList(); });
+    var resolved = this.dataset.state === 'resolved';
+    post(resolved ? '/reopen' : '/resolve').then(function () { toast(resolved ? __t('Chat reopened.') : __t('Chat resolved.')); refreshThread(); loadList(); });
   });
   document.getElementById('tag-add').addEventListener('change', function () {
     if (this.value) { post('/tag', { tag_id: parseInt(this.value, 10), on: true }).then(refreshInfo); }
   });
   document.getElementById('assign').addEventListener('change', function () {
-    post('/assign', { user_id: this.value ? parseInt(this.value, 10) : null }).then(function () { toast('Saved.'); loadList(); });
+    post('/assign', { user_id: this.value ? parseInt(this.value, 10) : null }).then(function () { toast(__t('Saved.')); loadList(); });
   });
 
   // ---------- dialogs: task and template ----------
@@ -314,14 +314,14 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
       body: JSON.stringify({ title: title, due_at: document.getElementById('tk-due').value || null, conversation_id: current })
-    }).then(function (r) { taskDlg.close(); toast(r.ok ? 'Task added. You will find it under Tasks.' : 'Could not add the task.', !r.ok); });
+    }).then(function (r) { taskDlg.close(); toast(r.ok ? __t('Task added. You will find it under Tasks.') : __t('Could not add the task.'), !r.ok); });
   });
 
   var tplDlg = wire(document.getElementById('tpl-dialog'));
   var tplPick = null;
   function tplPreview() {
     var box = document.getElementById('tpl-preview');
-    if (!tplPick) { box.textContent = 'Choose a template.'; return; }
+    if (!tplPick) { box.textContent = __t('Choose a template.'); return; }
     var vals = Array.from(document.querySelectorAll('#tpl-params input')).map(function (i) { return i.value; });
     var text = tplPick.body.replace(/\{\{(\d+)\}\}/g, function (m, n) { return vals[n - 1] || m; });
     box.textContent = text;
@@ -339,10 +339,10 @@
       r.addEventListener('change', function () {
         tplPick = t;
         var n = (t.body.match(/\{\{\d+\}\}/g) || []).length, box = document.getElementById('tpl-params'); box.innerHTML = '';
-        var hints = ['Customer name', 'Service', 'Date and time'];
+        var hints = [__t('Customer name'), __t('Service'), __t('Date and time')];
         for (var i = 1; i <= n; i++) {
           var f = document.createElement('label'); f.className = 'f';
-          var sp = document.createElement('span'); sp.textContent = 'Part ' + i + (hints[i - 1] ? ' (' + hints[i - 1].toLowerCase() + ')' : '');
+          var sp = document.createElement('span'); sp.textContent = __t('Part :n', { n: i }) + (hints[i - 1] ? ' (' + hints[i - 1].toLowerCase() + ')' : '');
           var inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 200;
           if (i === 1 && curName) { inp.value = curName; }
           inp.addEventListener('input', tplPreview);
@@ -360,7 +360,7 @@
     var params = Array.from(document.querySelectorAll('#tpl-params input')).map(function (i) { return i.value; });
     post('/template', { template_id: tplPick.id, params: params }).then(function (d) {
       if (d && d.error) { toast(d.error, true); return; }
-      tplDlg.close(); toast('Template sent.'); refreshThread(false, true); loadList();
+      tplDlg.close(); toast(__t('Template sent.')); refreshThread(false, true); loadList();
     });
   });
 
@@ -370,7 +370,7 @@
     var groups = {};
     (d.replies || []).forEach(function (r) {
       allReplies.push({ id: r.id, title: r.title, en: r.body.en || '', zh: r.body.zh || '' });
-      var g = r.category || 'Other';
+      var g = r.category || __t('Other');
       if (!groups[g]) { groups[g] = document.createElement('optgroup'); groups[g].label = g; qr.appendChild(groups[g]); }
       var o = new Option(r.title, r.id);
       o.dataset.en = r.body.en || ''; o.dataset.zh = r.body.zh || '';

@@ -15,6 +15,15 @@ class AccountController extends Controller
         return view('admin.account', ['business' => $request->user()->business, 'active' => 'account']);
     }
 
+    /** Each person chooses the language of the staff screens. */
+    public function language(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['locale' => ['required', 'in:'.implode(',', array_keys(\App\Support\Lang::LOCALES))]]);
+        $request->user()->forceFill(['locale' => $data['locale']])->save();
+
+        return back();
+    }
+
     public function save(Request $request): RedirectResponse
     {
         $user = $request->user();
