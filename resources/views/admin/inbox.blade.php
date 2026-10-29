@@ -42,9 +42,14 @@
                     </div>
                     <span class="tag" id="mode-badge"></span>
                     <div class="th-actions">
-                        <button class="btn small" id="btn-summarize" type="button" style="display:none">Summarise (AI)</button>
-                        <button class="btn small" id="btn-give-back" type="button">Give back to bot</button>
                         <button class="btn small primary" id="btn-resolve" type="button">Resolve</button>
+                        <div class="more" id="more">
+                            <button class="btn small more-btn" id="more-btn" type="button" aria-label="More actions" aria-haspopup="true">&middot;&middot;&middot;</button>
+                            <div class="more-menu" id="more-menu" hidden>
+                                <button type="button" id="btn-summarize" style="display:none">Summarise with AI</button>
+                                <button type="button" id="btn-give-back">Give back to the bot</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="note warn hidden" id="window-bar">
@@ -52,11 +57,13 @@
                     <button class="btn small" id="btn-template" type="button">Send a template</button>
                 </div>
                 <div class="info-bar" id="info-bar">
-                    <span id="info-customer"></span>
-                    <span id="info-tags"></span>
-                    <select id="tag-add" aria-label="Add tag"></select>
-                    <label>Handled by <select id="assign" aria-label="Assign"></select></label>
-                    <button class="btn small" id="btn-task" type="button">+ Task</button>
+                    <span id="info-customer" class="ib-cust"></span>
+                    <span id="info-tags" class="ib-tags"></span>
+                    <select id="tag-add" class="ib-add" aria-label="Add tag"></select>
+                    <span class="ib-right">
+                        <label class="ib-assign" title="Who looks after this chat"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg><select id="assign" aria-label="Handled by"></select></label>
+                        <button class="btn small" id="btn-task" type="button">+ Task</button>
+                    </span>
                 </div>
                 <div class="log-wrap">
                     <div class="thread-log" id="thread-log"></div>

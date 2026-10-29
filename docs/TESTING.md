@@ -568,3 +568,10 @@ Per person and per device:
 ## BO. Fewer labels in the Inbox header
 
 The grey/pink AI label next to the customer ("complaint · angry") no longer repeats a tag: if a tag already says it (for example the Complaint tag), the AI label drops that word. A "neutral" mood is not shown at all. So you see the tags, plus the AI label only when it adds something (for example "angry").
+
+## BP. Simpler Inbox chat header
+
+1. Open a chat in the Inbox. Top row: the customer, "Website · open", who is answering (bot or you; hover it to see why it was handed over), the green **Resolve** button, and a small **···** menu.
+2. **···** holds the less used actions: **Summarise with AI** (only when the AI is on) and **Give back to the bot** (only when you are handling the chat). The menu is hidden when neither applies.
+3. Second row: the customer (click for their page), the tags (click one to remove it), a dashed **+ Tag** to add one, and on the right **who looks after the chat** (Unassigned or a person) and **+ Task**.
+4. The long AI text and the extra AI label are gone. If the AI thinks the customer is upset, one red **Upset customer** label shows; the topics are the tags.

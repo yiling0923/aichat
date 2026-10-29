@@ -147,11 +147,13 @@
     document.getElementById('btn-summarize').style.display = c.ai_on ? '' : 'none';
     document.getElementById('thread-title').textContent = c.name;
     document.getElementById('thread-av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
-    document.getElementById('thread-meta').textContent = [c.channel_label || c.channel, c.status === 'open' ? 'open' : 'resolved', c.handover_reason].filter(Boolean).join(' · ');
+    document.getElementById('thread-meta').textContent = [c.channel_label || c.channel, c.status === 'open' ? 'open' : 'resolved'].filter(Boolean).join(' · ');
     var badge = document.getElementById('mode-badge');
     badge.textContent = c.mode === 'human' ? 'You are handling this' : 'Bot is answering';
     badge.className = 'tag ' + (c.mode === 'human' ? 'warn' : 'ok');
+    badge.title = c.handover_reason || '';
     document.getElementById('btn-give-back').style.display = c.mode === 'human' ? '' : 'none';
+    document.getElementById('more').style.display = (c.ai_on || c.mode === 'human') ? '' : 'none';
     var rb = document.getElementById('btn-resolve');
     rb.textContent = c.status === 'resolved' ? 'Reopen' : 'Resolve';
     rb.classList.toggle('primary', c.status !== 'resolved');
@@ -181,21 +183,12 @@
       a.textContent = (c.customer.name || 'Customer') + (c.customer.phone ? ' · ' + c.customer.phone : '');
       cust.appendChild(a);
     } else { cust.textContent = 'No customer details yet'; }
-    // The AI's reading of the chat, without repeating what a tag already says (an intent a tag covers is left out, and a neutral mood is not worth a label).
-    var tagNames = (c.tags || []).map(function (t) { return t.name.toLowerCase(); });
-    var intent = c.ai_intent && !tagNames.some(function (n) { return n.indexOf(String(c.ai_intent).toLowerCase()) !== -1; }) ? c.ai_intent : '';
-    var moodWord = c.ai_mood && c.ai_mood !== 'neutral' ? c.ai_mood : '';
-    if (intent || moodWord) {
-      var mood = document.createElement('span');
-      mood.className = 'tag ' + (c.ai_mood === 'angry' ? 'hot' : 'ok');
-      mood.style.marginLeft = '8px';
-      mood.textContent = [intent, moodWord].filter(Boolean).join(' · ');
-      mood.title = 'What the AI understood from the last messages';
-      cust.appendChild(mood);
-    }
-
     var tagsEl = document.getElementById('info-tags');
     tagsEl.innerHTML = '';
+    // One label for an upset customer (the AI's reading); everything else the AI notices is already a tag.
+    if (['angry', 'upset', 'frustrated', 'annoyed', 'negative'].indexOf(String(c.ai_mood || '').toLowerCase()) !== -1) {
+      var up = document.createElement('span'); up.className = 'tag hot'; up.textContent = 'Upset customer'; up.title = 'The AI thinks the customer is upset'; tagsEl.appendChild(up);
+    }
     var have = {};
     c.tags.forEach(function (t) {
       have[t.id] = true;
@@ -211,7 +204,7 @@
     sel.style.display = (data.all_tags || []).length ? '' : 'none';
 
     var as = document.getElementById('assign');
-    as.innerHTML = '<option value="">Anyone</option>';
+    as.innerHTML = '<option value="">Unassigned</option>';
     (data.team || []).forEach(function (u) { as.appendChild(new Option(u.name, u.id)); });
     as.value = c.assigned_to || '';
   }
@@ -280,6 +273,10 @@
   document.getElementById('btn-back').addEventListener('click', function () { root.classList.remove('chat-open'); });
 
   // ---------- header buttons ----------
+  var moreMenu = document.getElementById('more-menu');
+  document.getElementById('more-btn').addEventListener('click', function (e) { e.stopPropagation(); moreMenu.hidden = !moreMenu.hidden; });
+  document.addEventListener('click', function () { moreMenu.hidden = true; });
+  moreMenu.addEventListener('click', function () { moreMenu.hidden = true; });
   document.getElementById('btn-give-back').addEventListener('click', function () {
     post('/give-back').then(function () { toast('The bot is answering this chat again.'); refreshThread(); loadList(); });
   });

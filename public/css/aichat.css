@@ -1465,3 +1465,22 @@ html { scroll-behavior: smooth; }
 @media (max-width: 560px) { .ds-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0 16px; } .ds-date, .ds-topics, .ds-attn { margin-left: 16px; margin-right: 16px; } .ds-date { padding-left: 0; padding-right: 0; } }
 .ds .tp-head { flex-wrap: wrap; gap: 8px; }
 .ds .tp-head h3 { white-space: nowrap; }
+
+/* Inbox chat header, simpler */
+.th-actions { flex-wrap: nowrap; align-items: center; }
+.more { position: relative; }
+.more-btn { letter-spacing: 1px; font-weight: 700; padding: 0 10px; }
+.more-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 190px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(16, 40, 40, .16); padding: 6px; }
+.more-menu[hidden] { display: none; }
+.more-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 9px 12px; border-radius: 8px; font: inherit; font-size: 13px; color: var(--ink); cursor: pointer; }
+.more-menu button:hover { background: var(--accent-l, var(--accent-m)); }
+.info-bar { padding: 10px 20px; gap: 8px 10px; }
+.info-bar .ib-cust { font-size: 13px; }
+.info-bar .ib-tags { display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.info-bar .ib-tags .chip { margin: 0; padding: 3px 10px; font-size: 12px; }
+.info-bar .ib-tags .tag { margin: 0; }
+.info-bar select.ib-add { height: 26px; padding: 0 22px 0 10px; border-radius: 999px; border: 1px dashed var(--line); background-color: transparent; color: var(--mute); font-size: 12px; }
+.info-bar .ib-right { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+.info-bar .ib-assign { display: inline-flex; align-items: center; gap: 4px; margin: 0; }
+.info-bar .ib-assign svg { width: 15px; height: 15px; fill: none; stroke: var(--mute); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+@media (max-width: 700px) { .th-actions { order: 0; flex-basis: auto; } .info-bar .ib-right { margin-left: 0; width: 100%; } }
