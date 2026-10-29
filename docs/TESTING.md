@@ -557,3 +557,10 @@ Per person and per device:
 5. A customer who was cold and asks about price or booking becomes warm. A hot customer is never lowered.
 6. Staff and bot messages never add tags. You can still add or remove tags by hand; removed tags can come back only if the customer writes about that topic again.
 7. Turn it off: Settings → Business and team → **Automatic tags** → untick **Tag chats automatically** → Save.
+
+## BN. Daily summary
+
+1. **Today** page: under the five numbers there is a **Daily summary** card with two tabs, **Yesterday** and **Today so far**. Each shows new chats, bookings made, visits, new customers, money paid (and how many orders), cancelled bookings, and the topics customers asked about (from the automatic tags). Times follow your business time zone.
+2. At the bottom of the card: how many chats are waiting for a person, how many tasks are overdue and how many bookings are tomorrow. Red means something needs you. Each one is a link.
+3. **Morning email (optional):** Settings → Business and team → **Smart helpers** → tick **Email me yesterday's summary every morning** → Save. Owners and managers get one email at about 8:00 your time. It needs the scheduler running (`php artisan schedule:work`) and email set up.
+4. Test it now without waiting: `php artisan aichat:daily-summary --force` sends it immediately to the owners and managers of businesses that turned it on. With MAIL_MAILER=log the email is written to `storage/logs/laravel.log` instead of sent.

@@ -101,9 +101,10 @@ class SettingsController extends Controller
         $business = $request->user()->business;
         $settings = (array) $business->settings;
         $settings['auto_tag'] = $request->boolean('auto_tag');
+        $settings['daily_email'] = $request->boolean('daily_email');
         $business->update(['settings' => $settings]);
 
-        return back()->with('status', $settings['auto_tag'] ? 'Automatic tagging is on.' : 'Automatic tagging is off.');
+        return back()->with('status', 'Saved.');
     }
 
     public function testAlerts(Request $request, \App\Services\StaffAlerts $alerts): RedirectResponse

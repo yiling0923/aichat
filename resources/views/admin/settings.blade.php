@@ -60,8 +60,9 @@
 
         <form method="post" action="{{ url('/admin/settings/smart') }}" class="card set-card">
             @csrf
-            <div class="set-head"><h3>Automatic tags</h3><p class="mute">Chats are tagged by what the customer writes: Price question, Booking help, Cancel or change, Location, Payment, Aftercare and Complaint. Someone who asks about prices or booking becomes at least a warm lead, and owners and managers get a bell alert for a possible complaint. It uses simple word matching, no AI.</p></div>
+            <div class="set-head"><h3>Smart helpers</h3><p class="mute">Chats are tagged by what the customer writes: Price question, Booking help, Cancel or change, Location, Payment, Aftercare and Complaint. Someone who asks about prices or booking becomes at least a warm lead, and owners and managers get a bell alert for a possible complaint. It uses simple word matching, no AI.</p></div>
             <label class="terms set-check"><input type="checkbox" name="auto_tag" value="1" @checked(($business->settings['auto_tag'] ?? true) !== false)><span><b>Tag chats automatically</b> (you can still add or remove tags by hand).</span></label>
+            <label class="terms set-check"><input type="checkbox" name="daily_email" value="1" @checked(! empty($business->settings['daily_email']))><span><b>Email me yesterday's summary every morning</b> (about 8:00, to owners and managers). The same numbers are always on the Today page.</span></label>
             <div class="set-foot"><button class="btn primary" type="submit">Save</button></div>
         </form>
 

@@ -54,6 +54,35 @@
         <a class="tp-stat" href="{{ route('orders') }}"><span class="tp-sl">Paid, 7 days</span><b>{{ $money($revenueWeek) }}</b><span class="tp-sn {{ ($revenueDelta ?? 0) > 0 ? 'up' : (($revenueDelta ?? 0) < 0 ? 'down' : '') }}">{{ $revenueDelta === null ? 'no sales the week before' : ($revenueDelta >= 0 ? '▲ ' : '▼ ').abs($revenueDelta).'% vs week before' }}</span></a>
     </section>
 
+    <section class="tp-panel ds" id="ds">
+        <div class="tp-head"><h3>Daily summary</h3>
+            <div class="seg" id="ds-tabs"><a href="#" data-d="yesterday" class="on">Yesterday</a><a href="#" data-d="today">Today so far</a></div>
+        </div>
+        @foreach ($summaries as $key => $d)
+            <div class="ds-body" data-d="{{ $key }}" @if ($key !== 'yesterday') hidden @endif>
+                <p class="ds-date">{{ $d['label'] }}</p>
+                <div class="ds-grid">
+                    <div><b>{{ $d['new_chats'] }}</b><span>New chats</span></div>
+                    <div><b>{{ $d['bookings_made'] }}</b><span>Bookings made</span></div>
+                    <div><b>{{ $d['visits'] }}</b><span>Visits</span></div>
+                    <div><b>{{ $d['new_customers'] }}</b><span>New customers</span></div>
+                    <div><b>{{ $d['currency'] }} {{ number_format($d['revenue'], 0) }}</b><span>Paid ({{ $d['orders_paid'] }} {{ $d['orders_paid'] === 1 ? 'order' : 'orders' }})</span></div>
+                    <div><b>{{ $d['cancelled'] }}</b><span>Cancelled</span></div>
+                </div>
+                @if ($d['topics'])
+                    <p class="ds-topics"><span class="mute">Customers asked about</span> @foreach ($d['topics'] as $t)<span class="tag">{{ $t['name'] }} <b>{{ $t['count'] }}</b></span>@endforeach</p>
+                @else
+                    <p class="ds-topics mute">No tagged topics {{ $key === 'today' ? 'yet today' : 'that day' }}.</p>
+                @endif
+            </div>
+        @endforeach
+        <div class="ds-attn">
+            <a href="{{ route('inbox') }}" class="{{ $summaries['today']['waiting_now'] ? 'hot' : '' }}"><b>{{ $summaries['today']['waiting_now'] }}</b> waiting for a person</a>
+            <a href="{{ route('tasks', ['due' => 'overdue']) }}" class="{{ $summaries['today']['overdue_tasks'] ? 'hot' : '' }}"><b>{{ $summaries['today']['overdue_tasks'] }}</b> overdue tasks</a>
+            <a href="{{ route('schedule') }}"><b>{{ $summaries['today']['tomorrow'] }}</b> bookings tomorrow</a>
+        </div>
+    </section>
+
     <div class="tp-cols">
         <div class="tp-main">
             @if ($waiting->count())
@@ -139,6 +168,13 @@
 @push('scripts')
 <script>
 (function () {
+  document.querySelectorAll('#ds-tabs a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.querySelectorAll('#ds-tabs a').forEach(function (x) { x.classList.toggle('on', x === a); });
+      document.querySelectorAll('#ds .ds-body').forEach(function (p) { p.hidden = p.dataset.d !== a.dataset.d; });
+    });
+  });
   var b = document.getElementById('td-copy');
   if (!b) { return; }
   b.addEventListener('click', function () {

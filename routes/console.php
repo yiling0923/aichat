@@ -14,4 +14,5 @@ Schedule::command('aichat:send-reminders')->everyMinute()->withoutOverlapping();
 Schedule::command('aichat:run-automations')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('aichat:renew-subscriptions')->dailyAt('03:10')->withoutOverlapping();
 Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put('scheduler-heartbeat', now(), 600))->everyMinute()->name('scheduler-heartbeat');
+Schedule::command('aichat:daily-summary')->hourly()->withoutOverlapping();
 Schedule::command('aichat:backup')->dailyAt('02:30')->withoutOverlapping();

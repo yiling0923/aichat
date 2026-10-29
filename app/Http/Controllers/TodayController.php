@@ -54,7 +54,10 @@ class TodayController extends Controller
         $leadsPrev = Customer::query()->whereBetween('created_at', [now()->subDays(14), now()->subDays(7)])->count();
         $plans = app(\App\Billing\Plans::class);
 
+        $summary = app(\App\Services\DailySummary::class);
+
         return view('admin.today', [
+            'summaries' => ['yesterday' => $summary->forDay($business, now($tz)->subDay()), 'today' => $summary->forDay($business, now($tz))],
             'business' => $business,
             'active' => 'today',
             'waiting' => $waiting,
