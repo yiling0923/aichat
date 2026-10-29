@@ -90,7 +90,7 @@
 
   document.querySelectorAll('[data-copy-text]').forEach(function (b) {
     b.addEventListener('click', function () {
-      var t = b.dataset.copyText, done = function () { var o = b.textContent; b.textContent = {{ json_encode(__('Copied'), JSON_UNESCAPED_UNICODE) }}; setTimeout(function () { b.textContent = o; }, 1300); };
+      var t = b.dataset.copyText, done = function () { var o = b.textContent; b.textContent = {!! json_encode(__('Copied'), JSON_UNESCAPED_UNICODE) !!}; setTimeout(function () { b.textContent = o; }, 1300); };
       if (navigator.clipboard) { navigator.clipboard.writeText(t).then(done); } else { var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
     });
   });
@@ -100,7 +100,7 @@
   var form = document.getElementById('rd-form'), del = document.getElementById('rd-delete'), last = null;
   var f = { name: document.getElementById('rd-name'), cat: document.getElementById('rd-cat'), en: document.getElementById('rd-en'), zh: document.getElementById('rd-zh') };
   function open(data) {
-    document.getElementById('rd-title').textContent = data ? {{ json_encode(__('Edit reply'), JSON_UNESCAPED_UNICODE) }} : {{ json_encode(__('New reply'), JSON_UNESCAPED_UNICODE) }};
+    document.getElementById('rd-title').textContent = data ? {!! json_encode(__('Edit reply'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('New reply'), JSON_UNESCAPED_UNICODE) !!};
     form.action = data ? data.action : '{{ url('/admin/library') }}';
     f.name.value = data ? data.title : ''; f.cat.value = data ? (data.category || '') : ''; f.en.value = data ? data.en : ''; f.zh.value = data ? data.zh : '';
     del.hidden = !data; if (data) { del.setAttribute('formaction', data.delete); }

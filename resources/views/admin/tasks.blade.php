@@ -91,8 +91,8 @@
   var title = document.getElementById('td-title'), due = document.getElementById('td-due'), who = document.getElementById('td-assignee'), del = document.getElementById('td-delete');
   function open(d) {
     var edit = d && d.action;
-    document.getElementById('td-heading').textContent = edit ? {{ json_encode(__('Edit task'), JSON_UNESCAPED_UNICODE) }} : {{ json_encode(__('Add task'), JSON_UNESCAPED_UNICODE) }};
-    document.getElementById('td-save').textContent = edit ? {{ json_encode(__('Save'), JSON_UNESCAPED_UNICODE) }} : {{ json_encode(__('Add task'), JSON_UNESCAPED_UNICODE) }};
+    document.getElementById('td-heading').textContent = edit ? {!! json_encode(__('Edit task'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('Add task'), JSON_UNESCAPED_UNICODE) !!};
+    document.getElementById('td-save').textContent = edit ? {!! json_encode(__('Save'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('Add task'), JSON_UNESCAPED_UNICODE) !!};
     form.action = edit ? d.action : '{{ url('/admin/tasks') }}';
     title.value = edit ? d.title : ''; due.value = edit ? (d.due || '') : ''; who.value = edit ? (d.assignee || '') : String(me);
     del.hidden = !edit; if (edit) { del.setAttribute('formaction', d.delete); }

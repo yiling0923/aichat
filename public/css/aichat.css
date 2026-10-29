@@ -1627,3 +1627,15 @@ kbd { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); bo
 .guest-lang a.on{background:var(--accent);color:#fff}
 .auth-lang{position:absolute;top:14px;right:16px;z-index:5}
 .lp-nav .guest-lang{margin-right:6px}
+
+/* Inbox header: title and tools on one row, filter and search link below */
+.list-head.inbox-head { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 10px; padding: 14px 16px 12px; }
+.ih-top { display: flex; align-items: center; gap: 8px; }
+.ih-title { margin: 0; flex: 1; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.ih-tools { display: flex; align-items: center; gap: 8px; }
+.ih-tools .bell { margin: 0; }
+.ih-tools .lang-sw button, .ih-tools .bell > button { height: 34px; min-width: 34px; border-radius: 10px; font-size: 12.5px; }
+.ih-sub { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ih-sub select { height: 32px; min-width: 104px; border-radius: 10px; font-weight: 600; }
+.ih-sub .mini-link { font-size: 12.5px; font-weight: 600; white-space: nowrap; text-decoration: none; }
+.ih-sub .mini-link:hover { text-decoration: underline; }

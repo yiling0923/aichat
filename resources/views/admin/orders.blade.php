@@ -107,7 +107,7 @@
   f.s.addEventListener('change', showMethod);
   function open(d, pay) {
     var edit = d && d.action;
-    document.getElementById('od-title').textContent = pay ? {{ json_encode(__('Collect payment'), JSON_UNESCAPED_UNICODE) }} : (edit ? {{ json_encode(__('Edit order'), JSON_UNESCAPED_UNICODE) }} : {{ json_encode(__('New order'), JSON_UNESCAPED_UNICODE) }});
+    document.getElementById('od-title').textContent = pay ? {!! json_encode(__('Collect payment'), JSON_UNESCAPED_UNICODE) !!} : (edit ? {!! json_encode(__('Edit order'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('New order'), JSON_UNESCAPED_UNICODE) !!});
     form.action = edit ? d.action : '{{ url('/admin/orders') }}';
     f.c.value = edit ? (d.customer || '') : ''; f.a.value = edit ? d.amount : ''; f.i.value = edit ? (d.items || '') : '';
     f.s.value = edit ? d.status : 'paid'; f.d.value = edit ? (d.date || '') : ''; f.r.value = edit ? (d.reference || '') : ''; f.n.value = edit ? (d.notes || '') : '';

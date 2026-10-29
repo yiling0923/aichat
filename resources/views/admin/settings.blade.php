@@ -159,7 +159,7 @@
   Object.keys(f).forEach(function (k) { f[k] = document.getElementById(f[k]); });
   function open(d) {
     var edit = d && d.action;
-    document.getElementById('md-title').textContent = edit ? {{ json_encode(__('Edit :name', ['name' => '@@NAME@@']), JSON_UNESCAPED_UNICODE) }}.replace('@@NAME@@', d.name) : {{ json_encode(__('Add a team member'), JSON_UNESCAPED_UNICODE) }};
+    document.getElementById('md-title').textContent = edit ? {!! json_encode(__('Edit :name', ['name' => '@@NAME@@']), JSON_UNESCAPED_UNICODE) !!}.replace('@@NAME@@', d.name) : {!! json_encode(__('Add a team member'), JSON_UNESCAPED_UNICODE) !!};
     form.action = edit ? d.action : '{{ url('/admin/settings/team') }}';
     document.getElementById('md-new').hidden = !!edit;
     f.name.required = !edit; f.email.required = !edit; f.pw.required = !edit;
@@ -167,7 +167,7 @@
     var who = document.getElementById('md-who'); who.hidden = !edit; who.textContent = edit ? d.email : '';
     document.getElementById('md-active-wrap').hidden = !edit; f.active.disabled = !edit;
     f.role.value = edit ? d.role : 'staff'; f.active.value = edit ? d.active : '1'; f.pw.value = ''; f.name.value = ''; f.email.value = '';
-    document.getElementById('md-pw-label').textContent = edit ? {{ json_encode(__('New password (leave empty to keep the current one)'), JSON_UNESCAPED_UNICODE) }} : {{ json_encode(__('Password (8 or more characters)'), JSON_UNESCAPED_UNICODE) }};
+    document.getElementById('md-pw-label').textContent = edit ? {!! json_encode(__('New password (leave empty to keep the current one)'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('Password (8 or more characters)'), JSON_UNESCAPED_UNICODE) !!};
     help(); dlg.showModal(); (edit ? f.role : f.name).focus();
   }
   function help() { document.getElementById('md-help').textContent = f.role.options[f.role.selectedIndex].dataset.help; }

@@ -685,3 +685,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 2. Press English: everything is English again.
 3. Staff screens still follow each person's own language (My account). A person set to 中文 gets the daily summary, plan-limit and waiting-customer emails in Chinese; the confirmation email follows the language chosen on the sign-up page.
 4. The customer chat is not affected: customers still pick English or 中文 inside the chat.
+
+## CB. Fixes: Orders "Edit", customer "Spent" card, tidier inbox header
+
+1. Orders: press Edit on any order (in English and 中文): the "Edit order" window opens. Same for Tasks, Saved replies, Settings > Team and Tags.
+2. Customers: open a customer. The Spent card shows e.g. "3 paid orders" and no odd text.
+3. Inbox: the header has the title with the bell and 中文 button on top, and the Open filter with "Search all chats" below.

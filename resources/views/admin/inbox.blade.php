@@ -15,15 +15,19 @@
 
     <main class="inbox" id="inbox" data-base="{{ url('/admin/api') }}" data-business="{{ $business->name }}">
         <section class="list">
-            <div class="list-head">
-                <span>{{ __('Inbox') }} <a class="mini-link" href="{{ route('conversations') }}">{{ __('Search all chats') }}</a></span>
-                @include('admin._bell')
-                @include('admin._lang_switch')
-                <select class="small" id="status-filter" aria-label="{{ __('Filter') }}">
-                    <option value="open">{{ __('Open') }}</option>
-                    <option value="resolved">{{ __('Resolved') }}</option>
-                    <option value="all">{{ __('All') }}</option>
-                </select>
+            <div class="list-head inbox-head">
+                <div class="ih-top">
+                    <h2 class="ih-title">{{ __('Inbox') }}</h2>
+                    <div class="ih-tools">@include('admin._bell')@include('admin._lang_switch')</div>
+                </div>
+                <div class="ih-sub">
+                    <select class="small" id="status-filter" aria-label="{{ __('Filter') }}">
+                        <option value="open">{{ __('Open') }}</option>
+                        <option value="resolved">{{ __('Resolved') }}</option>
+                        <option value="all">{{ __('All') }}</option>
+                    </select>
+                    <a class="mini-link" href="{{ route('conversations') }}">{{ __('Search all chats') }} &rarr;</a>
+                </div>
             </div>
             <div id="conv-list"></div>
         </section>

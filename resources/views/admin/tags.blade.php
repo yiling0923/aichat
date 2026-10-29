@@ -111,7 +111,7 @@
   // The preview chip shows the new tag as it will look.
   function preview(f) {
     var c = f.querySelector('.pick-color').value, h = c.replace('#', ''), l = 0.299 * parseInt(h.substr(0, 2), 16) + 0.587 * parseInt(h.substr(2, 2), 16) + 0.114 * parseInt(h.substr(4, 2), 16), p = f.querySelector('.tag-prev');
-    p.textContent = f.querySelector('input[name=name]').value.trim() || {{ json_encode(__('Preview'), JSON_UNESCAPED_UNICODE) }}; p.style.background = c; p.style.color = l > 160 ? '#15292a' : '#fff';
+    p.textContent = f.querySelector('input[name=name]').value.trim() || {!! json_encode(__('Preview'), JSON_UNESCAPED_UNICODE) !!}; p.style.background = c; p.style.color = l > 160 ? '#15292a' : '#fff';
   }
 
   // Colour swatches in the "new tag" forms.
