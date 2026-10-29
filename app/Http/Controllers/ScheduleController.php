@@ -166,11 +166,21 @@ class ScheduleController extends Controller
         $message = __('Booking updated.');
         $order = null;
 
+        if ($booking->status === 'completed' && $data['status'] === 'completed') {
+            $order = Order::query()->where('reference', 'BK-'.$booking->id)->where('status', 'pending')->first();
+            if ($order !== null) {
+                $message = __('This visit is already done. The payment is still waiting, so it is open below.');
+            }
+        }
+
         if ($booking->status === 'confirmed') {
             $booking->update(['status' => $data['status']]);
 
             if ($data['status'] === 'completed') {
                 $order = $this->orderForVisit($booking);
+                if ($order === null && (float) ($booking->service->price ?? 0) <= 0) {
+                    $message = __('Marked done. This service has no price, so no payment was created. Add a price in Booking setup, or add an order in Orders.');
+                }
                 if ($order !== null) {
                     $cur = $request->user()->business->settings['currency'] ?? 'RM';
                     $message = __('Marked done. Collect the payment of :amount below, or close this and mark it paid later.', ['amount' => $cur.' '.number_format((float) $order->amount, 2)]);

@@ -110,4 +110,16 @@ class VisitOrderTest extends TestCase
         $this->get('/admin/orders')->assertDontSee('title="The customer has paid"', false);
         $this->get('/admin/customers/'.$this->customer->id)->assertDontSee('unpaid');
     }
+
+    public function test_pressing_done_again_reopens_a_payment_that_is_still_waiting_and_a_free_service_says_why(): void
+    {
+        $b = $this->booking(188);
+        $this->actingAs($this->staff)->post('/admin/schedule/'.$b->id.'/mark', ['status' => 'completed']);
+        $order = $this->in(fn () => Order::first());
+
+        $this->post('/admin/schedule/'.$b->id.'/mark', ['status' => 'completed'])->assertRedirect(route('orders', ['pay' => $order->id]));
+
+        $free = $this->booking(0);
+        $this->post('/admin/schedule/'.$free->id.'/mark', ['status' => 'completed'])->assertSessionHas('status', fn ($m) => str_contains($m, 'has no price'));
+    }
 }
