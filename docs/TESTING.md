@@ -610,3 +610,12 @@ The grey/pink AI label next to the customer ("complaint · angry") no longer rep
 2. Topics on the left (or as buttons on a phone): the big picture, a day with the system, how customers reach you, inbox and handover, chat menu, bookings, customers and tags, orders, marketing, reports, alerts, the AI assistant, team and roles, plan and billing, your data, questions and fixes, words used.
 3. Type in **Search help** to show only the topics that match (for example "template" or "24 hour").
 4. Links inside the text open the real pages. Pages only for owners or managers are marked **Owner** or **Owner and manager** when a staff member reads them.
+
+## BT. A friendlier Help page
+
+1. **Help** now opens with a green banner: "How can we help?" and a big search box, with quick words under it (opening hours, saved reply, tags, alerts, template, backup). Click a word to search for it.
+2. **I want to...** shows shortcut cards for everyday jobs (reply to a customer, change opening hours, add a service, change what the bot says, get alerts on my phone, message many customers, see how the business is doing, add a team member, download my data). Each card opens the right page. You only see the cards for things your role can do.
+3. **How a chat flows** is a five-step picture: customer writes, bot answers, person takes over, everything is saved, follow-up.
+4. **Browse by topic** is a grid of all topics; click one to jump to it.
+5. Yellow **Tip** boxes give small tricks (Ctrl+K search, Enter to send, Publish after editing, phone alerts). A **Still stuck?** box ends the page.
+6. When you type in the search box, the top blocks hide and only the matching topics show. Clear the box to come back.

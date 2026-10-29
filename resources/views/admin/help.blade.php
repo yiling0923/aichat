@@ -2,14 +2,89 @@
 @section('title', 'Help')
 @section('content')
     @php $owner = $role === 'owner'; @endphp
+    @php
+        $can = fn (string $need) => match ($need) { 'owner' => $role === 'owner', 'manager' => in_array($role, ['owner', 'manager'], true), default => true };
+        $tasks = array_values(array_filter([
+            ['Reply to a customer', 'Open the Inbox, pick a chat, type, press Enter.', route('inbox'), 'chat', 'any'],
+            ['Change opening hours', 'Set the days and times customers can book.', route('booking.setup'), 'clock', 'owner'],
+            ['Add a service or change a price', 'Name, minutes and price for each service.', route('booking.setup'), 'tag', 'owner'],
+            ['Change what the bot says', 'Edit the menu in English and Chinese, then Publish.', route('menu'), 'edit', 'owner'],
+            ['Get alerts on my phone', 'A pop-up for new chats, even when the page is closed.', route('account').'#phone-alerts', 'bell', 'any'],
+            ['Message many customers', 'Send an offer to a group, only to those who agreed.', route('broadcasts'), 'send', 'manager'],
+            ['See how the business is doing', 'Chats, bookings, money and ratings for any period.', route('reports'), 'chart', 'any'],
+            ['Add a team member', 'Give someone their own sign-in and alerts.', route('settings', ['tab' => 'team']), 'people', 'owner'],
+            ['Download my data', 'Customers, bookings, orders and chats as spreadsheets.', route('backup'), 'download', 'owner'],
+        ], fn ($t) => $can($t[4])));
+        $icons = [
+            'chat' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+            'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+            'tag' => '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+            'edit' => '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+            'bell' => '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+            'send' => '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
+            'chart' => '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+            'people' => '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+            'download' => '<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>',
+        ];
+        $topics = [
+            ['overview', 'The big picture', 'What the system does, start to finish'],
+            ['day', 'A day with the system', 'A simple daily routine'],
+            ['reach', 'How customers reach you', 'Website, WhatsApp, Messenger, Instagram'],
+            ['inbox', 'Inbox and handover', 'Bot or person, notes, tags, replies'],
+            ['menu', 'The chat menu', 'What the bot shows and says'],
+            ['booking', 'Bookings and schedule', 'Services, hours, changes, reminders'],
+            ['customers', 'Customers, leads and tags', 'Who they are and how close to booking'],
+            ['orders', 'Orders and payments', 'Paid, pending, pay at the shop'],
+            ['marketing', 'Marketing and reviews', 'Ratings, review links, broadcasts'],
+            ['reports', 'Reports', 'Numbers for any period'],
+            ['alerts', 'Alerts and waiting customers', 'Bell, phone, email, reminders'],
+            ['ai', 'The AI assistant', 'Optional, off by default'],
+            ['team', 'Team and roles', 'Who can do what'],
+            ['billing', 'Plan and billing', 'Trial, limits, payments'],
+            ['data', 'Your data and privacy', 'Export, backup, erase'],
+            ['faq', 'Questions and fixes', 'When something does not work'],
+        ];
+    @endphp
+
     <div class="page-head">
-        <div><h1>Help</h1><p class="mute">How the whole system works, in plain words. Use the search box, or pick a topic on the left.</p></div>
+        <div><h1>Help</h1></div>
         @if ($owner)<a class="btn" href="{{ route('guide') }}">Open the setup guide</a>@endif
+    </div>
+
+    <section class="hp-hero">
+        <h2>How can we help?</h2>
+        <p>Search in plain words, or pick something you want to do.</p>
+        <div class="hp-searchbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" id="hp-search" placeholder="Try: opening hours, template, tags, stop, backup" aria-label="Search help"></div>
+        <div class="hp-chips">@foreach (['opening hours', 'saved reply', 'tags', 'alerts', 'template', 'backup'] as $w)<button type="button" data-q="{{ $w }}">{{ $w }}</button>@endforeach</div>
+    </section>
+
+    <div class="hp-discover" id="hp-discover">
+        <h3 class="set-group">I want to...</h3>
+        <div class="hp-tasks">
+            @foreach ($tasks as [$t, $d, $url, $ic])
+                <a class="hp-task" href="{{ $url }}"><span class="hp-ico"><svg viewBox="0 0 24 24">{!! $icons[$ic] !!}</svg></span><span><b>{{ $t }}</b><small>{{ $d }}</small></span></a>
+            @endforeach
+        </div>
+
+        <h3 class="set-group">How a chat flows</h3>
+        <div class="hp-pipe">
+            <div><span>1</span><b>Customer writes</b><small>Website, WhatsApp, Messenger or Instagram</small></div>
+            <div><span>2</span><b>Bot answers</b><small>Menu, prices, and it can book by itself</small></div>
+            <div><span>3</span><b>Person takes over</b><small>When asked, or when the bot is stuck</small></div>
+            <div><span>4</span><b>Everything is saved</b><small>Customer, chat, booking, tags, lead level</small></div>
+            <div><span>5</span><b>Follow-up</b><small>Rating, review link, invite back</small></div>
+        </div>
+
+        <h3 class="set-group">Browse by topic</h3>
+        <div class="hp-topics">
+            @foreach ($topics as $i => [$id, $t, $d])
+                <a href="#{{ $id }}" class="hp-topic"><i style="--n: {{ $i }}"></i><span><b>{{ $t }}</b><small>{{ $d }}</small></span></a>
+            @endforeach
+        </div>
     </div>
 
     <div class="hp">
         <aside class="hp-toc" id="hp-toc">
-            <input type="search" id="hp-search" placeholder="Search help" aria-label="Search help">
             <nav>
                 <a href="#overview">The big picture</a>
                 <a href="#day">A day with the system</a>
@@ -42,6 +117,7 @@
                     <li><b>Everything is saved</b>: the customer, the chat, the booking, tags and lead level. You see it on Today, Inbox, Schedule and Customers.</li>
                     <li><b>After the visit</b> the system can ask for a rating, ask for a review, and invite the customer back.</li>
                 </ol>
+                <p class="hp-tip"><b>Tip</b> Press <kbd>Ctrl</kbd> + <kbd>K</kbd> on any page to jump to a customer or a chat.</p>
                 <p class="mute">The side menu is the map: <b>Today</b> and <b>Inbox</b> are for every day, <b>Schedule</b>, <b>Customers</b>, <b>Tasks</b> and <b>Orders</b> are your work lists, <b>Marketing</b> and <b>Reports</b> help you grow, and <b>Set up</b> is where you change how the bot behaves.</p>
             </section>
 
@@ -75,12 +151,14 @@
                     <li><b>Saved replies.</b> Under the reply box, choose one, or tap a <b>Suggested</b> reply the system found for the customer's question. {name} and {business} are filled in, in the customer's language.</li>
                     <li><b>Tags.</b> Added automatically by what the customer writes (Price question, Booking help, Complaint ...). Click a tag to remove it, or add your own with <b>+ Tag</b>.</li>
                     <li><b>Handled by</b> assigns the chat to a team member. <b>+ Task</b> makes a follow-up.</li>
+                    <li class="hp-tipli"><b>Tip.</b> In the reply box, <kbd>Enter</kbd> sends and <kbd>Shift</kbd> + <kbd>Enter</kbd> starts a new line.</li>
                     <li><b>WhatsApp 24-hour rule.</b> WhatsApp only lets you write freely for 24 hours after the customer's last message. After that you can only send an approved <b>template</b>. The Inbox tells you when this happens.</li>
                 </ul>
             </section>
 
             <section class="card hp-sec" id="menu">
                 <h2>The chat menu @unless ($owner)<span class="tag">Owner</span>@endunless</h2>
+                <p class="hp-tip"><b>Tip</b> Always press <b>Publish</b> after editing. Until then customers still see the old menu.</p>
                 <p>The <a href="{{ route('menu') }}">Menu builder</a> is what the bot says and shows. It is a set of screens: a message, buttons, and where each button leads.</p>
                 <ul>
                     <li>Edit the words in English and Chinese. Press <b>Publish</b> to make the change live. Until you publish, customers keep seeing the old menu.</li>
@@ -139,6 +217,7 @@
 
             <section class="card hp-sec" id="alerts">
                 <h2>Alerts and waiting customers</h2>
+                <p class="hp-tip"><b>Tip</b> Turn on phone alerts on every phone and computer you use. It takes one minute and you never miss a customer.</p>
                 <ul>
                     <li><b>The bell</b> (top of every page) shows new chats, bookings and complaints, and chimes. Turn the sound on once with a click. It works only while a page is open.</li>
                     <li><b>Phone alerts</b>: in <a href="{{ route('account') }}">My account</a> press Turn on alerts for each phone or computer you use. You get a pop-up even when the page is closed. It needs an https address (a hosted site), or localhost on the same computer. On iPhone, add the site to the Home Screen first.</li>
@@ -211,7 +290,11 @@
                     <dt>Trial</dt><dd>The free period when you start.</dd>
                 </dl>
             </section>
-            <p class="mute hp-none" id="hp-none" hidden>Nothing matches your search.</p>
+            <section class="card hp-sec hp-stuck" id="stuck">
+                <h2>Still stuck?</h2>
+                <p>Read <a href="#faq">Questions and fixes</a> first, it covers the most common problems. @if ($owner)The <a href="{{ route('guide') }}">setup guide</a> walks you through the first steps. @endif Otherwise ask the person who set this system up for you, and tell them what you clicked and what you expected.</p>
+            </section>
+            <p class="mute hp-none" id="hp-none" hidden>Nothing matches your search. Try a shorter word.</p>
         </div>
     </div>
 @endsection
@@ -219,8 +302,11 @@
 <script>
 (function () {
   var box = document.getElementById('hp-search'), secs = document.querySelectorAll('#hp-main .hp-sec'), links = document.querySelectorAll('#hp-toc nav a'), none = document.getElementById('hp-none');
+  var disc = document.getElementById('hp-discover');
+  document.querySelectorAll('.hp-chips button').forEach(function (b) { b.addEventListener('click', function () { box.value = b.dataset.q; box.dispatchEvent(new Event('input')); box.focus(); }); });
   box.addEventListener('input', function () {
     var q = box.value.trim().toLowerCase(), shown = 0;
+    disc.hidden = q !== '';
     secs.forEach(function (s) {
       var ok = !q || s.textContent.toLowerCase().indexOf(q) !== -1;
       s.hidden = !ok; if (ok) { shown++; }
