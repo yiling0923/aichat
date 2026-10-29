@@ -22,6 +22,10 @@ class ManageController extends Controller
             'Organise' => [
                 ['Tags', 'tags', 'Labels for customers and chats.'],
             ],
+            'You' => [
+                ['My account', 'account', 'Your name and password.'],
+                ['Phone alerts', 'account', 'Get a pop-up on this device for new chats and bookings.', '#phone-alerts'],
+            ],
         ];
 
         return view('admin.manage', ['business' => $user->business, 'active' => 'manage', 'groups' => array_filter($groups)]);

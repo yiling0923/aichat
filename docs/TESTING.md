@@ -513,3 +513,9 @@ Per person and per device:
 
 1. Bottom of the left menu: a round badge with your initials, your name, your role (Owner, Manager, Staff) and a small sign-out icon on the right. Hover the icon: "Sign out". Click the badge or your name: My account opens.
 2. On a phone the menu is a bar across the top; the badge and sign-out icon sit at its right end (scroll the bar sideways).
+
+## BH. Settings page and Business page, tidied
+
+1. **Settings** (bottom of the left menu): tiles with an icon, a title, a short line and an arrow, grouped as Your business, Organise and You. New tiles: **My account** and **Phone alerts** (opens My account at the alerts card).
+2. **Business and team → Business**: three clear cards, each with a title and a short explanation: About your business (name and address side by side, time zone and currency side by side, colour swatches, Save at the bottom right), When a customer waits for a person (the email option sits in its own box, **Send me a test alert** and **Save** at the bottom right), and Your customer chat link.
+3. On a phone the fields stack and the buttons fill the width.

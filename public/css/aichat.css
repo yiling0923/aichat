@@ -1349,3 +1349,41 @@ html { scroll-behavior: smooth; }
 .side .me button.me-out svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .side .me button.me-out:hover { background: rgba(255, 255, 255, .1); color: #fff; }
 @media (max-width: 900px) { .side .me { margin: 0 0 0 auto; padding: 0 4px; gap: 6px; } .side .me .me-text { display: none; } .side .me .me-av { width: 30px; height: 30px; } }
+
+/* Settings hub and Business page */
+.set-group { margin: 26px 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.set-group:first-of-type { margin-top: 18px; }
+.set-tiles { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.set-tile { flex-direction: row; align-items: center; gap: 14px; padding: 16px 18px; }
+.set-ico { flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--accent-m); color: var(--accent-d); display: grid; place-items: center; }
+.set-ico svg, .set-go { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.set-ico svg { width: 22px; height: 22px; }
+.set-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.set-txt b { font-size: 14.5px; }
+.set-txt span { font-size: 12.5px; color: var(--mute); line-height: 1.4; }
+.set-go { flex: none; width: 18px; height: 18px; color: var(--mute); transition: transform .12s, color .12s; }
+.set-tile:hover .set-go { color: var(--accent); transform: translateX(2px); }
+.set-card { padding: 22px 24px; margin-top: 16px; }
+[data-panel="business"] > .set-card:first-child { margin-top: 0; }
+.set-head { margin-bottom: 16px; }
+.set-head h3 { margin: 0; font-size: 16px; }
+.set-head p { margin: 4px 0 0; font-size: 13px; line-height: 1.45; }
+.set-card .grid2 { margin: 0 0 14px; gap: 14px; }
+.set-card .grid2 .wide { grid-column: 1 / -1; }
+.set-card .f { display: block; margin-bottom: 14px; }
+.set-card .f > span { display: block; margin-bottom: 6px; }
+.set-card .f .hint { display: block; margin-top: 6px; line-height: 1.45; }
+.set-card .swatches { padding: 4px 0 2px; gap: 10px; }
+.set-card .sw { width: 28px; height: 28px; }
+.set-check { padding: 12px 14px; border: 1px solid var(--line-s); border-radius: 10px; background: var(--bg, #f7f8f8); margin: 0 0 18px; }
+.set-card > .hint { display: block; line-height: 1.5; margin: -2px 0 6px; }
+.set-foot { display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line-s); }
+.set-card .copy-row { margin: 0; }
+@media (max-width: 560px) { .set-card { padding: 18px; } .set-tiles { grid-template-columns: 1fr; } .set-foot .btn { flex: 1 1 140px; } }
+
+.set-tile .set-txt { color: var(--ink); }
+.set-tile .set-ico { color: var(--accent-d); }
+.set-tile .set-txt b { color: var(--ink); }
+.set-card .grid2 { grid-template-columns: 1fr 1fr; }
+.set-card .grid2 .f { margin-bottom: 0; }
+@media (max-width: 700px) { .set-card .grid2 { grid-template-columns: 1fr; } }
