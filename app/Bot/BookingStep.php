@@ -348,7 +348,7 @@ class BookingStep
     {
         $normalized = Text::normalize($text);
         $change = $optionId === 'bk_change' || str_starts_with((string) $optionId, 'bk_change:')
-            || ($optionId === null && ($normalized === Text::normalize(Strings::get('opt_change', $language)) || in_array($normalized, ['change time', 'change', 'reschedule', 'change booking', '改期', '更改时间', '更改预约'], true)));
+            || ($optionId === null && ($normalized === Text::normalize(Strings::get('opt_change', $language)) || in_array($normalized, ['change time', 'change', 'reschedule', 'change booking', '改期', '更改时间', '更改预约', '更改時間', '更改預約', '改时间', '改時間'], true)));
 
         if ($change) {
             return $this->startChange($c, $state, $optionId, $language);

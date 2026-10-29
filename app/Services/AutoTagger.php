@@ -17,31 +17,31 @@ class AutoTagger
     public const TOPICS = [
         'Price question' => ['color' => '#2563eb', 'lead' => true,
             'en' => ['price', 'prices', 'pricing', 'cost', 'costs', 'how much', 'fee', 'fees', 'rate', 'rates', 'discount', 'promo', 'promotion', 'package', 'packages', 'harga', 'berapa'],
-            'zh' => ['多少钱', '价格', '价钱', '收费', '费用', '优惠', '套餐', '折扣']],
+            'zh' => ['多少钱', '价格', '价钱', '收费', '费用', '优惠', '套餐', '折扣', '多少錢', '價格', '價錢', '收費', '費用', '優惠', '套餐', '折扣']],
         'Booking help' => ['color' => '#0f766e', 'lead' => true,
             'en' => ['book', 'booking', 'appointment', 'reserve', 'reservation', 'available', 'availability', 'slot', 'tempah'],
-            'zh' => ['预约', '预订', '订位', '有空', '约时间']],
+            'zh' => ['预约', '预订', '订位', '有空', '约时间', '預約', '預訂', '訂位', '約時間']],
         'Cancel or change' => ['color' => '#c2410c',
             'en' => ['cancel', 'cancellation', 'reschedule', 'postpone', 'batal'],
-            'zh' => ['取消', '改期', '延期']],
+            'zh' => ['取消', '改期', '延期', '改時間', '改时间']],
         'Location' => ['color' => '#475569',
             'en' => ['where are you', 'address', 'location', 'parking', 'direction', 'directions', 'map', 'alamat', 'lokasi'],
-            'zh' => ['地址', '在哪', '哪里', '停车', '怎么去']],
+            'zh' => ['地址', '在哪', '哪里', '停车', '怎么去', '哪裡', '停車', '怎麼去']],
         'Payment' => ['color' => '#15803d',
             'en' => ['payment', 'pay', 'deposit', 'invoice', 'receipt', 'bank transfer', 'bayar'],
-            'zh' => ['付款', '定金', '收据', '转账']],
+            'zh' => ['付款', '定金', '收据', '转账', '收據', '轉帳', '轉賬']],
         'Aftercare' => ['color' => '#7c3aed',
             'en' => ['swelling', 'swollen', 'redness', 'rash', 'itchy', 'pain', 'bleeding', 'side effect', 'side effects', 'infection'],
-            'zh' => ['红肿', '肿', '疼', '痛', '痒', '过敏', '副作用', '出血']],
+            'zh' => ['红肿', '肿', '疼', '痛', '痒', '过敏', '副作用', '出血', '紅腫', '腫', '癢', '過敏']],
         'Complaint' => ['color' => '#b91c1c',
             'en' => ['complaint', 'complain', 'refund', 'terrible', 'awful', 'worst', 'disappointed', 'angry', 'unhappy', 'not happy', 'rude', 'scam', 'bad service', 'unacceptable'],
-            'zh' => ['投诉', '退款', '差劲', '不满意', '太差', '生气', '失望', '骗']],
+            'zh' => ['投诉', '退款', '差劲', '不满意', '太差', '生气', '失望', '骗', '投訴', '差勁', '不滿意', '生氣', '騙']],
     ];
 
     /** @return list<string> the topic names found in the text */
     public function topics(string $text): array
     {
-        $text = mb_strtolower($text);
+        $text = \App\Bot\Text::simplified(mb_strtolower($text));
         $found = [];
 
         foreach (self::TOPICS as $name => $rule) {

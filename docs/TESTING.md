@@ -584,3 +584,13 @@ The grey/pink AI label next to the customer ("complaint · angry") no longer rep
 4. A customer who types something like `=HYPERLINK(...)` as their name is saved as plain text in the file, so a spreadsheet never runs it.
 5. Only owners can open the page or the downloads. Each business only ever gets its own data.
 6. **Automatic server backup**: the page shows when the last nightly backup of the whole database happened and how many copies are kept. If there is none yet, it says how to start one (`php artisan aichat:backup`, needs `mysqldump` from XAMPP, and `php artisan schedule:work` for the nightly run). Copies are in `storage/app/backups`; copy the newest to a USB stick or a cloud folder now and then.
+
+## BR. Chinese wording review
+
+1. **Chat in Chinese** (website chat, choose 中文). Everything the bot says by itself now reads more naturally: for example "抱歉，这个时间刚刚被其他人预约了", "近期暂时没有空位", the Change button is "更改第 1 个" next to "取消第 1 个", and Keep is "保留预约".
+2. **Traditional Chinese customers** (繁體): type "請問多少錢", "我想預約", "有優惠嗎", "幾點開門", "有停車嗎", "轉人工", "菜單". The bot now understands them, including on a menu you saved earlier, because Traditional is read as Simplified. It still replies in Simplified. (This needs PHP's **intl** extension, which XAMPP has on by default; without it the old behaviour stays.)
+3. **Full-width typing** from a Chinese keyboard works too: "ＭＥＮＵ", "０", "人工。".
+4. More ways to ask for a person: "人工客服", "真人客服", "联系员工", "找客服". More ways to go back or to the menu: "返回上一步", "返回菜单".
+5. **Setup wizard**: after approving services and opening hours, the Chinese menu now shows them in Chinese ("- 面部护理：RM 188（60 分钟）", "周一 10:00 - 19:00", "周日 休息", "请咨询") instead of English words.
+6. **Automatic tags** also understand Traditional Chinese ("多少錢" → Price question, "退款" → Complaint).
+7. The "no-show" and "come back" message templates read more naturally. Templates you already saved keep your own wording.

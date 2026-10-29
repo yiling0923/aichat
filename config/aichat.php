@@ -18,10 +18,10 @@ return [
 
     // Typed words the bot understands in any step (lower case, compared after cleaning).
     'keywords' => [
-        'menu' => ['menu', 'main menu', 'start', 'start over', '0', '菜单', '主菜单'],
-        'back' => ['back', 'go back', 'previous', '上一步', '返回'],
-        'human' => ['human', 'agent', 'staff', 'person', 'real person', 'talk to staff', 'customer service', '真人', '人工', '客服', '转人工'],
-        'opt_out' => ['stop', 'unsubscribe', 'opt out', '退订', '取消订阅', '不要再发'],
+        'menu' => ['menu', 'main menu', 'start', 'start over', '0', '菜单', '主菜单', '返回菜单', '回到菜单', '菜單', '主菜單', '返回菜單', '回到菜單'],
+        'back' => ['back', 'go back', 'previous', '上一步', '返回', '返回上一步', '上一页', '上一頁', '返回上一頁'],
+        'human' => ['human', 'agent', 'staff', 'person', 'real person', 'talk to staff', 'customer service', '真人', '人工', '客服', '转人工', '人工客服', '真人客服', '联系员工', '联系客服', '找客服', '找人', '轉人工', '人工客服', '聯絡員工', '聯絡客服', '找客服'],
+        'opt_out' => ['stop', 'unsubscribe', 'opt out', '退订', '取消订阅', '不要再发', '别再发', '退訂', '取消訂閱', '不要再發', '別再發'],
     ],
 
     // A WhatsApp/Messenger/Instagram message written more than this many minutes ago (delivered late by Meta)

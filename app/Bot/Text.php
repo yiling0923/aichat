@@ -10,10 +10,31 @@ class Text
     /** Lower case, no punctuation, single spaces. Works for Chinese too. */
     public static function normalize(string $text): string
     {
-        $text = mb_strtolower(trim($text));
+        // Full-width letters and digits (typed with a Chinese keyboard) become normal ones.
+        if (class_exists(\Normalizer::class)) {
+            $folded = \Normalizer::normalize($text, \Normalizer::FORM_KC);
+            $text = $folded === false ? $text : $folded;
+        }
+        $text = self::simplified(mb_strtolower(trim($text)));
         $text = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $text) ?? $text;
 
         return trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+    }
+
+    /** Traditional Chinese becomes Simplified, so one menu keyword understands both ("多少錢" and "多少钱"). Needs PHP's intl; without it the text is left as typed. */
+    public static function simplified(string $text): string
+    {
+        static $transliterator = false;
+
+        if ($transliterator === false) {
+            $transliterator = class_exists(\Transliterator::class) ? (\Transliterator::create('Traditional-Simplified') ?: null) : null;
+        }
+
+        if ($transliterator === null || ! preg_match('/\p{Han}/u', $text)) {
+            return $text;
+        }
+
+        return $transliterator->transliterate($text) ?: $text;
     }
 
     private static function isPhrase(string $keyword): bool

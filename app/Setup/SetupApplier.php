@@ -17,6 +17,8 @@ class SetupApplier
 {
     private const DAYS = ['mon' => 'Mon', 'tue' => 'Tue', 'wed' => 'Wed', 'thu' => 'Thu', 'fri' => 'Fri', 'sat' => 'Sat', 'sun' => 'Sun'];
 
+    private const DAYS_ZH = ['mon' => '周一', 'tue' => '周二', 'wed' => '周三', 'thu' => '周四', 'fri' => '周五', 'sat' => '周六', 'sun' => '周日'];
+
     public function __construct(private CurrentBusiness $current, private FlowRepository $flows, private Plans $plans) {}
 
     /** The starter menu without the made-up sample clinic content. */
@@ -87,25 +89,27 @@ class SetupApplier
         $record = $this->flows->forBusiness($business);
         $currency = (string) ($business->settings['currency'] ?? 'RM');
 
-        $lines = Service::query()->where('active', true)->orderBy('sort')->get()->map(function (Service $s) use ($currency) {
-            $price = $s->price !== null && (float) $s->price > 0 ? $currency.' '.rtrim(rtrim(number_format((float) $s->price, 2, '.', ''), '0'), '.') : 'ask us';
-
-            return '- '.$s->label('en').': '.$price.' ('.$s->duration_min.' min)';
-        });
+        $services = Service::query()->where('active', true)->orderBy('sort')->get();
+        $money = fn (Service $s) => $s->price !== null && (float) $s->price > 0 ? $currency.' '.rtrim(rtrim(number_format((float) $s->price, 2, '.', ''), '0'), '.') : null;
+        $lines = $services->map(fn (Service $s) => '- '.$s->label('en').': '.($money($s) ?? 'ask us').' ('.$s->duration_min.' min)');
+        $linesZh = $services->map(fn (Service $s) => '- '.$s->label('zh').'：'.($money($s) ?? '请咨询').'（'.$s->duration_min.' 分钟）');
 
         $hours = [];
+        $hoursZh = [];
         foreach (self::DAYS as $key => $label) {
             $h = $business->settings['hours'][$key] ?? null;
-            $hours[] = $label.' '.(is_array($h) && count($h) === 2 ? $h[0].' - '.$h[1] : 'closed');
+            $open = is_array($h) && count($h) === 2;
+            $hours[] = $label.' '.($open ? $h[0].' - '.$h[1] : 'closed');
+            $hoursZh[] = self::DAYS_ZH[$key].' '.($open ? $h[0].' - '.$h[1] : '休息');
         }
 
         foreach (['draft', 'published'] as $which) {
             $flow = $record->{$which};
             if ($lines->isNotEmpty() && isset($flow['nodes']['prices'])) {
-                $flow['nodes']['prices']['text'] = ['en' => "Our prices:\n".$lines->implode("\n"), 'zh' => "我们的价格：\n".$lines->implode("\n")];
+                $flow['nodes']['prices']['text'] = ['en' => "Our prices:\n".$lines->implode("\n"), 'zh' => "我们的价格：\n".$linesZh->implode("\n")];
             }
             if (isset($flow['nodes']['hours'])) {
-                $flow['nodes']['hours']['text'] = ['en' => "We are open:\n".implode("\n", $hours), 'zh' => "营业时间：\n".implode("\n", $hours)];
+                $flow['nodes']['hours']['text'] = ['en' => "We are open:\n".implode("\n", $hours), 'zh' => "营业时间：\n".implode("\n", $hoursZh)];
             }
             if ($address !== null && trim($address) !== '' && isset($flow['nodes']['location'])) {
                 $flow['nodes']['location']['text'] = ['en' => 'We are at '.trim($address).'.', 'zh' => '我们的地址：'.trim($address).'。'];

@@ -41,7 +41,7 @@ class AutomationDefaults
                 'delay_hours' => 0,
                 'message' => [
                     'en' => 'Hi {name}, it has been a while since your {service}. Ready for your next visit?',
-                    'zh' => '您好 {name}，距离您上次的{service}已经有一段时间了。准备好预约下一次了吗？',
+                    'zh' => '您好 {name}，距离您上次的{service}已经有一段时间了。要不要预约下一次呢？',
                 ],
                 'settings' => ['rebook_days' => 30],
             ],
@@ -51,7 +51,7 @@ class AutomationDefaults
                 'delay_hours' => 2,
                 'message' => [
                     'en' => 'Hi {name}, we missed you at your {service} appointment. Would you like to book a new time?',
-                    'zh' => '您好 {name}，您的{service}预约我们没有等到您。要不要重新预约一个时间？',
+                    'zh' => '您好 {name}，您预约的{service}我们没能等到您。要不要重新约个时间？',
                 ],
                 'settings' => [],
             ],
