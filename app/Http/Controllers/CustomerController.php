@@ -61,19 +61,19 @@ class CustomerController extends Controller
         // One list of everything that happened, newest first.
         $events = collect();
         foreach ($bookings as $b) {
-            $events->push(['type' => 'booking', 'at' => $b->starts_at, 'title' => $b->service->label('en').' ('.str_replace('_', ' ', $b->status).')',
-                'sub' => 'with '.$b->practitioner->name, 'url' => route('schedule', ['view' => 'week', 'date' => $b->starts_at->copy()->setTimezone($tz)->format('Y-m-d')])]);
+            $events->push(['type' => 'booking', 'at' => $b->starts_at, 'title' => $b->service->label(app()->getLocale()).' ('.__(str_replace('_', ' ', $b->status)).')',
+                'sub' => __('with :name', ['name' => $b->practitioner->name]), 'url' => route('schedule', ['view' => 'week', 'date' => $b->starts_at->copy()->setTimezone($tz)->format('Y-m-d')])]);
         }
         foreach ($orders as $o) {
-            $events->push(['type' => 'order', 'at' => $o->ordered_at, 'title' => 'Order '.number_format($o->amount, 2).' ('.$o->status.')', 'sub' => $o->items, 'url' => route('orders', ['customer' => $customer->id])]);
+            $events->push(['type' => 'order', 'at' => $o->ordered_at, 'title' => __('Order :amount (:status)', ['amount' => number_format($o->amount, 2), 'status' => __($o->status)]), 'sub' => $o->items, 'url' => route('orders', ['customer' => $customer->id])]);
         }
         foreach ($surveys as $sv) {
-            $events->push(['type' => 'survey', 'at' => $sv->answered_at, 'title' => 'Rated the visit '.$sv->rating.' out of 5', 'sub' => null, 'url' => null]);
+            $events->push(['type' => 'survey', 'at' => $sv->answered_at, 'title' => __('Rated the visit :n out of 5', ['n' => $sv->rating]), 'sub' => null, 'url' => null]);
         }
         foreach ($customer->conversations as $c) {
-            $events->push(['type' => 'chat', 'at' => $c->last_message_at ?? $c->created_at, 'title' => (\App\Reports\ReportData::CHANNELS[$c->channel] ?? ucfirst($c->channel)).' chat', 'sub' => $c->status === 'open' ? 'open' : 'resolved', 'url' => route('inbox', ['c' => $c->id])]);
+            $events->push(['type' => 'chat', 'at' => $c->last_message_at ?? $c->created_at, 'title' => __(':channel chat', ['channel' => __(\App\Reports\ReportData::CHANNELS[$c->channel] ?? ucfirst($c->channel))]), 'sub' => $c->status === 'open' ? __('open') : __('resolved'), 'url' => route('inbox', ['c' => $c->id])]);
         }
-        $events->push(['type' => 'new', 'at' => $customer->created_at, 'title' => 'Became a customer', 'sub' => $customer->interest ? 'Asked about '.$customer->interest : null, 'url' => null]);
+        $events->push(['type' => 'new', 'at' => $customer->created_at, 'title' => __('Became a customer'), 'sub' => $customer->interest ? __('Asked about :x', ['x' => $customer->interest]) : null, 'url' => null]);
 
         return view('admin.customer', [
             'business' => $business,

@@ -630,3 +630,18 @@ Run `php artisan migrate` once (adds a language setting per person).
 4. Things your business typed stay as typed (customer names, task titles, service names, saved replies). The tags that the system creates itself (Price question, Complaint ...) and the usual hand-over reasons show in Chinese.
 5. Bell messages that were created before the switch are stored in English and stay English.
 6. Simplified Chinese only. If a phrase is missing a translation it simply shows in English.
+
+## BV. Staff screens in Chinese (part 2: Schedule, Customers, Tasks, Orders)
+
+Run `git pull`, then `php artisan migrate` if you have not yet (it adds the language setting). Switch with the **中文** button at the top.
+
+In Chinese you now see, fully translated:
+1. **Customers**: filters, bulk tag buttons, table headings, lead levels (准备预约 / 有兴趣 / 随便看看), promotions status, dates like 2026年10月14日, and the **customer page** (activity timeline, follow-ups, notes, edit pop-up, download or delete their data).
+2. **All conversations**: filters and the table.
+3. **Tasks**: Open/Done, filters, groups (已逾期, 今天, 明天, 本周, 稍后, 没有日期), the Add task pop-up and its quick buttons.
+4. **Orders**: summary boxes, filters, periods, statuses (已付款, 等待付款, 已退款, 已取消), the New order and Collect payment pop-up, payment methods.
+5. **Schedule**: Month, Week and List views, weekday names (周一 ...), titles like 10月26日 至 2026年11月1日, the booking pop-up (change time, mark done, no-show, cancel), the drag-to-move question, and the legend.
+6. The page numbers at the bottom of lists ("第 1 / 3 页", 上一页, 下一页).
+7. The standard tag names (VIP, First visit, Regular ...) show in Chinese: VIP, 首次到店, 常客. Tags you create yourself show as you typed them.
+
+Still English: Tags page, Saved replies, Settings, Marketing, Reports, Menu builder, Booking setup, Channels, AI, Billing, My account, Setup guide, Help, sign-in pages and emails. Customer names, service names and notes stay as typed.

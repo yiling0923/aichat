@@ -70,6 +70,7 @@ class StaffLanguageTest extends TestCase
 
         $files = array_merge(
             glob(resource_path('views/admin/*.blade.php')) ?: [],
+            glob(resource_path('views/pagination/*.php')) ?: [],
             glob(app_path('Http/Controllers/*.php')) ?: [],
             [app_path('Services/DailySummary.php')],
         );
@@ -98,6 +99,18 @@ class StaffLanguageTest extends TestCase
 
         $this->assertSame([], $missing, "These phrases have no Chinese yet:\n".implode("\n", $missing));
         $this->assertSame([], $bad, 'Placeholders differ for: '.implode(', ', $bad));
+    }
+
+    public function test_phrases_chosen_while_the_page_runs_are_translated_too(): void
+    {
+        $zh = json_decode(file_get_contents(lang_path('zh.json')), true);
+        $need = ['Owner', 'Manager', 'Staff', 'Price question', 'Booking help', 'Cancel or change', 'Location', 'Payment', 'Aftercare', 'Complaint',
+            'confirmed', 'completed', 'no show', 'cancelled', 'paid', 'pending', 'refunded', 'open', 'resolved',
+            'Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No date', 'All time', 'This month', 'Last month', 'Last 30 days', 'Last 90 days', 'This year',
+            'Cash', 'Card', 'Bank transfer or QR', 'Other', 'Ready to book', 'Interested', 'Just browsing', 'Website'];
+        $missing = array_values(array_filter($need, fn ($k) => ! isset($zh[$k])));
+
+        $this->assertSame([], $missing, 'No Chinese for: '.implode(', ', $missing));
     }
 
     /** @return list<string> */

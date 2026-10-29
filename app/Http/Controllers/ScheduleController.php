@@ -52,13 +52,13 @@ class ScheduleController extends Controller
             $first = $anchor->copy()->startOfMonth();
             $from = $first->copy()->startOfWeek(Carbon::MONDAY);
             $to = $first->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY);
-            $title = $first->format('F Y');
+            $title = $first->translatedFormat(app()->getLocale() === 'zh' ? 'Y年n月' : 'F Y');
             $prev = $first->copy()->subMonth();
             $next = $first->copy()->addMonth();
         } else {
             $from = $anchor->copy()->startOfWeek(Carbon::MONDAY);
             $to = $from->copy()->endOfWeek(Carbon::SUNDAY);
-            $title = $from->format('j M').' to '.$to->format('j M Y');
+            $title = app()->getLocale() === 'zh' ? $from->translatedFormat('n月j日').' 至 '.$to->translatedFormat('Y年n月j日') : $from->format('j M').' to '.$to->format('j M Y');
             $prev = $from->copy()->subWeek();
             $next = $from->copy()->addWeek();
         }
