@@ -143,6 +143,10 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::post('/channels/{id}/subscribe', [$ch, 'subscribe'])->whereNumber('id');
     Route::post('/channels/{id}/test', [$ch, 'test'])->whereNumber('id');
 
+    Route::get('/backup', [\App\Http\Controllers\BackupController::class, 'index'])->name('backup');
+    Route::get('/backup/zip', [\App\Http\Controllers\BackupController::class, 'zip'])->middleware('throttle:6,1');
+    Route::get('/backup/{set}', [\App\Http\Controllers\BackupController::class, 'csv'])->middleware('throttle:20,1');
+
     $c = \App\Http\Controllers\SettingsController::class;
     Route::get('/settings', [$c, 'index'])->name('settings');
     Route::post('/settings/profile', [$c, 'saveProfile']);

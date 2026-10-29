@@ -575,3 +575,12 @@ The grey/pink AI label next to the customer ("complaint · angry") no longer rep
 2. **···** holds the less used actions: **Summarise with AI** (only when the AI is on) and **Give back to the bot** (only when you are handling the chat). The menu is hidden when neither applies.
 3. Second row: the customer (click for their page), the tags (click one to remove it), a dashed **+ Tag** to add one, and on the right **who looks after the chat** (Unassigned or a person) and **+ Task**.
 4. The long AI text and the extra AI label are gone. If the AI thinks the customer is upset, one red **Upset customer** label shows; the topics are the tags.
+
+## BQ. Backup and export (owner only)
+
+1. Settings → **Backup and export** (a new tile under Your business).
+2. **Download all (zip)**: one file with a spreadsheet for customers, bookings, orders, chats, chat messages, tasks and saved replies, plus a short README. Unzip it and open the .csv files with Excel or Google Sheets. Chinese names and messages show correctly. Times are in your business time zone. Private team notes are not included.
+3. **Download one list**: each list has its own **Download .csv** button, with the row count next to it. The row counts match the files (a file also has one header line).
+4. A customer who types something like `=HYPERLINK(...)` as their name is saved as plain text in the file, so a spreadsheet never runs it.
+5. Only owners can open the page or the downloads. Each business only ever gets its own data.
+6. **Automatic server backup**: the page shows when the last nightly backup of the whole database happened and how many copies are kept. If there is none yet, it says how to start one (`php artisan aichat:backup`, needs `mysqldump` from XAMPP, and `php artisan schedule:work` for the nightly run). Copies are in `storage/app/backups`; copy the newest to a USB stick or a cloud folder now and then.

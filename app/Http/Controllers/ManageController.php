@@ -17,6 +17,7 @@ class ManageController extends Controller
             'Your business' => array_filter([
                 $owner ? ['Business and team', 'settings', 'Name, time zone, colour, team members and their roles.'] : null,
                 $owner ? ['Plan and billing', 'billing', 'Your plan, what you have used, payments.'] : null,
+                $owner ? ['Backup and export', 'backup', 'Download your customers, bookings, orders and chats as spreadsheets.'] : null,
                 $owner ? ['Getting started', 'setup', 'Draft your services from a price list, connect, test, go live.'] : null,
             ]),
             'Organise' => [
