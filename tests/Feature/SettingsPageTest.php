@@ -85,4 +85,13 @@ class SettingsPageTest extends TestCase
         $this->post('/admin/settings/team/'.$other->id, ['role' => 'owner', 'active' => 1])->assertNotFound();
         $this->assertSame('staff', $other->fresh()->role);
     }
+
+    public function test_a_warning_shows_while_the_automatic_jobs_are_not_running(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('scheduler-heartbeat');
+        $this->actingAs($this->owner)->get('/admin/today')->assertSee('Automatic jobs are not running.')->assertSee('setup-scheduler.bat');
+
+        \Illuminate\Support\Facades\Cache::put('scheduler-heartbeat', now(), 600);
+        $this->actingAs($this->owner)->get('/admin/today')->assertDontSee('Automatic jobs are not running.');
+    }
 }

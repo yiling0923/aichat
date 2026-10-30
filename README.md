@@ -301,6 +301,8 @@ If Google cannot be reached when a customer books, the bot tells them and hands 
 
 ### Staff reminders (Windows Task Scheduler)
 
+**Easiest:** double-click **`tools\setup-scheduler.bat`** in the project folder once. It adds a Windows task that runs the jobs every minute while you are signed in to Windows (this script was not tested on Windows by its author). The staff area shows a yellow warning on Today, Automations and Settings until the jobs are running. The manual way is below.
+
 When a chat is handed over and nobody replies, the app escalates after 5, 10, 20 and 30 minutes (a "thanks for waiting" message to the
 customer, then events to n8n). This needs one job that runs every minute. In **Task Scheduler** choose **Create Basic Task**, trigger
 **Daily**, then in the task's properties set **Repeat task every 1 minute** for **1 day**. Action: **Start a program**,

@@ -26,6 +26,9 @@
         @if (in_array($active, ['tags', 'settings', 'billing']) && auth()->user()->canManage())
             <a class="crumb" href="{{ route('manage') }}">&larr; {{ __('Settings') }}</a>
         @endif
+        @if (in_array($active, ['today', 'automations', 'manage', 'settings'], true) && auth()->user()->canManage() && ! (($beat = \Illuminate\Support\Facades\Cache::get('scheduler-heartbeat')) && \Illuminate\Support\Carbon::parse($beat)->gt(now()->subMinutes(5))))
+            <div class="note warn" id="scheduler-warn"><b>{{ __('Automatic jobs are not running.') }}</b> {{ __('Staff reminders, automations, booking reminders and the daily email only work while they run.') }} {!! __('On this PC, double-click :file in the project folder once.', ['file' => '<code>tools\\setup-scheduler.bat</code>']) !!}</div>
+        @endif
         @php($planState = app(\App\Billing\Plans::class)->state($business))
         @if (in_array($planState, ['trial_expired', 'past_due', 'canceled'], true))
             <div class="note err">{{ __('Your plan is not active, so the AI is paused. Messages still reach your inbox.') }} @if (auth()->user()->role === 'owner')<a href="{{ route('billing') }}">{{ __('Plan & billing') }}</a>@endif</div>
