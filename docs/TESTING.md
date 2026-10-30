@@ -709,3 +709,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. Channels page: a card with one account has a Manage button (or a green Fix connection button when something is wrong). It opens that account's settings window straight away, where you can paste a new access token.
 2. A card with two or more accounts still jumps to the list below. "Connect" on an unconnected card opens the Connect window.
+
+## CF. Channels: clear feedback on Subscribe / Check connection
+
+1. On Channels press "Subscribe to messages" or "Check connection". A message pops up near the bottom of the screen wherever you are scrolled (green if it worked, red with Meta's reason if not). Click it to close.
+2. A failed Subscribe or Check no longer opens the "Connect a channel" window by mistake.

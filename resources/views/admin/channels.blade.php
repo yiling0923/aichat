@@ -15,8 +15,6 @@
     @endphp
     <div class="page-head"><div><h1>{{ __('Channels') }}</h1><p class="mute">{{ __('Where customers can message you. Everyone lands in the same Inbox.') }}</p></div>
         <button type="button" class="btn primary" id="open-connect">{{ __('+ Connect a channel') }}</button></div>
-    @error('channel')<div class="note err">{{ $message }}</div>@enderror
-    @error('type')<div class="note err">{{ $message }}</div>@enderror
 
     @if ($problems && $channels->isEmpty())
         <div class="note warn">{!! __('WhatsApp, Messenger and Instagram need a one-time setup with Meta first (:steps to finish, see :link at the bottom). The website chat works right now.', ['steps' => $problems === 1 ? e(__('1 step')) : e(__(':n steps', ['n' => $problems])), 'link' => '<a href="#meta-setup">'.e(__('Meta app connection')).'</a>']) !!}</div>
@@ -198,7 +196,14 @@
   document.getElementById('open-connect').addEventListener('click', function () { cd.showModal(); });
   document.querySelectorAll('[data-pick]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); cd.showModal(); }); });
   document.querySelectorAll('[data-open]').forEach(function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.open).showModal(); }); });
-  @if ($errors->has('channel') || $errors->has('type') || $errors->has('external_id') || $errors->has('access_token') || $errors->has('name')) cd.showModal(); @endif
+  @if ($errors->has('type') || $errors->has('external_id') || $errors->has('access_token') || $errors->has('name')) cd.showModal(); @endif
+
+  // Say what happened right where you are looking, whatever the scroll position (a note at the top of the page is easy to miss).
+  var said = @json($errors->has('channel') ? $errors->first('channel') : (string) session('status')), bad = @json($errors->has('channel'));
+  if (said) {
+    var t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = said; t.style.maxWidth = '92vw'; t.style.zIndex = 60; t.style.cursor = 'pointer';
+    document.body.appendChild(t); t.addEventListener('click', function () { t.remove(); }); setTimeout(function () { t.remove(); }, bad ? 15000 : 9000);
+  }
 
   document.querySelectorAll('[data-copy]').forEach(function (b) {
     b.addEventListener('click', function () {
