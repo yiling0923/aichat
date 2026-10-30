@@ -1793,7 +1793,7 @@ details.au-card[open] > summary::after { content: none; }
 @media (max-width: 640px) { .composer .row #c-hint { display: none; } .composer .row { justify-content: space-between; } }
 
 /* Schedule: summary strip, clearer week grid, list grouped by day */
-.sch-strip { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 12px; margin: 0 0 14px; align-items: stretch; }
+.sch-strip { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; margin: 0 0 14px; align-items: stretch; }
 .sch-card { display: flex; flex-direction: column; gap: 1px; padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); text-decoration: none; min-width: 0; }
 .sch-card:hover { border-color: var(--accent); text-decoration: none; }
 .sch-card small { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--mute); }

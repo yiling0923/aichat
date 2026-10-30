@@ -43,7 +43,6 @@
             <div class="sch-card"><small>{{ __('Next booking') }}</small><b>-</b><span>{{ __('Nothing coming up.') }}</span></div>
         @endif
         <a @class(['sch-card', 'todo' => $toMark > 0]) href="{{ route('schedule', ['view' => 'list', 'show' => 'upcoming']) }}"><small>{{ __('Finished, not marked yet') }}</small><b>{{ $toMark }}</b><span>{{ $toMark > 0 ? __('Mark them Done or No-show.') : __('All caught up.') }}</span></a>
-        <div class="sch-legend"><span class="lg st-confirmed">{{ __('Confirmed') }}</span><span class="lg st-completed">{{ __('Done') }}</span><span class="lg st-no_show">{{ __('No-show') }}</span></div>
     </div>
 
     @if ($view === 'month')
