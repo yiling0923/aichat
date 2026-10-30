@@ -138,6 +138,11 @@ class BotEngine
             return [$conversation->addMessage('out', 'bot', $info."\n\n".Strings::get('ai_waiting_note', $language), ['waiting_answer' => true, 'ai_waiting' => true])];
         }
 
+        $saved = (new SavedAnswers)->find((string) $incoming->body, $language);
+        if ($saved !== null) {
+            return [$conversation->addMessage('out', 'bot', $saved."\n\n".Strings::get('ai_waiting_note', $language), ['waiting_answer' => true, 'ai_waiting' => true])];
+        }
+
         if ($this->ai->mode($conversation->business) !== 'auto' || ! $this->ai->active($conversation->business)) {
             return [];
         }

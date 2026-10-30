@@ -107,6 +107,14 @@ class MenuBot
         }
 
         if ($state['awaiting'] === 'options') {
+            // A topic the owner taught by name ("Parking") beats the menu's own keyword for it.
+            if ($optionId === null && $conversation->business !== null && $conversation->channel !== 'preview' && ($saved = app(SavedAnswers::class)->find($text, $conversation->language ?? $language, true)) !== null) {
+                $state['misses'] = 0;
+                $out[] = $conversation->addMessage('out', 'bot', $saved, ['options' => $this->optionList($flow, $node, $language, $state), 'saved_answer' => true]);
+
+                return $this->finish($conversation, $state, $out);
+            }
+
             $option = $this->match($flow, $node, $text, $optionId);
 
             if ($option === null) {
@@ -117,6 +125,14 @@ class MenuBot
                     if ($handled !== null) {
                         return $handled;
                     }
+                }
+
+                // No AI (or it had nothing): an answer the owner wrote in Teach it is sent as written.
+                if ($optionId === null && $conversation->business !== null && $conversation->channel !== 'preview' && ($saved = app(SavedAnswers::class)->find($text, $conversation->language ?? $language)) !== null) {
+                    $state['misses'] = 0;
+                    $out[] = $conversation->addMessage('out', 'bot', $saved, ['options' => $this->optionList($flow, $node, $language, $state), 'saved_answer' => true]);
+
+                    return $this->finish($conversation, $state, $out);
                 }
 
                 return $this->miss($conversation, $flow, $state, $out, $language, 'sorry_choose');

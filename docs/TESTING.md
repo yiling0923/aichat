@@ -841,3 +841,10 @@ Needs your own free Google account. Allow about 10 minutes.
 5. Press 中文: every label on both tabs is in Chinese. On a phone the tiles show two per row and the funnel stacks.
 
 (CZ/ai tab) AI assistant: after you add, edit or delete an answer in "2. Teach it", the page comes back on the same tab instead of the first one. The same works after Save in "1. Choose how it helps".
+
+## DA. Your own answers work without the AI
+
+1. In AI assistant > Teach it, add an answer, for example "Payment methods" with the text you want customers to read.
+2. In the chat (or WhatsApp) type "Payment methods", "can I pay by card" or "pay". The bot sends your answer exactly as written, with the menu buttons under it. It works even when AI is off and no AI key is set.
+3. The same works for Parking (parking, 停车), Aftercare, Cancellation policy (cancel, refund), Walk-ins and First visit. A turned-off answer is never sent. Typing "cancel my booking" still goes to the menu's booking steps.
+4. Your answer beats the menu's own text for the same word (typing "parking" gives your Parking answer, not the sample location message). While a customer waits for a person, a matching answer is also sent, with the usual waiting note.

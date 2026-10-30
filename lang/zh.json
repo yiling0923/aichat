@@ -1773,5 +1773,6 @@
     "Left details": "留下资料",
     "Chat to booking %": "聊天转预约 %",
     "Topic customers asked about": "客户询问的话题",
-    "Automatic message": "自动消息"
+    "Automatic message": "自动消息",
+    "Works even with the AI off: when a customer types the topic (for example \"parking\"), your answer is sent as you wrote it.": "即使关闭 AI 也有效:顾客输入该主题(例如“停车”)时,会按您写的内容原样回复。"
 }

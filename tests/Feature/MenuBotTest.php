@@ -245,4 +245,38 @@ class MenuBotTest extends TestCase
         [$text] = $this->last($r);
         $this->assertMatchesRegularExpression('/Which service|no free times/', $text);
     }
+
+    public function test_saved_answers_from_teach_it_are_sent_without_any_ai(): void
+    {
+        $this->inBusiness(function () {
+            \App\Models\KnowledgeEntry::create(['title' => 'Payment methods', 'answer' => ['en' => 'Cash, card or DuitNow.', 'zh' => '现金、刷卡或 DuitNow。'], 'active' => true]);
+            \App\Models\KnowledgeEntry::create(['title' => 'Parking', 'answer' => ['en' => 'Free parking behind the shop.'], 'active' => true]);
+            \App\Models\KnowledgeEntry::create(['title' => 'First visit', 'answer' => ['en' => 'Arrive 10 minutes early.'], 'active' => true]);
+            \App\Models\KnowledgeEntry::create(['title' => 'Walk-ins', 'answer' => ['en' => 'Walk-ins welcome.'], 'active' => false]);
+        });
+        $token = $this->say('hi')->json('token');
+        $this->say('English', $token, 'lang_en');
+
+        [$text, $m] = $this->last($this->say('Payment methods', $token));
+        $this->assertSame('Cash, card or DuitNow.', $text);
+        $this->assertNotEmpty($m['options']);                       // the menu buttons stay under the answer
+
+        $this->assertSame('Free parking behind the shop.', $this->last($this->say('is there parking?', $token))[0]);
+        $this->assertSame('Cash, card or DuitNow.', $this->last($this->say('can i pay by card', $token))[0]);
+        $this->assertSame('Arrive 10 minutes early.', $this->last($this->say('what about my first visit', $token))[0]);
+
+        // One loose word of a longer title, a turned-off answer and unrelated words do not trigger anything.
+        $this->assertStringNotContainsString('Arrive 10', $this->last($this->say('can i visit tomorrow', $token))[0]);
+        $this->assertStringNotContainsString('Walk-ins welcome', $this->last($this->say('walk in please', $token))[0]);
+        $this->assertStringNotContainsString('Cash', $this->last($this->say('blah blah', $token))[0]);
+    }
+
+    public function test_saved_answers_use_the_customers_language(): void
+    {
+        $this->inBusiness(fn () => \App\Models\KnowledgeEntry::create(['title' => 'Parking', 'answer' => ['en' => 'Free parking.', 'zh' => '有免费停车位。'], 'active' => true]));
+        $token = $this->say('hi')->json('token');
+        $this->say('中文', $token, 'lang_zh');
+
+        $this->assertSame('有免费停车位。', $this->last($this->say('有停车位吗', $token))[0]);
+    }
 }

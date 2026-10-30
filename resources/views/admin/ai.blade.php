@@ -84,6 +84,7 @@
         <div>
             <h2 id="step-teach">{{ __('2. Teach it: extra answers') }}</h2>
             <p class="mute">{{ __('Opening hours, services with prices and the information screens of your menu are added automatically. Add anything else customers ask.') }}</p>
+            <p class="mute">{{ __('Works even with the AI off: when a customer types the topic (for example "parking"), your answer is sent as you wrote it.') }}</p>
         </div>
         <button type="button" class="btn primary" id="new-answer">+ {{ __('Add an answer') }}</button>
     </div>
