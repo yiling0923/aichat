@@ -581,4 +581,41 @@ class AiTest extends TestCase
         }
         $this->in(fn () => $this->assertSame(1, Message::query()->where('sender_type', 'ai')->count()));
     }
+
+    public function test_in_auto_mode_a_waiting_customer_gets_a_factual_answer_at_once_until_a_person_replies(): void
+    {
+        $this->setMode('auto');
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $token = $this->chat();
+        $this->say('x', $token, 'staff');                                                   // Talk to staff: now waiting for a person
+
+        $r = $this->say('what time are you around', $token);
+        $this->assertStringContainsString('Mon 10:00-19:00', $this->texts($r));              // sent straight away
+        $this->assertStringContainsString('will still reply', $this->texts($r));
+        $this->in(fn () => $this->assertSame(0, Message::query()->where('sender_type', 'ai')->count()));   // no draft card
+
+        // Asking for a person is never answered by the AI.
+        $r = $this->say('Can I talk to a person?', $token);
+        $this->assertStringNotContainsString('will still reply', $this->texts($r));
+
+        // Once a person has replied, the AI goes back to quiet suggestions.
+        $c = $this->conversation($token);
+        $this->actingAs($staff)->postJson("/admin/api/conversations/{$c->id}/reply", ['text' => 'Hi, this is Sarah.'])->assertOk();
+        $before = $this->in(fn () => Message::query()->where('sender_type', 'bot')->count());
+        $this->say('what time are you around', $token);
+        $this->in(fn () => $this->assertSame($before, Message::query()->where('sender_type', 'bot')->count()));
+        $this->in(fn () => $this->assertSame(1, Message::query()->where('sender_type', 'ai')->count()));
+    }
+
+    public function test_suggest_mode_never_sends_by_itself_while_waiting(): void
+    {
+        $this->setMode('suggest');
+        $token = $this->chat();
+        $this->say('x', $token, 'staff');
+
+        $r = $this->say('what time are you around', $token);
+
+        $this->assertStringNotContainsString('will still reply', $this->texts($r));
+        $this->in(fn () => $this->assertSame(1, Message::query()->where('sender_type', 'ai')->count()));
+    }
 }

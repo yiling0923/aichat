@@ -747,3 +747,10 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. With AI on (suggest mode), in a chat a person already handles, the customer types "Can I talk to a person?" several times: no "AI suggestion" cards appear (the chat already needs a person, and you get the bell alert).
 2. The generic "I can help with prices, booking..." suggestion (labelled other, confused) no longer appears, and the same suggestion is never added twice while the first one is still waiting.
+
+## CM. AI answers a waiting customer by itself (Auto mode)
+
+1. AI assistant: set the mode to Auto and save.
+2. As a customer choose "Talk to staff", then ask something factual such as "what time are you open". Without waiting for anyone the customer gets the answer plus "Our team has your message and will still reply as soon as possible." It is sent at most 3 times while nobody has replied.
+3. "Can I talk to a person?", complaints and refund requests are never answered by the AI.
+4. As soon as a team member replies, the AI stops answering by itself in that chat and only offers draft cards. In Suggest mode nothing is sent by itself.

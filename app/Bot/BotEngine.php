@@ -35,9 +35,14 @@ class BotEngine
                 app(\App\Services\Notifier::class)->notify($conversation->business, 'message', 'New message from '.\App\Services\Notifier::chatName($conversation), (string) $incoming->body, route('inbox', ['c' => $conversation->id]));
             }
 
-            // Staff are in charge, but the AI can still offer them a suggested reply (never sent by itself).
+            // Staff are in charge, but the AI can still offer them a suggested reply. In Auto mode, while the customer is still
+            // waiting for a first reply from a person, a plain factual answer (hours, prices, location) is sent straight away.
             if ($conversation->channel !== 'preview' && $conversation->business !== null && $this->ai->active($conversation->business)) {
                 try {
+                    if ($this->ai->mode($conversation->business) === 'auto' && ($sent = $this->answerWhileWaiting($conversation, $incoming)) !== []) {
+                        return $sent;
+                    }
+
                     $this->ai->suggest($conversation);
                 } catch (\Throwable $e) {
                     report($e);
@@ -50,6 +55,42 @@ class BotEngine
         $flow ??= $this->flows->published($conversation->business);
 
         return $this->menu->respond($conversation, $flow, (string) $incoming->body, $optionId);
+    }
+
+    /**
+     * The customer asked for a person and nobody has answered yet. If the AI knows a plain factual answer, send it now
+     * (at most 3 times, never when the customer is upset or asking for a person), and say the team will still reply.
+     *
+     * @return list<Message>
+     */
+    private function answerWhileWaiting(Conversation $conversation, Message $incoming): array
+    {
+        $since = $conversation->handover_at;
+
+        if ($since === null || Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'staff')->where('is_private', false)->where('created_at', '>=', $since)->exists()) {
+            return [];
+        }
+
+        $already = Message::query()->where('conversation_id', $conversation->id)->where('payload->ai_waiting', true)->where('created_at', '>=', $since)->count();
+        $normalized = Text::normalize((string) $incoming->body);
+
+        if ($already >= 3 || Text::isCommand($normalized, (array) config('aichat.keywords.human')) || Text::isCommand($normalized, (array) config('aichat.keywords.upset'))) {
+            return [];
+        }
+
+        $answer = $this->ai->answer($conversation, 'reply');
+
+        if ($answer === null || $answer->intent !== 'faq' || $answer->wantsHuman || ! in_array($answer->mood, ['calm', 'happy'], true)) {
+            return [];
+        }
+
+        $language = $conversation->language ?? 'en';
+        $text = $answer->text;
+        if (! Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'bot')->where('payload->ai', true)->exists()) {
+            $text .= "\n".Strings::get('ai_disclosure', $language);
+        }
+
+        return [$conversation->addMessage('out', 'bot', $text."\n".Strings::get('ai_waiting_note', $language), ['ai' => true, 'ai_waiting' => true])];
     }
 
     private function wantsMenu(string $text, ?string $optionId): bool
