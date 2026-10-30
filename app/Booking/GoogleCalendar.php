@@ -85,8 +85,25 @@ class GoogleCalendar
         return ['ok' => true, 'message' => __('Connected. The calendar can be read and bookings can be added to it.')];
     }
 
+    /** Google's status and its own reason, so the page can say what is really wrong. */
+    private function why(\Illuminate\Http\Client\Response $response): string
+    {
+        $reason = (string) ($response->json('error.errors.0.reason') ?? $response->json('error.details.0.reason') ?? $response->json('error.status') ?? '');
+        $message = (string) ($response->json('error.message') ?? '');
+
+        return trim($response->status().' '.$reason.' '.mb_substr($message, 0, 160));
+    }
+
     private function explain(string $error, string $email): string
     {
+        $lower = strtolower($error);
+
+        if (str_contains($lower, 'accessnotconfigured') || str_contains($lower, 'service_disabled') || str_contains($lower, 'has not been used') || str_contains($lower, 'is disabled')) {
+            return __('The Google Calendar API is not turned on for your Google Cloud project. Open Google Cloud, APIs and services, Library, search for Google Calendar API, press Enable, wait a minute, then test again.');
+        }
+        if (str_contains($lower, 'writer access') || str_contains($lower, 'writeaccessrequired') || str_contains($lower, 'requiredaccesslevel') || str_contains($lower, 'forbidden')) {
+            return __('The calendar is shared with :email, but only for viewing. Open the calendar\'s Settings and sharing, change the permission for that address to "Make changes to events", then test again.', ['email' => $email]);
+        }
         if (str_contains($error, '404') || str_contains($error, 'cannot read')) {
             return __('Google cannot find or open this calendar. Check the Calendar ID, and share the calendar with :email (permission: Make changes to events).', ['email' => $email]);
         }
@@ -114,7 +131,7 @@ class GoogleCalendar
         ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Google Calendar free/busy failed: '.$response->status());
+            throw new RuntimeException('Google Calendar free/busy failed: '.$this->why($response));
         }
 
         // Calendar ids contain dots, so index the array instead of using dot notation.
@@ -140,7 +157,7 @@ class GoogleCalendar
         ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Google Calendar event failed: '.$response->status());
+            throw new RuntimeException('Google Calendar event failed: '.$this->why($response));
         }
 
         return (string) $response->json('id');
@@ -151,7 +168,7 @@ class GoogleCalendar
         $response = $this->request()->delete('https://www.googleapis.com/calendar/v3/calendars/'.rawurlencode($calendarId).'/events/'.rawurlencode($eventId));
 
         if ($response->failed() && $response->status() !== 410 && $response->status() !== 404) {
-            throw new RuntimeException('Google Calendar delete failed: '.$response->status());
+            throw new RuntimeException('Google Calendar delete failed: '.$this->why($response));
         }
     }
 

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\CurrentBusiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -135,5 +136,30 @@ class GoogleCalendarSetupTest extends TestCase
         $this->actingAs($this->owner)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile()]);
         $r = $this->actingAs($this->owner)->post('/admin/booking-setup/practitioners/'.$p->id.'/google-test');
         $this->assertStringContainsString('Calendar ID', session('errors')->first('google'));
+    }
+
+    public function test_the_message_names_the_real_problem_not_just_a_403(): void
+    {
+        $this->actingAs($this->owner)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile()]);
+        $p = $this->practitioner();
+
+        // 1. The Calendar API is not enabled in the Google Cloud project.
+        Http::fake([
+            'oauth2.googleapis.com/*' => Http::response(['access_token' => 'tok']),
+            'www.googleapis.com/calendar/v3/freeBusy' => Http::response(['error' => ['code' => 403, 'message' => 'Google Calendar API has not been used in project 1 before or it is disabled.', 'errors' => [['reason' => 'accessNotConfigured']]]], 403),
+        ]);
+        $this->actingAs($this->owner)->post('/admin/booking-setup/practitioners/'.$p->id.'/google-test');
+        $this->assertStringContainsString('API is not turned on', session('errors')->first('google'));
+
+        // 2. Shared, but only for viewing: reading works, adding the test event is refused.
+        Cache::flush();
+        Http::swap(new \Illuminate\Http\Client\Factory);
+        Http::fake([
+            'oauth2.googleapis.com/*' => Http::response(['access_token' => 'tok']),
+            'www.googleapis.com/calendar/v3/freeBusy' => Http::response(['calendars' => ['team@group.calendar.google.com' => ['busy' => []]]]),
+            'www.googleapis.com/calendar/v3/calendars/*/events' => Http::response(['error' => ['code' => 403, 'message' => 'You need to have writer access to this calendar.', 'errors' => [['reason' => 'forbiddenForServiceAccounts']]]], 403),
+        ]);
+        $this->actingAs($this->owner)->post('/admin/booking-setup/practitioners/'.$p->id.'/google-test');
+        $this->assertStringContainsString('only for viewing', session('errors')->first('google'));
     }
 }
