@@ -736,3 +736,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. Restart the tunnel so its address changes, then click a notification that was created before (bell, pop-up card or phone alert). It opens on the address you are using now, not on the old tunnel address.
 
 (CJ, continued) Links also keep working when the app lives in a folder such as /aichat/public: the folder is added back for the address you are using, so a notification opens /aichat/public/admin?c=... on XAMPP and /admin?c=... on `php artisan serve`.
+
+## CK. Natural handover phrases and following the customer's language
+
+1. On WhatsApp (or the website chat) choose English, then type "Can I talk to a person?". The bot hands over to your team (it no longer says "sorry, I did not understand").
+2. Type "I want a refund" (or 我要退款): with AI off, the chat goes straight to a person.
+3. Choose 中文, then type an English sentence such as "what are your prices please": the bot switches to English. Type Chinese again and it switches back.

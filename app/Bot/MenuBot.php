@@ -33,6 +33,15 @@ class MenuBot
         $language = $conversation->language ?? $flow->defaultLanguage();
         $normalized = Text::normalize($text);
 
+        // A customer who changes language while typing (Chinese chosen earlier, now writing in English, or the other way round) gets answers in the new language.
+        if ($optionId === null && $conversation->language !== null && in_array($state['awaiting'], [null, 'options'], true)) {
+            $typed = Text::typedLanguage($text);
+            if ($typed !== null && $typed !== $conversation->language && in_array($typed, $flow->languages(), true)) {
+                $conversation->forceFill(['language' => $typed])->save();
+                $language = $typed;
+            }
+        }
+
         // An open satisfaction survey: a 1 to 5 answer is recorded, anything else just carries on as normal.
         if (! empty($state['survey'])) {
             $answer = $this->surveys->answer($conversation, (int) $state['survey'], $text, $optionId, $conversation->language ?? $language);
@@ -71,6 +80,10 @@ class MenuBot
 
         if ($optionId === null && Text::isCommand($normalized, config('aichat.keywords.human'))) {
             return $this->handover($conversation, $state, $out, 'Customer asked for a person', $language);
+        }
+
+        if ($optionId === null && ($conversation->business === null || ! $this->ai->active($conversation->business)) && Text::isCommand($normalized, config('aichat.keywords.upset'))) {
+            return $this->handover($conversation, $state, $out, 'Customer is unhappy or asked for a refund', $language);
         }
 
         if ($optionId === null && Text::isCommand($normalized, config('aichat.keywords.menu')) && $state['node'] !== null) {

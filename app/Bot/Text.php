@@ -83,6 +83,20 @@ class Text
         return false;
     }
 
+    /** 'zh' for text with Chinese characters, 'en' for a plain English sentence (two or more Latin words), otherwise null (unclear, so keep the current language). */
+    public static function typedLanguage(string $text): ?string
+    {
+        if (preg_match_all('/\p{Han}/u', $text) >= 2) {
+            return 'zh';
+        }
+
+        if (! preg_match('/\p{Han}/u', $text) && preg_match_all('/\b[A-Za-z]{2,}\b/', $text) >= 2) {
+            return 'en';
+        }
+
+        return null;
+    }
+
     /** Fill {name}, {phone} and friends. Unknown placeholders become empty. */
     public static function fill(string $text, array $values): string
     {

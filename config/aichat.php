@@ -18,9 +18,11 @@ return [
 
     // Typed words the bot understands in any step (lower case, compared after cleaning).
     'keywords' => [
+        // Customers who are unhappy or want money back: with no AI to answer them kindly, they go straight to a person.
+        'upset' => ['refund', 'want a refund', 'need a refund', 'get a refund', 'my money back', 'make a complaint', 'want to complain', 'complaint', '退款', '退钱', '投诉', '投訴'],
         'menu' => ['menu', 'main menu', 'start', 'start over', '0', '菜单', '主菜单', '返回菜单', '回到菜单', '菜單', '主菜單', '返回菜單', '回到菜單'],
         'back' => ['back', 'go back', 'previous', '上一步', '返回', '返回上一步', '上一页', '上一頁', '返回上一頁'],
-        'human' => ['human', 'agent', 'staff', 'person', 'real person', 'talk to staff', 'customer service', '真人', '人工', '客服', '转人工', '人工客服', '真人客服', '联系员工', '联系客服', '找客服', '找人', '轉人工', '人工客服', '聯絡員工', '聯絡客服', '找客服'],
+        'human' => ['human', 'agent', 'staff', 'person', 'real person', 'talk to staff', 'customer service', 'talk to a person', 'speak to a person', 'talk to someone', 'speak to someone', 'talk to a human', 'speak to a human', 'talk to a real person', 'speak to staff', 'talk to an agent', 'speak to an agent', 'real human', '真人', '人工', '客服', '转人工', '人工客服', '真人客服', '联系员工', '联系客服', '找客服', '找人', '轉人工', '人工客服', '聯絡員工', '聯絡客服', '找客服'],
         'opt_out' => ['stop', 'unsubscribe', 'opt out', '退订', '取消订阅', '不要再发', '别再发', '退訂', '取消訂閱', '不要再發', '別再發'],
     ],
 

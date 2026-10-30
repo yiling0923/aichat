@@ -188,4 +188,28 @@ class MenuBotTest extends TestCase
         $this->assertSame(1, count(array_keys($ids, 'lang_en')));
         $this->assertNotContains('__back', $ids);
     }
+
+    public function test_natural_ways_of_asking_for_a_person_and_a_refund_reach_staff(): void
+    {
+        foreach (['Can I talk to a person?', 'I want to speak to someone please', 'I want a refund', '我要退款'] as $phrase) {
+            $token = $this->say('hi')->json('token');
+            $this->say('English', $token, 'lang_en');
+            $r = $this->say($phrase, $token);
+            $this->assertSame('human', $r->json('mode'), $phrase);
+        }
+    }
+
+    public function test_the_bot_follows_the_language_the_customer_types(): void
+    {
+        $token = $this->say('hi')->json('token');
+        $this->say('中文', $token, 'lang_zh');
+
+        $r = $this->say('what are your prices please', $token);
+        $this->assertSame('en', $this->inBusiness(fn () => Conversation::query()->where('token', $token)->first()->language));
+        [$text] = $this->last($r);
+        $this->assertDoesNotMatchRegularExpression('/\p{Han}/u', $text);
+
+        $this->say('你们的价格是多少', $token);
+        $this->assertSame('zh', $this->inBusiness(fn () => Conversation::query()->where('token', $token)->first()->language));
+    }
 }
