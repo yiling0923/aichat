@@ -772,3 +772,5 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 2. Four pills jump to: 1. Choose how it helps, 2. Teach it, 3. Try it, Usage and history.
 3. Each mode card says what customers see and what your team does. Pick one and press Save right under the cards.
 4. Tone and the spending limit are tucked into one folded card. Usage, "Everything the AI knows" and recent calls are at the bottom.
+
+(CP, updated) The AI assistant page now has four tabs: 1. Choose how it helps (modes, Save, tone and limit, what the AI never does), 2. Teach it (extra answers and ideas), 3. Try it (test box), Usage and history (this month, everything the AI knows, recent calls). The tab stays selected after a reload, and an address ending in #teach opens that tab. On a phone the tab bar scrolls sideways.

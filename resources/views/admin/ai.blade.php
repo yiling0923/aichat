@@ -23,13 +23,6 @@
         <div><b>{{ __('Right now: :mode', ['mode' => $modes[$mode][0] ?? $mode]) }}</b>
             <span class="mute">{{ __('Customers see:') }} {{ $modes[$mode][2] ?? '' }} &nbsp;·&nbsp; {{ __('Your team:') }} {{ $modes[$mode][3] ?? '' }}</span></div>
     </div>
-    <nav class="bk-jump" aria-label="{{ __('AI assistant') }}">
-        <a href="#step-mode">{{ __('1. Choose how it helps') }}</a>
-        <a href="#step-teach">{{ __('2. Teach it') }}</a>
-        <a href="#try">{{ __('3. Try it') }}</a>
-        <a href="#usage">{{ __('Usage and history') }}</a>
-    </nav>
-
     @if ($provider === 'off')
         <div class="note warn">{{ __('The AI is switched off for the whole system, so nothing below will answer yet.') }} <details class="inline"><summary>{{ __('How to turn it on') }}</summary>{!! __('Set :fake in :env (free practice AI) or :claude with your :key, then run :clear.', ['fake' => '<code>AI_PROVIDER=fake</code>', 'env' => '<code>.env</code>', 'claude' => '<code>AI_PROVIDER=claude</code>', 'key' => '<code>ANTHROPIC_API_KEY</code>', 'clear' => '<code>php artisan config:clear</code>']) !!}</details></div>
     @elseif ($provider === 'fake')
@@ -38,9 +31,17 @@
         <div class="note err">{!! __('The real AI is selected but :key is not set in :env.', ['key' => '<code>ANTHROPIC_API_KEY</code>', 'env' => '<code>.env</code>']) !!}</div>
     @endif
 
+    <div class="tabs ai-tabs" id="ai-tabs" role="tablist">
+        <a href="#mode" data-tab="mode" class="on">{{ __('1. Choose how it helps') }}</a>
+        <a href="#teach" data-tab="teach">{{ __('2. Teach it') }}</a>
+        <a href="#try" data-tab="try">{{ __('3. Try it') }}</a>
+        <a href="#usage" data-tab="usage">{{ __('Usage and history') }}</a>
+    </div>
+
+    <section data-tab-panel="mode">
     <form method="post" action="{{ url('/admin/ai') }}">
         @csrf
-        <h2 class="bk-h" id="step-mode" style="margin-top:14px">{{ __('1. How should the AI help?') }}</h2>
+        <h2 class="bk-h" id="step-mode" style="margin-top:6px">{{ __('1. How should the AI help?') }}</h2>
         <p class="mute bk-sub">{{ __('Not sure? Start with Approve. Switch to Auto when you are happy with its answers.') }}</p>
         <div class="mode-cards" role="radiogroup">
             @foreach ($modes as $key => [$name, $text, $customer, $team])
@@ -66,7 +67,19 @@
             <div style="margin-top:14px"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
         </div></details>
     </form>
+    <div class="card safe">
+        <b>{{ __('What the AI will never do') }}</b>
+        <ul>
+            <li>{{ __('Invent prices, offers or opening times. It quotes only what is written for your business.') }}</li>
+            <li>{{ __('Offer appointment times. Booking always goes through the Book button.') }}</li>
+            <li>{{ __('Keep talking to an upset customer. It passes them to your team.') }}</li>
+            <li>{{ __('Pretend to be a person. It says it is a virtual assistant.') }}</li>
+        </ul>
+    </div>
 
+    </section>
+
+    <section data-tab-panel="teach" hidden>
     <h2 class="bk-h" id="step-teach">{{ __('2. Teach it: extra answers') }}</h2>
     <p class="mute" style="margin-top:-4px">{{ __('Opening hours, services with prices and the information screens of your menu are added automatically. Add anything else customers ask.') }}</p>
     <div class="bar" style="margin-bottom:10px"><button type="button" class="btn primary" id="new-answer">{{ __('Add an answer') }}</button></div>
@@ -88,8 +101,11 @@
             <div class="idea-row">@foreach ($ideas as $t)<button type="button" class="btn small" data-idea="{{ $t }}">+ {{ $t }}</button>@endforeach</div></div>
     @endif
 
+    </section>
+
+    <section data-tab-panel="try" hidden>
     <h2 class="bk-h" id="try-h">{{ __('3. Try it') }}</h2>
-    <div class="card" id="try">
+    <div class="card" id="try-box">
         <p class="mute small-note" style="padding:0">{{ __('Ask a question as a customer would. Nothing is sent to anyone.') }}</p>
         <div class="try-chips">
             @foreach (array_filter([$firstService ? __('How much is :x?', ['x' => $firstService]) : null, __('What time do you open?'), __('Can I book tomorrow?'), __('I want a refund'), __('Can I talk to a person?')]) as $q)<button type="button" class="btn small" data-q="{{ $q }}">{{ $q }}</button>@endforeach
@@ -98,16 +114,9 @@
         <div id="try-out"></div>
     </div>
 
-    <div class="card safe">
-        <b>{{ __('What the AI will never do') }}</b>
-        <ul>
-            <li>{{ __('Invent prices, offers or opening times. It quotes only what is written for your business.') }}</li>
-            <li>{{ __('Offer appointment times. Booking always goes through the Book button.') }}</li>
-            <li>{{ __('Keep talking to an upset customer. It passes them to your team.') }}</li>
-            <li>{{ __('Pretend to be a person. It says it is a virtual assistant.') }}</li>
-        </ul>
-    </div>
+    </section>
 
+    <section data-tab-panel="usage" hidden>
     <h2 class="bk-h" id="usage" style="margin-top:22px">{{ __('Usage and history') }}</h2>
     <div class="card ai-usage">
         <div class="bar spread"><b>{{ __('This month') }}</b><span class="mute">{{ __('Resets on :date', ['date' => $resets]) }}</span></div>
@@ -139,6 +148,8 @@
         </table></div>
     </details>
 
+    </section>
+
     <dialog id="ans-dialog" class="dlg wide">
         <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
         <h3 id="ad-title">{{ __('Add an answer') }}</h3>
@@ -156,6 +167,17 @@
 <script>
 (function () {
   var csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+  // Tabs: remembered in the address (#teach), so a reload or a link opens the same tab.
+  var tabs = document.querySelectorAll('#ai-tabs a'), panels = document.querySelectorAll('[data-tab-panel]');
+  function showTab(name) {
+    if (!document.querySelector('[data-tab-panel="' + name + '"]')) { name = 'mode'; }
+    tabs.forEach(function (a) { a.classList.toggle('on', a.dataset.tab === name); });
+    panels.forEach(function (p) { p.hidden = p.dataset.tabPanel !== name; });
+  }
+  tabs.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.dataset.tab); history.replaceState(null, '', '#' + a.dataset.tab); }); });
+  window.addEventListener('hashchange', function () { showTab(location.hash.replace('#', '')); });
+  showTab(location.hash.replace('#', '') || 'mode');
 
   // Mode cards.
   document.querySelectorAll('.mode input').forEach(function (r) {
