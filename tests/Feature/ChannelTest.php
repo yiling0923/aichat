@@ -745,4 +745,18 @@ class ChannelTest extends TestCase
         $this->assertSame('image', $all[count($all) - 2]['message']['attachment']['type']);
         $this->assertSame('Here it is', end($all)['message']['text']);
     }
+
+    public function test_an_expired_token_failure_says_how_to_fix_it(): void
+    {
+        $this->hook($this->waText('hi', 'wamid.1'));
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $id = $this->in(fn () => Conversation::query()->first()->id);
+        $this->meta(['graph.facebook.com/*' => Http::response(['error' => ['message' => 'Authentication Error']], 401)]);
+
+        $r = $this->actingAs($staff)->postJson("/admin/api/conversations/{$id}/reply", ['text' => 'Hello'])->assertOk();
+
+        $this->assertSame('failed', $r->json('message.delivery'));
+        $this->assertStringContainsString('Fix connection', $r->json('message.delivery_error'));
+        $this->assertStringContainsString('expired', (string) $this->in(fn () => Channel::query()->first()->last_error));
+    }
 }

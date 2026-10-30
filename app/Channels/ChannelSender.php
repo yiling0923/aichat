@@ -45,9 +45,22 @@ class ChannelSender
             $this->mark($message, 'sent', null, $id);
         } catch (Throwable $e) {
             Log::warning('Channel send failed', ['channel' => $channel->id, 'error' => $e->getMessage()]);
-            $channel->forceFill(['last_error' => mb_substr($e->getMessage(), 0, 500)])->save();
-            $this->mark($message, 'failed', $e->getMessage());
+            $reason = $this->friendly($e->getMessage());
+            $channel->forceFill(['last_error' => mb_substr($reason, 0, 500)])->save();
+            $this->mark($message, 'failed', $reason);
         }
+    }
+
+    /** Meta's own wording is hard to act on. The most common problem, an expired token, gets the fix spelled out. */
+    private function friendly(string $error): string
+    {
+        $lower = strtolower($error);
+
+        if (str_contains($lower, 'authentication error') || str_contains($lower, 'access token') || str_contains($lower, 'oauth') || str_contains($lower, 'session has expired') || str_contains($lower, 'token')) {
+            return $error.' The access token for this channel has probably expired. Open Channels, press Fix connection, paste a new access token and save. (A System user token in Meta Business settings never expires.)';
+        }
+
+        return $error;
     }
 
     private function mark(Message $message, string $status, ?string $error = null, ?string $externalId = null): void
