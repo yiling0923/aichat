@@ -80,27 +80,46 @@
     </section>
 
     <section data-tab-panel="teach" hidden>
-    <h2 class="bk-h" id="step-teach">{{ __('2. Teach it: extra answers') }}</h2>
-    <p class="mute" style="margin-top:-4px">{{ __('Opening hours, services with prices and the information screens of your menu are added automatically. Add anything else customers ask.') }}</p>
-    <div class="bar" style="margin-bottom:10px"><button type="button" class="btn primary" id="new-answer">{{ __('Add an answer') }}</button></div>
-    <div class="masonry">
-        @foreach ($entries as $e)
-            <div class="card reply {{ $e->active ? '' : 'off' }}">
-                <div class="reply-top"><b>{{ $e->title }}</b>@unless ($e->active)<span class="tag">{{ __('Not used') }}</span>@endunless</div>
-                <p class="reply-text"><span class="lang">{{ __('EN') }}</span>{{ $e->answer['en'] ?? '' }}</p>
-                @if (! empty($e->answer['zh']))<p class="reply-text"><span class="lang">中文</span>{{ $e->answer['zh'] }}</p>@endif
-                <div class="reply-actions"><button type="button" class="btn small" data-edit
-                    data-action="{{ url('/admin/ai/knowledge/'.$e->id) }}" data-delete="{{ url('/admin/ai/knowledge/'.$e->id.'/delete') }}"
-                    data-title="{{ $e->title }}" data-en="{{ $e->answer['en'] ?? '' }}" data-zh="{{ $e->answer['zh'] ?? '' }}" data-active="{{ $e->active ? 1 : 0 }}">{{ __('Edit') }}</button></div>
-            </div>
-        @endforeach
+    <div class="teach-head">
+        <div>
+            <h2 id="step-teach">{{ __('2. Teach it: extra answers') }}</h2>
+            <p class="mute">{{ __('Opening hours, services with prices and the information screens of your menu are added automatically. Add anything else customers ask.') }}</p>
+        </div>
+        <button type="button" class="btn primary" id="new-answer">+ {{ __('Add an answer') }}</button>
     </div>
+
+    <div class="teach-auto">
+        <span class="ta-title">{{ __('The AI already knows') }}</span>
+        <span class="ta-chip">&#10003; {{ __('Opening hours') }}</span>
+        <span class="ta-chip">&#10003; {{ __('Services and prices') }}</span>
+        <span class="ta-chip">&#10003; {{ __('Your menu information screens') }}</span>
+    </div>
+
     @php $have = $entries->pluck('title')->map(fn ($t) => mb_strtolower($t)); $ideas = collect($topicIdeas)->reject(fn ($t) => $have->contains(mb_strtolower($t))); @endphp
     @if ($ideas->isNotEmpty())
-        <div class="card ideas"><b>{{ $entries->isEmpty() ? __('Start with a few common topics') : __('Ideas') }}</b>
-            <div class="idea-row">@foreach ($ideas as $t)<button type="button" class="btn small" data-idea="{{ $t }}">+ {{ $t }}</button>@endforeach</div></div>
+        <div class="card teach-ideas">
+            <div class="ti-head"><b>{{ $entries->isEmpty() ? __('Start with a few common topics') : __('More ideas') }}</b><small>{{ __('Press a topic, then write the answer once.') }}</small></div>
+            <div class="idea-row">@foreach ($ideas as $t)<button type="button" class="btn small" data-idea="{{ $t }}">+ {{ $t }}</button>@endforeach</div>
+        </div>
     @endif
 
+    <h3 class="teach-sub">{{ __('Your answers') }} <span>{{ $entries->count() }}</span></h3>
+    @if ($entries->isEmpty())
+        <div class="card teach-empty"><b>{{ __('No extra answers yet') }}</b><p class="mute">{{ __('Add answers to questions like parking, payment methods or your cancellation policy. The AI will use them when customers ask.') }}</p></div>
+    @else
+        <div class="masonry">
+            @foreach ($entries as $e)
+                <div class="card reply {{ $e->active ? '' : 'off' }}">
+                    <div class="reply-top"><b>{{ $e->title }}</b>@unless ($e->active)<span class="tag">{{ __('Not used') }}</span>@endunless</div>
+                    <p class="reply-text"><span class="lang">{{ __('EN') }}</span>{{ $e->answer['en'] ?? '' }}</p>
+                    @if (! empty($e->answer['zh']))<p class="reply-text"><span class="lang">中文</span>{{ $e->answer['zh'] }}</p>@endif
+                    <div class="reply-actions"><button type="button" class="btn small" data-edit
+                        data-action="{{ url('/admin/ai/knowledge/'.$e->id) }}" data-delete="{{ url('/admin/ai/knowledge/'.$e->id.'/delete') }}"
+                        data-title="{{ $e->title }}" data-en="{{ $e->answer['en'] ?? '' }}" data-zh="{{ $e->answer['zh'] ?? '' }}" data-active="{{ $e->active ? 1 : 0 }}">{{ __('Edit') }}</button></div>
+                </div>
+            @endforeach
+        </div>
+    @endif
     </section>
 
     <section data-tab-panel="try" hidden>
