@@ -848,3 +848,12 @@ Needs your own free Google account. Allow about 10 minutes.
 2. In the chat (or WhatsApp) type "Payment methods", "can I pay by card" or "pay". The bot sends your answer exactly as written, with the menu buttons under it. It works even when AI is off and no AI key is set.
 3. The same works for Parking (parking, 停车), Aftercare, Cancellation policy (cancel, refund), Walk-ins and First visit. A turned-off answer is never sent. Typing "cancel my booking" still goes to the menu's booking steps.
 4. Your answer beats the menu's own text for the same word (typing "parking" gives your Parking answer, not the sample location message). While a customer waits for a person, a matching answer is also sent, with the usual waiting note.
+
+## DB. Free improvements (answer keywords, missed questions, menu files, Day view, print)
+
+Not yet checked in a browser. Check each:
+1. AI assistant > Teach it: an answer has "Also answer when customers type these words". Add "toilet, restroom" to an answer titled Facilities; typing "where is the toilet" in the chat sends that answer.
+2. When the bot cannot answer a typed question, it appears under "Questions the bot could not answer" (Teach it). "Teach an answer" opens the form filled in; saving removes it from the list. "Ignore" removes it. This needs `php artisan migrate`.
+3. Menu builder: a Message or Question step has "Send a picture or file with this step". Upload a JPG/PNG/PDF, save and publish; the bot sends the file just before that step's text.
+4. Schedule > Day: one column per practitioner for the chosen day; the week headers link to that day.
+5. Reports: "Print / save as PDF" prints the tab you are on without the menu and buttons; the Export CSV list now also has the Sales and Marketing files.

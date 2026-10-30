@@ -49,6 +49,15 @@ class FlowValidator
                 $item['notify'] = (bool) $node['notify'];
             }
 
+            if (isset($node['file']) && is_array($node['file']) && str_starts_with((string) ($node['file']['path'] ?? ''), 'menu-files/')) {
+                $item['file'] = [
+                    'type' => in_array($node['file']['type'] ?? '', ['image', 'video', 'document'], true) ? $node['file']['type'] : 'document',
+                    'mime' => $this->str($node['file']['mime'] ?? '', 100),
+                    'filename' => $this->str($node['file']['filename'] ?? '', 80),
+                    'path' => $this->str($node['file']['path'], 120),
+                ];
+            }
+
             if (isset($node['link']) && is_array($node['link'])) {
                 $item['link'] = [
                     'url' => $this->str($node['link']['url'] ?? '', 500),

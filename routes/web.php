@@ -99,6 +99,7 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::get('/menu', [\App\Http\Controllers\MenuController::class, 'index'])->name('menu');
     Route::get('/api/menu', [\App\Http\Controllers\MenuController::class, 'show']);
     Route::put('/api/menu', [\App\Http\Controllers\MenuController::class, 'save']);
+    Route::post('/api/menu/file', [\App\Http\Controllers\MenuController::class, 'upload']);
     Route::post('/api/menu/publish', [\App\Http\Controllers\MenuController::class, 'publish']);
     Route::post('/api/menu/reset', [\App\Http\Controllers\MenuController::class, 'reset']);
     Route::post('/api/menu/preview', [\App\Http\Controllers\MenuController::class, 'preview']);
@@ -167,6 +168,7 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::post('/ai/knowledge', [$ai, 'storeEntry']);
     Route::post('/ai/knowledge/{id}', [$ai, 'updateEntry'])->whereNumber('id');
     Route::post('/ai/knowledge/{id}/delete', [$ai, 'destroyEntry'])->whereNumber('id');
+    Route::post('/ai/unanswered/{id}/dismiss', [$ai, 'dismissUnanswered'])->whereNumber('id');
 
     $tp = \App\Http\Controllers\TemplateController::class;
     Route::get('/templates', [$tp, 'index'])->name('templates');

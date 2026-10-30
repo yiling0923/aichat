@@ -22,7 +22,7 @@ class ScheduleController extends Controller
     {
         $business = $request->user()->business;
         $tz = $business->timezone ?: 'UTC';
-        $view = in_array($request->query('view'), ['month', 'week', 'list'], true) ? $request->query('view') : 'month';
+        $view = in_array($request->query('view'), ['month', 'week', 'day', 'list'], true) ? $request->query('view') : 'month';
         $practitionerId = $request->integer('practitioner') ?: null;
 
         $data = ['business' => $business, 'view' => $view, 'practitionerId' => $practitionerId,
@@ -55,6 +55,12 @@ class ScheduleController extends Controller
             $title = $first->translatedFormat(app()->getLocale() === 'zh' ? 'Y年n月' : 'F Y');
             $prev = $first->copy()->subMonth();
             $next = $first->copy()->addMonth();
+        } elseif ($view === 'day') {
+            $from = $anchor->copy();
+            $to = $anchor->copy()->endOfDay();
+            $title = app()->getLocale() === 'zh' ? $anchor->translatedFormat('Y年n月j日 l') : $anchor->format('l, j F Y');
+            $prev = $anchor->copy()->subDay();
+            $next = $anchor->copy()->addDay();
         } else {
             $from = $anchor->copy()->startOfWeek(Carbon::MONDAY);
             $to = $from->copy()->endOfWeek(Carbon::SUNDAY);
@@ -78,6 +84,16 @@ class ScheduleController extends Controller
 
         if ($view === 'week') {
             $data += $this->weekLayout($byDay, $tz, $business);
+        }
+
+        // Day view: one column per practitioner (just the chosen one when a person is picked), laid out like the week grid.
+        if ($view === 'day') {
+            $columns = $data['practitioners']->when($practitionerId, fn ($c) => $c->where('id', $practitionerId))->values();
+            $byPerson = [];
+            foreach ($bookings as $b) {
+                $byPerson[$b->practitioner_id][] = $b;
+            }
+            $data += ['columns' => $columns, 'byPerson' => $byPerson] + $this->weekLayout($byPerson, $tz, $business);
         }
 
         return view('admin.schedule', $data);

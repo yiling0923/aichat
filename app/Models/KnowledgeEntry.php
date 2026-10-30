@@ -9,7 +9,7 @@ class KnowledgeEntry extends Model
 {
     use BelongsToBusiness;
 
-    protected $fillable = ['title', 'answer', 'active'];
+    protected $fillable = ['title', 'answer', 'keywords', 'active'];
 
     protected function casts(): array
     {

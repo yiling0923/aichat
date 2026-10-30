@@ -10,6 +10,8 @@
     @endphp
     <div class="page-head">
         <div><h1>{{ __('Reports') }}</h1><p class="mute">{{ preg_match('/^The last (\d+) days$/', $r->label, $pm) ? __('The last :n days', ['n' => $pm[1]]) : __($r->label) }}, {{ __(':from to :to', ['from' => \App\Support\Lang::fmt($r->from, 'j M', 'n月j日'), 'to' => \App\Support\Lang::fmt($r->to, 'j M Y', 'Y年n月j日')]) }}@if ($r->filtered()) · {{ __('filtered') }} @endif</p></div>
+        <div class="head-actions">
+        <button type="button" class="btn" id="print-report">{{ __('Print / save as PDF') }}</button>
         <details class="menu">
             <summary class="btn">{{ __('Export CSV') }}</summary>
             <div class="menu-body">
@@ -19,7 +21,9 @@
                 <small class="mute">{{ __('Uses the period and filters you chose.') }}</small>
             </div>
         </details>
+        </div>
     </div>
+    <p class="print-only print-title">{{ $business->name }} · {{ __('Reports') }} · {{ __($r->label) }}</p>
 
     <form method="get" action="{{ route('reports') }}" class="fbar" id="filters">
         <select name="period" id="period" aria-label="{{ __('Period') }}">@foreach ($periods as $k => $name)<option value="{{ $k }}" @selected($r->period === (string) $k)>{{ __($name) }}</option>@endforeach</select>
@@ -216,5 +220,8 @@
         show(location.hash.replace('#', '') || 'overview');
         p.addEventListener('change', function () { c.hidden = p.value !== 'custom'; if (p.value !== 'custom') { document.getElementById('filters').submit(); } });
     })();
+
+  var pb = document.getElementById('print-report');
+  if (pb) { pb.addEventListener('click', function () { window.print(); }); }
 </script>
 @endpush

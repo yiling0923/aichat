@@ -12,6 +12,7 @@
         <div class="seg">
             <a @class(['on' => $view === 'month']) href="{{ $link(['view' => 'month', 'date' => isset($anchor) ? $anchor->format('Y-m-d') : null]) }}">{{ __('Month') }}</a>
             <a @class(['on' => $view === 'week']) href="{{ $link(['view' => 'week', 'date' => isset($anchor) ? $anchor->format('Y-m-d') : null]) }}">{{ __('Week') }}</a>
+            <a @class(['on' => $view === 'day']) href="{{ $link(['view' => 'day', 'date' => isset($anchor) ? ($view === 'month' ? $today->format('Y-m-d') : $anchor->format('Y-m-d')) : null]) }}">{{ __('Day') }}</a>
             <a @class(['on' => $view === 'list']) href="{{ $link(['view' => 'list']) }}">{{ __('List') }}</a>
         </div>
     </div>
@@ -62,18 +63,29 @@
                 </div>
             @endforeach
         </div>
-    @elseif ($view === 'week')
-        @php $hourH = 48; $hours = $endHour - $startHour; @endphp
+    @elseif ($view === 'week' || $view === 'day')
+        @php
+            $hourH = 48; $hours = $endHour - $startHour;
+            // Week: one column per day. Day: one column per practitioner, all on the same day.
+            $cols = [];
+            if ($view === 'week') {
+                for ($i = 0; $i < 7; $i++) { $cd = $from->copy()->addDays($i); $cols[] = ['d' => $cd, 'list' => $byDay[$cd->format('Y-m-d')] ?? [], 'head' => '<span>'.e($cd->translatedFormat('D')).'</span> <b>'.$cd->day.'</b>', 'href' => $link(['view' => 'day', 'date' => $cd->format('Y-m-d')])]; }
+            } else {
+                foreach ($columns as $p) { $cols[] = ['d' => $anchor->copy(), 'list' => $byPerson[$p->id] ?? [], 'head' => '<b>'.e($p->name).'</b>', 'href' => null]; }
+            }
+        @endphp
+        @if ($cols === [])
+            <div class="card"><p class="mute">{{ __('No practitioners yet. Add them in Booking setup.') }}</p></div>
+        @endif
         <div class="week-scroll" id="week-scroll">
-            <div class="week" style="--hours: {{ $hours }}; --hh: {{ $hourH }}px">
+            <div @class(['week', 'week-day' => $view === 'day']) style="--hours: {{ $hours }}; --hh: {{ $hourH }}px; --cols: {{ max(1, count($cols)) }}">
                 <div class="wh gutter"></div>
-                @for ($i = 0; $i < 7; $i++)
-                    @php $d = $from->copy()->addDays($i); @endphp
-                    <div @class(['wh', 'today' => $d->isSameDay($today)])><span>{{ $d->translatedFormat('D') }}</span> <b>{{ $d->day }}</b></div>
-                @endfor
+                @foreach ($cols as $c)
+                    <div @class(['wh', 'today' => $view === 'week' && $c['d']->isSameDay($today)])>@if ($c['href'])<a href="{{ $c['href'] }}" class="wh-link">{!! $c['head'] !!}</a>@else{!! $c['head'] !!}@endif</div>
+                @endforeach
                 <div class="gutter hours">@for ($h = $startHour; $h < $endHour; $h++)<div>{{ sprintf('%02d:00', $h) }}</div>@endfor</div>
-                @for ($i = 0; $i < 7; $i++)
-                    @php $d = $from->copy()->addDays($i); $key = $d->format('Y-m-d'); @endphp
+                @foreach ($cols as $c)
+                    @php $d = $c['d']; $key = $d->format('Y-m-d'); @endphp
                     @php
                         $win = $openHours[strtolower($d->format('D'))] ?? null;
                         $isClosed = ! is_array($win) || count($win) !== 2 || in_array($key, $closedDates, true);
@@ -91,7 +103,7 @@
                         @if ($d->isSameDay($today) && ($nowH = now($tz)->hour + now($tz)->minute / 60) >= $startHour && $nowH <= $endHour)
                             <i class="nowline" style="top:{{ round(($nowH - $startHour) * $hourH, 1) }}px"><b>{{ now($tz)->format('H:i') }}</b></i>
                         @endif
-                        @foreach ($byDay[$key] ?? [] as $b)
+                        @foreach ($c['list'] as $b)
                             @php
                                 $s = $b->starts_at->copy()->setTimezone($tz); $e = $b->ends_at->copy()->setTimezone($tz);
                                 if ($e->lte($s) || ! $e->isSameDay($s)) { $e = $s->copy()->addMinutes(max(15, (int) ($b->service->duration_min ?? 30))); }
@@ -105,7 +117,7 @@
                             </button>
                         @endforeach
                     </div>
-                @endfor
+                @endforeach
             </div>
         </div>
     @else

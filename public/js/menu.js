@@ -115,6 +115,33 @@
     });
   }
 
+  // A picture, PDF or other file the bot sends just before this step's text (a price list, a map).
+  function fileField(n) {
+    var wrap = el('div', { class: 'f file-step' }, [el('span', { text: __t('Send a picture or file with this step (optional)') })]);
+    var status = el('small', { class: 'mute' });
+    var input = el('input', { type: 'file', accept: 'image/jpeg,image/png,application/pdf,video/mp4,.doc,.docx,.xls,.xlsx' });
+    function show() {
+      status.textContent = n.file ? __t('Attached: :name', { name: n.file.filename || n.file.type }) : __t('Nothing attached. JPG, PNG, PDF, MP4 or Office file, up to 16 MB.');
+      remove.hidden = !n.file;
+    }
+    var remove = el('button', { type: 'button', class: 'btn small danger', text: __t('Remove file') });
+    remove.addEventListener('click', function () { delete n.file; input.value = ''; show(); refreshState(); });
+    input.addEventListener('change', function () {
+      if (!input.files.length) { return; }
+      var fd = new FormData(); fd.append('file', input.files[0]);
+      status.textContent = __t('Uploading...');
+      fetch(base + '/file', { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }, body: fd })
+        .then(function (r) { return r.json().then(function (j) { j._status = r.status; return j; }); })
+        .then(function (d) {
+          if (d.file) { n.file = d.file; refreshState(); } else { toast((d.message || (d.errors && d.errors.file && d.errors.file[0])) || __t('Could not upload this file.'), true); input.value = ''; }
+          show();
+        })
+        .catch(function () { toast(__t('Could not upload this file.'), true); show(); });
+    });
+    wrap.appendChild(input); wrap.appendChild(status); wrap.appendChild(remove); show();
+    return wrap;
+  }
+
   function renderEditor() {
     var box = document.getElementById('editor');
     box.innerHTML = '';
@@ -159,6 +186,7 @@
     if (n.type === 'booking' || n.type === 'my_booking') {
       box.appendChild(el('p', { class: 'mute small-note', text: __t('Services, days and times come from Booking setup. No text is needed here.') }));
     }
+    if (n.type === 'options' || n.type === 'message') { box.appendChild(fileField(n)); }
     if (n.type !== 'options' && n.type !== 'handover') {
       box.appendChild(field(__t('Then go to'), select(stepOptions(), n.goto, null, function (v) { if (v) { n.goto = v; } else { delete n.goto; } }, n.type === 'ask' ? __t('Choose...') : __t('Main menu'))));
     }

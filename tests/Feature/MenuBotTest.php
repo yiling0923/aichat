@@ -279,4 +279,28 @@ class MenuBotTest extends TestCase
 
         $this->assertSame('有免费停车位。', $this->last($this->say('有停车位吗', $token))[0]);
     }
+
+    public function test_keywords_on_a_saved_answer_and_the_unanswered_list(): void
+    {
+        $this->inBusiness(fn () => \App\Models\KnowledgeEntry::create(['title' => 'Facilities', 'answer' => ['en' => 'Toilets are next to reception.'], 'keywords' => 'toilet, restroom，洗手间', 'active' => true]));
+        $token = $this->say('hi')->json('token');
+        $this->say('English', $token, 'lang_en');
+
+        $this->assertSame('Toilets are next to reception.', $this->last($this->say('where is the toilet', $token))[0]);
+        $this->assertSame('Toilets are next to reception.', $this->last($this->say('Restroom?', $token))[0]);
+
+        // Nothing matches: the menu answers as before, and the question is noted (and counted once more when repeated).
+        $this->say('do you sell gift vouchers', $token);
+        $this->say('Do you sell gift vouchers?', $token);
+        $this->say('12345', $token);
+        $rows = $this->inBusiness(fn () => \App\Models\UnansweredQuestion::query()->get());
+        $this->assertCount(1, $rows);
+        $this->assertSame(2, $rows[0]->times);
+
+        // Teaching it from the list removes it from the list.
+        $owner = \App\Models\User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $this->actingAs($owner)->get('/admin/ai')->assertOk()->assertSee('Questions the bot could not answer')->assertSee('do you sell gift vouchers');
+        $this->actingAs($owner)->post('/admin/ai/knowledge', ['title' => 'Gift vouchers', 'answer_en' => 'Yes, at reception.', 'unanswered_id' => $rows[0]->id])->assertRedirect();
+        $this->assertSame(0, $this->inBusiness(fn () => \App\Models\UnansweredQuestion::query()->count()));
+    }
 }

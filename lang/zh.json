@@ -1774,5 +1774,22 @@
     "Chat to booking %": "聊天转预约 %",
     "Topic customers asked about": "客户询问的话题",
     "Automatic message": "自动消息",
-    "Works even with the AI off: when a customer types the topic (for example \"parking\"), your answer is sent as you wrote it.": "即使关闭 AI 也有效:顾客输入该主题(例如“停车”)时,会按您写的内容原样回复。"
+    "Works even with the AI off: when a customer types the topic (for example \"parking\"), your answer is sent as you wrote it.": "即使关闭 AI 也有效:顾客输入该主题(例如“停车”)时,会按您写的内容原样回复。",
+    "Questions the bot could not answer": "机器人答不上来的问题",
+    "What customers typed that matched nothing. Teach an answer once and the bot will know next time.": "顾客输入后没有匹配到任何内容的问题。写一次答案,机器人下次就会了。",
+    ":n times": ":n 次",
+    "Teach an answer": "添加答案",
+    "Ignore": "忽略",
+    "Also answer when customers type these words (optional)": "顾客输入这些词时也回答(可选)",
+    "toilet, restroom, washroom": "厕所, 洗手间",
+    "Separate with commas. The topic itself already counts.": "用逗号分隔。主题本身已经算在内。",
+    "Print / save as PDF": "打印 / 存为 PDF",
+    "No practitioners yet. Add them in Booking setup.": "还没有服务人员。请在预约设置中添加。",
+    "Removed from the list.": "已从列表中移除。",
+    "Send a picture or file with this step (optional)": "在此步骤附带图片或文件(可选)",
+    "Attached: :name": "已附上::name",
+    "Nothing attached. JPG, PNG, PDF, MP4 or Office file, up to 16 MB.": "未附加文件。支持 JPG、PNG、PDF、MP4 或 Office 文件,最大 16 MB。",
+    "Remove file": "移除文件",
+    "Uploading...": "上传中...",
+    "Could not upload this file.": "无法上传此文件。"
 }

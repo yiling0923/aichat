@@ -40,6 +40,25 @@ class MenuController extends Controller
         return response()->json($this->payload($request));
     }
 
+    /** A picture or file a menu step sends along with its text (a price list, a map). Kept per business. */
+    public function upload(Request $request): JsonResponse
+    {
+        $request->validate(['file' => ['required', 'file', 'max:'.\App\Support\ChatFile::MAX_KB]]);
+        $file = $request->file('file');
+        $mime = strtolower((string) $file->getMimeType());
+        $type = \App\Support\ChatFile::type($mime);
+
+        if ($type === null || $type === 'audio') {
+            return response()->json(['message' => \App\Support\ChatFile::REFUSED], 422);
+        }
+
+        $path = 'menu-files/'.$request->user()->business_id.'/'.\Illuminate\Support\Str::random(24);
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path, file_get_contents($file->getRealPath()));
+        $name = mb_substr(preg_replace('/[^\p{L}\p{N}._ -]+/u', '_', (string) $file->getClientOriginalName()), 0, 80);
+
+        return response()->json(['file' => ['type' => $type, 'mime' => $mime, 'filename' => $name, 'path' => $path]]);
+    }
+
     public function publish(Request $request): JsonResponse
     {
         $record = $this->flows->forBusiness($request->user()->business);

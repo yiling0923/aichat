@@ -104,6 +104,20 @@
         </div>
     @endif
 
+    @if ($unanswered->isNotEmpty())
+        <div class="card teach-missed">
+            <div class="ti-head"><b>{{ __('Questions the bot could not answer') }}</b><small>{{ __('What customers typed that matched nothing. Teach an answer once and the bot will know next time.') }}</small></div>
+            @foreach ($unanswered as $u)
+                <div class="missed-row">
+                    <span class="missed-q">{{ $u->text }}</span>
+                    <small class="mute">{{ __(':n times', ['n' => $u->times]) }} · {{ $u->last_asked_at?->diffForHumans() }}</small>
+                    <button type="button" class="btn small primary" data-missed="{{ $u->id }}" data-title="{{ $u->text }}">{{ __('Teach an answer') }}</button>
+                    <form method="post" action="{{ url('/admin/ai/unanswered/'.$u->id.'/dismiss') }}">@csrf<button class="btn small" type="submit">{{ __('Ignore') }}</button></form>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     <h3 class="teach-sub">{{ __('Your answers') }} <span>{{ $entries->count() }}</span></h3>
     @if ($entries->isEmpty())
         <div class="card teach-empty"><b>{{ __('No extra answers yet') }}</b><p class="mute">{{ __('Add answers to questions like parking, payment methods or your cancellation policy. The AI will use them when customers ask.') }}</p></div>
@@ -116,7 +130,7 @@
                     @if (! empty($e->answer['zh']))<p class="reply-text"><span class="lang">中文</span>{{ $e->answer['zh'] }}</p>@endif
                     <div class="reply-actions"><button type="button" class="btn small" data-edit
                         data-action="{{ url('/admin/ai/knowledge/'.$e->id) }}" data-delete="{{ url('/admin/ai/knowledge/'.$e->id.'/delete') }}"
-                        data-title="{{ $e->title }}" data-en="{{ $e->answer['en'] ?? '' }}" data-zh="{{ $e->answer['zh'] ?? '' }}" data-active="{{ $e->active ? 1 : 0 }}">{{ __('Edit') }}</button></div>
+                        data-title="{{ $e->title }}" data-keywords="{{ $e->keywords }}" data-en="{{ $e->answer['en'] ?? '' }}" data-zh="{{ $e->answer['zh'] ?? '' }}" data-active="{{ $e->active ? 1 : 0 }}">{{ __('Edit') }}</button></div>
                 </div>
             @endforeach
         </div>
@@ -178,6 +192,8 @@
             <label class="f" style="margin-top:12px"><span>{{ __('Question or topic') }}</span><input type="text" name="title" id="ad-name" required maxlength="150" placeholder="{{ __('Parking') }}"></label>
             <label class="f"><span>{{ __('Answer (English)') }}</span><textarea name="answer_en" id="ad-en" rows="4" required maxlength="1500"></textarea></label>
             <label class="f"><span>{{ __('答案 (中文, optional)') }}</span><textarea name="answer_zh" id="ad-zh" rows="4" maxlength="1500"></textarea></label>
+            <label class="f"><span>{{ __('Also answer when customers type these words (optional)') }}</span><input type="text" name="keywords" id="ad-kw" maxlength="300" placeholder="{{ __('toilet, restroom, washroom') }}"><small class="mute">{{ __('Separate with commas. The topic itself already counts.') }}</small></label>
+            <input type="hidden" name="unanswered_id" id="ad-missed" value="">
             <label class="chk"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" id="ad-active" checked> {{ __('The AI may use this answer') }}</label>
             <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save') }}</button><button class="btn danger push" type="submit" id="ad-delete" hidden onclick="return confirm('Delete this answer?')">{{ __('Delete') }}</button></div>
         </form>
@@ -235,17 +251,19 @@
 
   // Answers pop-up.
   var dlg = document.getElementById('ans-dialog'), form = document.getElementById('ad-form'), del = document.getElementById('ad-delete');
-  var f = { name: document.getElementById('ad-name'), en: document.getElementById('ad-en'), zh: document.getElementById('ad-zh'), on: document.getElementById('ad-active') };
+  var f = { kw: document.getElementById('ad-kw'), missed: document.getElementById('ad-missed'), name: document.getElementById('ad-name'), en: document.getElementById('ad-en'), zh: document.getElementById('ad-zh'), on: document.getElementById('ad-active') };
   function open(d) {
     document.getElementById('ad-title').textContent = d && d.action ? @json(__('Edit answer')) : @json(__('Add an answer'));
     form.action = d && d.action ? d.action : '{{ url('/admin/ai/knowledge') }}';
     f.name.value = d ? (d.title || '') : ''; f.en.value = d ? (d.en || '') : ''; f.zh.value = d ? (d.zh || '') : ''; f.on.checked = d && d.active !== undefined ? d.active === '1' : true;
+    f.kw.value = d ? (d.keywords || '') : ''; f.missed.value = d && d.missed ? d.missed : '';
     del.hidden = !(d && d.action); if (d && d.delete) { del.setAttribute('formaction', d.delete); }
     dlg.showModal(); (d && d.action ? f.en : (d && d.title ? f.en : f.name)).focus();
   }
   document.getElementById('new-answer').addEventListener('click', function () { open(null); });
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   document.querySelectorAll('[data-idea]').forEach(function (b) { b.addEventListener('click', function () { open({ title: b.dataset.idea }); }); });
+  document.querySelectorAll('[data-missed]').forEach(function (b) { b.addEventListener('click', function () { open({ title: b.dataset.title, keywords: b.dataset.title, missed: b.dataset.missed }); }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });
 })();
 </script>

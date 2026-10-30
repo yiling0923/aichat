@@ -135,6 +135,10 @@ class MenuBot
                     return $this->finish($conversation, $state, $out);
                 }
 
+                if ($optionId === null && $conversation->business !== null && $conversation->channel !== 'preview') {
+                    \App\Models\UnansweredQuestion::note($text, $conversation->language ?? $language, $conversation->channel);
+                }
+
                 return $this->miss($conversation, $flow, $state, $out, $language, 'sorry_choose');
             }
 
@@ -204,6 +208,21 @@ class MenuBot
      * @param  list<\App\Models\Message>  $out
      * @return list<\App\Models\Message>
      */
+    /** The picture or file attached to a menu step, sent before the step's text. Only this business's own files are ever sent. */
+    private function fileMessage(Conversation $conversation, array $node): ?\App\Models\Message
+    {
+        $file = (array) ($node['file'] ?? []);
+        $path = (string) ($file['path'] ?? '');
+
+        if ($path === '' || $conversation->business === null || ! str_starts_with($path, 'menu-files/'.$conversation->business->id.'/') || ! \Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        $media = ['type' => (string) ($file['type'] ?? 'document'), 'mime' => (string) ($file['mime'] ?? ''), 'filename' => (string) ($file['filename'] ?? ''), 'caption' => '', 'path' => $path, 'token' => \Illuminate\Support\Str::random(40)];
+
+        return $conversation->addMessage('out', 'bot', \App\Channels\InboundEvent::mediaLabel($media['type']), ['media' => $media]);
+    }
+
     private function enter(Conversation $conversation, Flow $flow, array $state, string $nodeId, array $out): array
     {
         for ($i = 0; $i < self::MAX_CHAIN; $i++) {
@@ -222,6 +241,10 @@ class MenuBot
             if (! empty($node['link']['url'])) {
                 $label = $flow->localize($node['link']['label'] ?? [], $language);
                 $text .= "\n".($label !== '' ? $label.': ' : '').$node['link']['url'];
+            }
+
+            if (in_array($type, ['options', 'message'], true) && ($file = $this->fileMessage($conversation, $node)) !== null) {
+                $out[] = $file;
             }
 
             if ($type === 'options') {

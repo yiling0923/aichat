@@ -147,16 +147,10 @@ class InboxController extends Controller
         $file = $request->file('file');
         $mime = strtolower((string) $file->getMimeType());
 
-        $type = match (true) {
-            in_array($mime, ['image/jpeg', 'image/png'], true) => 'image',
-            in_array($mime, ['video/mp4', 'video/3gpp'], true) => 'video',
-            in_array($mime, ['audio/ogg', 'audio/mpeg', 'audio/aac', 'audio/amr'], true) => 'audio',
-            in_array($mime, ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip', 'image/webp', 'image/gif'], true) => 'document',
-            default => null,
-        };
+        $type = \App\Support\ChatFile::type($mime);
 
         if ($type === null) {
-            return response()->json(['error' => 'This file type cannot be sent. Use a photo (JPG or PNG), video (MP4), voice note, PDF or Office file.'], 422);
+            return response()->json(['error' => \App\Support\ChatFile::REFUSED], 422);
         }
 
         $path = 'chat-media/'.$conversation->business_id.'/out-'.\Illuminate\Support\Str::random(24);

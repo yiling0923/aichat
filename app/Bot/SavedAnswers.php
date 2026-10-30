@@ -43,7 +43,7 @@ class SavedAnswers
         $bestScore = 0;
 
         foreach (KnowledgeEntry::query()->where('active', true)->orderBy('id')->get() as $entry) {
-            $score = $this->score($typed, $words, Text::normalize((string) $entry->title));
+            $score = $this->score($typed, $words, Text::normalize((string) $entry->title), self::keywordList((string) $entry->keywords));
 
             if ($score > $bestScore) {
                 $best = $entry;
@@ -61,8 +61,17 @@ class SavedAnswers
         return $answer !== '' ? $answer : null;
     }
 
-    /** @param  list<string>  $words */
-    private function score(string $typed, array $words, string $title): int
+    /** @return list<string> the owner's keywords (comma or line separated), normalised */
+    public static function keywordList(string $raw): array
+    {
+        return array_values(array_unique(array_filter(array_map(fn ($k) => Text::normalize($k), preg_split('/[,，、;；\n]+/u', $raw) ?: []), fn ($k) => mb_strlen($k) >= 2)));
+    }
+
+    /**
+     * @param  list<string>  $words
+     * @param  list<string>  $keywords  extra words the owner listed for this answer (normalised)
+     */
+    private function score(string $typed, array $words, string $title, array $keywords = []): int
     {
         if ($title === '') {
             return 0;
@@ -70,6 +79,12 @@ class SavedAnswers
 
         if (str_contains($typed, $title)) {
             return 100;
+        }
+
+        foreach ($keywords as $keyword) {
+            if (preg_match('/\p{Han}/u', $keyword) ? str_contains($typed, $keyword) : str_contains(' '.$typed.' ', ' '.$keyword.' ')) {
+                return 100;
+            }
         }
 
         foreach (self::SYNONYMS[$title] ?? [] as $synonym) {

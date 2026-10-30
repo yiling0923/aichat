@@ -44,6 +44,7 @@ class AiSettingsController extends Controller
             'tokensOut' => $out,
             'cost' => $in / 1_000_000 * (float) config('aichat.ai.price_input_per_million') + $out / 1_000_000 * (float) config('aichat.ai.price_output_per_million'),
             'entries' => KnowledgeEntry::query()->orderBy('id')->get(),
+            'unanswered' => \App\Models\UnansweredQuestion::query()->orderByDesc('times')->orderByDesc('last_asked_at')->limit(8)->get(),
             'knowledgeText' => $knowledge->build($business),
             'recent' => AiUsage::query()->orderByDesc('id')->limit(8)->get(),
             'planLimit' => app(\App\Billing\Plans::class)->limit($business, 'ai'),
@@ -84,6 +85,11 @@ class AiSettingsController extends Controller
     {
         KnowledgeEntry::create($this->entryData($request));
 
+        // Teaching an answer for a question the bot missed removes it from that list.
+        if ($request->filled('unanswered_id')) {
+            \App\Models\UnansweredQuestion::query()->whereKey((int) $request->input('unanswered_id'))->delete();
+        }
+
         return back()->with('status', __('Answer added. The AI can use it from now on.'));
     }
 
@@ -92,6 +98,13 @@ class AiSettingsController extends Controller
         KnowledgeEntry::query()->findOrFail($id)->update($this->entryData($request));
 
         return back()->with('status', __('Answer saved.'));
+    }
+
+    public function dismissUnanswered(int $id): RedirectResponse
+    {
+        \App\Models\UnansweredQuestion::query()->whereKey($id)->delete();
+
+        return back()->with('status', __('Removed from the list.'));
     }
 
     public function destroyEntry(int $id): RedirectResponse
@@ -108,8 +121,9 @@ class AiSettingsController extends Controller
             'title' => ['required', 'string', 'max:150'],
             'answer_en' => ['required', 'string', 'max:1500'],
             'answer_zh' => ['nullable', 'string', 'max:1500'],
+            'keywords' => ['nullable', 'string', 'max:300'],
         ]);
 
-        return ['title' => $data['title'], 'answer' => array_filter(['en' => $data['answer_en'], 'zh' => $data['answer_zh'] ?? null]), 'active' => $request->boolean('active', true)];
+        return ['title' => $data['title'], 'answer' => array_filter(['en' => $data['answer_en'], 'zh' => $data['answer_zh'] ?? null]), 'keywords' => trim((string) ($data['keywords'] ?? '')) ?: null, 'active' => $request->boolean('active', true)];
     }
 }

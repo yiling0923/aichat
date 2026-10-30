@@ -33,7 +33,7 @@ class ReportsController extends Controller
             'channels' => ReportData::CHANNELS,
             'services' => Service::query()->orderBy('sort')->get(),
             'practitioners' => Practitioner::query()->orderBy('name')->get(),
-            'exports' => ReportData::EXPORTS,
+            'exports' => ReportData::EXPORTS + ReportData::DETAIL_EXPORTS,
             'query' => array_filter($request->only(['period', 'from', 'to', 'channel', 'service', 'practitioner']), fn ($v) => $v !== null && $v !== ''),
         ]);
     }

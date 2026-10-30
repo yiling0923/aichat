@@ -182,4 +182,38 @@ class MenuBuilderTest extends TestCase
         $this->assertStringContainsString('not available right now', $r->json('messages.1.text'));
         Carbon::setTestNow();
     }
+
+    public function test_a_menu_step_can_send_a_picture_and_only_its_own_business_files(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $file = \Illuminate\Http\UploadedFile::fake()->image('prices.png', 20, 20);
+
+        $res = $this->actingAs($this->owner)->post('/admin/api/menu/file', ['file' => $file], ['Accept' => 'application/json'])->assertOk();
+        $attached = $res->json('file');
+        $this->assertSame('image', $attached['type']);
+        $this->assertStringStartsWith('menu-files/'.$this->business->id.'/', $attached['path']);
+        \Illuminate\Support\Facades\Storage::disk('local')->assertExists($attached['path']);
+
+        $this->actingAs($this->owner)->post('/admin/api/menu/file', ['file' => \Illuminate\Http\UploadedFile::fake()->create('x.exe', 5, 'application/x-msdownload')], ['Accept' => 'application/json'])->assertStatus(422);
+
+        $flow = DefaultFlow::make();
+        $flow['nodes']['prices']['file'] = $attached;
+        $this->actingAs($this->owner)->putJson('/admin/api/menu', ['flow' => $flow])->assertOk();
+        $this->actingAs($this->owner)->postJson('/admin/api/menu/publish')->assertOk();
+
+        $token = $this->postJson(route('chat.send', 'demo'), ['text' => 'hi'])->json('token');
+        $this->postJson(route('chat.send', 'demo'), ['text' => 'English', 'option_id' => 'lang_en', 'token' => $token]);
+        $r = $this->postJson(route('chat.send', 'demo'), ['text' => 'Prices', 'option_id' => 'prices', 'token' => $token]);
+        $media = array_values(array_filter($r->json('messages'), fn ($m) => ! empty($m['media'])));
+        $this->assertCount(1, $media);
+        $this->assertSame('image', $media[0]['media']['type']);
+        $this->assertNotEmpty($media[0]['media']['url']);
+
+        // A step that points at another business's file sends nothing.
+        $flow['nodes']['prices']['file']['path'] = 'menu-files/'.($this->business->id + 99).'/stolen';
+        $this->actingAs($this->owner)->putJson('/admin/api/menu', ['flow' => $flow])->assertOk();
+        $this->actingAs($this->owner)->postJson('/admin/api/menu/publish')->assertOk();
+        $r = $this->postJson(route('chat.send', 'demo'), ['text' => 'Prices', 'option_id' => 'prices', 'token' => $token]);
+        $this->assertCount(0, array_filter($r->json('messages'), fn ($m) => ! empty($m['media'])));
+    }
 }

@@ -217,4 +217,25 @@ class ScheduleCalendarTest extends TestCase
         $this->assertStringContainsString('wd closed', $html);                       // Saturday and Sunday are closed
         $this->assertMatchesRegularExpression('#class="ev st-confirmed"[^>]*style="top: 96px; height: 46#', $html);   // 11:00 is 2 hours after 9:00, one hour tall (the service length)
     }
+
+    public function test_day_view_has_one_column_per_practitioner_and_the_filter_narrows_it(): void
+    {
+        $day = now('Asia/Kuala_Lumpur')->addDay()->setTime(10, 0);
+        $this->make('Alice Column', 'Dr A', 'Facial', $day->format('Y-m-d H:i'));
+        $this->make('Bob Column', 'Dr B', 'Facial', $day->format('Y-m-d H:i'));
+        $this->make('Other Day Olga', 'Dr A', 'Facial', $day->copy()->addDay()->format('Y-m-d H:i'));
+        $dr = app(CurrentBusiness::class)->runAs($this->business, fn () => Practitioner::where('name', 'Dr A')->first());
+
+        $r = $this->actingAs($this->staff)->get('/admin/schedule?view=day&date='.$day->format('Y-m-d'))->assertOk();
+        $r->assertSee('Alice Column')->assertSee('Bob Column')->assertDontSee('Other Day Olga')->assertSee('--cols: 2', false)->assertSee('Day')
+            ->assertSee('<b>Dr A</b>', false)->assertSee('<b>Dr B</b>', false);
+        // Two people at the same time sit in their own columns, not squeezed side by side.
+        $r->assertDontSee('width: calc(100% / 2 - 4px)', false);
+
+        $this->actingAs($this->staff)->get('/admin/schedule?view=day&date='.$day->format('Y-m-d').'&practitioner='.$dr->id)->assertOk()
+            ->assertSee('Alice Column')->assertDontSee('Bob Column')->assertSee('--cols: 1', false);
+
+        // Week headers link to that day.
+        $this->actingAs($this->staff)->get('/admin/schedule?view=week&date='.$day->format('Y-m-d'))->assertOk()->assertSee('view=day', false);
+    }
 }
