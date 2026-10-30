@@ -184,4 +184,37 @@ class ScheduleCalendarTest extends TestCase
         $this->assertMatchesRegularExpression('/<a [^>]*href="[^"]*view=month[^"]*"[^>]*>Month<\/a>/', $week->getContent());
         $this->get('/admin/schedule?view=list')->assertOk()->assertSee('Upcoming');
     }
+
+    public function test_the_strip_names_the_next_booking_and_counts_finished_visits_nobody_marked(): void
+    {
+        $this->make('Past Pam', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->subDays(2)->setTime(11, 0)->format('Y-m-d H:i'));
+        $this->make('Soon Sam', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDay()->setTime(15, 30)->format('Y-m-d H:i'));
+
+        $r = $this->actingAs($this->staff)->get('/admin/schedule?view=week')->assertOk()->assertSee('Next booking')->assertSee('Soon Sam')->assertSee('15:30')->assertSee('Finished, not marked yet');
+        $this->assertMatchesRegularExpression('#Finished, not marked yet</small><b>1</b>#', $r->getContent());
+    }
+
+    public function test_the_list_groups_bookings_by_day_with_clear_buttons(): void
+    {
+        $this->make('Group Gina', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDay()->setTime(10, 0)->format('Y-m-d H:i'));
+        $this->make('Group Greg', 'Dr A', 'Facial', now('Asia/Kuala_Lumpur')->addDay()->setTime(12, 0)->format('Y-m-d H:i'));
+
+        $this->actingAs($this->staff)->get('/admin/schedule?view=list')->assertOk()->assertSee('Tomorrow')->assertSee('2 bookings')->assertSee('Group Gina')->assertSee('Group Greg')->assertSee('class="day-h"', false);
+    }
+
+    public function test_the_week_grid_follows_opening_hours_and_a_booking_with_a_broken_end_stays_sensible(): void
+    {
+        $this->business->update(['settings' => ['hours' => ['mon' => ['10:00', '19:00'], 'tue' => ['10:00', '19:00'], 'wed' => ['10:00', '19:00'], 'thu' => ['10:00', '19:00'], 'fri' => ['10:00', '19:00']]]]);
+        $monday = now('Asia/Kuala_Lumpur')->startOfWeek();
+        $b = $this->make('Odd Olive', 'Dr A', 'Facial', $monday->copy()->setTime(11, 0)->format('Y-m-d H:i'));
+        app(CurrentBusiness::class)->runAs($this->business, fn () => $b->forceFill(['ends_at' => $b->starts_at->copy()->addDay()])->save());   // an end on another day
+
+        $r = $this->actingAs($this->staff)->get('/admin/schedule?view=week&date='.$monday->format('Y-m-d'))->assertOk();
+        $html = $r->getContent();
+
+        $this->assertStringContainsString('--hours: 11', $html);                     // 9:00 to 20:00, not midnight to midnight
+        $this->assertStringContainsString('class="shade"', $html);                   // hours outside opening are shaded
+        $this->assertStringContainsString('wd closed', $html);                       // Saturday and Sunday are closed
+        $this->assertMatchesRegularExpression('#class="ev st-confirmed"[^>]*style="top: 96px; height: 46#', $html);   // 11:00 is 2 hours after 9:00, one hour tall (the service length)
+    }
 }

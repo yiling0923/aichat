@@ -824,3 +824,10 @@ Needs your own free Google account. Allow about 10 minutes.
 1. Send a WhatsApp reply from the Inbox. Under your message a small tick appears: ✓ Sent, ✓✓ Delivered, ✓✓ Read (blue). This follows WhatsApp's own news, so it can take a few seconds.
 2. If WhatsApp accepted a message but could not deliver it (for example it could not download a photo from your server, the 24-hour window closed, the phone is not allowed or offline), the bubble turns red within seconds and says why, and the bell tells your team. The first red message may say "Not delivered: Authentication Error" for an expired token.
 3. The Attach button on the left of the reply row has a paperclip icon and the word Attach.
+
+## CY. Schedule: neater and clearer
+
+1. Open Schedule. A strip shows the Next booking (click it to jump to that day), how many finished visits are not marked Done or No-show yet (click to mark them), and the colour key.
+2. Week view: the grid shows your opening hours (an hour before and after), hours when you are closed and closed days are hatched grey, a red line marks the time now, and it opens scrolled to now (or to the first booking), not at midnight. Click a booking for details; drag it to move it.
+3. List view: bookings are grouped by day (Today, Tomorrow, Wednesday ...). Each line has the time, customer, service, person, status and clear Done / No-show / Cancel buttons. Finished visits that need marking are highlighted.
+4. On a phone the list opens by default (the Month and Week buttons still work).

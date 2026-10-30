@@ -35,6 +35,17 @@
         </select>
     </form>
 
+    <div class="sch-strip">
+        @if ($nextBooking)
+            @php $ns = $nextBooking->starts_at->copy()->setTimezone($tz); $nd = $ns->isSameDay(now($tz)) ? __('Today') : ($ns->isSameDay(now($tz)->addDay()) ? __('Tomorrow') : \App\Support\Lang::fmt($ns, 'D j M', 'n月j日 D')); @endphp
+            <a class="sch-card next" href="{{ $link(['view' => 'week', 'date' => $ns->format('Y-m-d')]) }}"><small>{{ __('Next booking') }}</small><b>{{ $nd }} {{ $ns->format('H:i') }}</b><span>{{ $nextBooking->customer?->name ?: '-' }} · {{ $nextBooking->service->label($lbl) }}</span></a>
+        @else
+            <div class="sch-card"><small>{{ __('Next booking') }}</small><b>-</b><span>{{ __('Nothing coming up.') }}</span></div>
+        @endif
+        <a @class(['sch-card', 'todo' => $toMark > 0]) href="{{ route('schedule', ['view' => 'list', 'show' => 'upcoming']) }}"><small>{{ __('Finished, not marked yet') }}</small><b>{{ $toMark }}</b><span>{{ $toMark > 0 ? __('Mark them Done or No-show.') : __('All caught up.') }}</span></a>
+        <div class="sch-legend"><span class="lg st-confirmed">{{ __('Confirmed') }}</span><span class="lg st-completed">{{ __('Done') }}</span><span class="lg st-no_show">{{ __('No-show') }}</span></div>
+    </div>
+
     @if ($view === 'month')
         @php $days = []; for ($d = $from->copy(); $d->lte($to); $d->addDay()) { $days[] = $d->copy(); } @endphp
         <div class="month">
@@ -54,7 +65,7 @@
         </div>
     @elseif ($view === 'week')
         @php $hourH = 48; $hours = $endHour - $startHour; @endphp
-        <div class="week-scroll">
+        <div class="week-scroll" id="week-scroll">
             <div class="week" style="--hours: {{ $hours }}; --hh: {{ $hourH }}px">
                 <div class="wh gutter"></div>
                 @for ($i = 0; $i < 7; $i++)
@@ -64,10 +75,27 @@
                 <div class="gutter hours">@for ($h = $startHour; $h < $endHour; $h++)<div>{{ sprintf('%02d:00', $h) }}</div>@endfor</div>
                 @for ($i = 0; $i < 7; $i++)
                     @php $d = $from->copy()->addDays($i); $key = $d->format('Y-m-d'); @endphp
-                    <div @class(['wd', 'today' => $d->isSameDay($today)]) data-date="{{ $key }}" data-start="{{ $startHour }}">
+                    @php
+                        $win = $openHours[strtolower($d->format('D'))] ?? null;
+                        $isClosed = ! is_array($win) || count($win) !== 2 || in_array($key, $closedDates, true);
+                        $toPx = fn ($t) => max(0, (((int) substr($t, 0, 2)) + ((int) substr($t, 3, 2)) / 60 - $startHour) * $hourH);
+                    @endphp
+                    <div @class(['wd', 'today' => $d->isSameDay($today), 'closed' => $isClosed && $openHours !== []]) data-date="{{ $key }}" data-start="{{ $startHour }}">
+                        @if ($openHours !== [])
+                            @if ($isClosed)
+                                <i class="shade" style="top:0;height:100%" title="{{ __('Closed') }}"></i>
+                            @else
+                                <i class="shade" style="top:0;height:{{ round($toPx($win[0]), 1) }}px"></i>
+                                <i class="shade" style="top:{{ round($toPx($win[1]), 1) }}px;bottom:0"></i>
+                            @endif
+                        @endif
+                        @if ($d->isSameDay($today) && ($nowH = now($tz)->hour + now($tz)->minute / 60) >= $startHour && $nowH <= $endHour)
+                            <i class="nowline" style="top:{{ round(($nowH - $startHour) * $hourH, 1) }}px"><b>{{ now($tz)->format('H:i') }}</b></i>
+                        @endif
                         @foreach ($byDay[$key] ?? [] as $b)
                             @php
                                 $s = $b->starts_at->copy()->setTimezone($tz); $e = $b->ends_at->copy()->setTimezone($tz);
+                                if ($e->lte($s) || ! $e->isSameDay($s)) { $e = $s->copy()->addMinutes(max(15, (int) ($b->service->duration_min ?? 30))); }
                                 $top = (($s->hour - $startHour) * 60 + $s->minute) / 60 * $hourH;
                                 $height = max(24, $s->diffInMinutes($e) / 60 * $hourH - 2);
                                 $l = $lanes[$b->id] ?? ['lane' => 0, 'of' => 1];
@@ -82,35 +110,47 @@
             </div>
         </div>
     @else
-        <table class="table">
-            <thead><tr><th>{{ __('When') }}</th><th>{{ __('Service') }}</th><th>{{ __('With') }}</th><th>{{ __('Customer') }}</th><th>{{ __('Status') }}</th><th></th></tr></thead>
-            <tbody>
-            @forelse ($bookings as $b)
-                <tr>
-                    <td>{{ \App\Support\Lang::fmt($b->starts_at->copy()->setTimezone($business->timezone), 'D d M Y, H:i', 'Y年n月j日 D H:i') }}</td>
-                    <td>{{ $b->service->label($lbl) }}<br><small class="mute">{{ __(':n min', ['n' => $b->service->duration_min]) }}</small></td>
-                    <td>{{ $b->practitioner->name }}</td>
-                    <td>{{ $b->customer?->name ?: '-' }}<br><small class="mute">{{ $b->customer?->phone }}</small></td>
-                    <td><span class="tag {{ $b->status === 'confirmed' ? ($b->ends_at->isPast() ? 'warn' : 'ok') : 'warn' }}">{{ $b->status === 'confirmed' && $b->ends_at->isPast() ? __('Finished? Mark it') : ($st[$b->status] ?? $b->status) }}</span>
-                        @if ($b->status === 'confirmed' && ! $b->google_event_id && $b->practitioner->google_calendar_id)
-                            <br><small class="mute">{{ __('not in Google Calendar') }}</small>
-                        @endif
-                    </td>
-                    <td class="actions">
-                        @if ($b->status === 'confirmed')
-                            @if ($b->starts_at->isPast())
-                                <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="completed"><button class="btn small">{{ __('Done') }}</button></form>
-                                <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="no_show"><button class="btn small">{{ __('No-show') }}</button></form>
+        @php
+            $groups = $bookings->groupBy(fn ($b) => $b->starts_at->copy()->setTimezone($tz)->format('Y-m-d'));
+            $nowDay = now($tz)->startOfDay();
+        @endphp
+        @forelse ($groups as $key => $dayBookings)
+            @php
+                $d = \Carbon\Carbon::parse($key, $tz);
+                $dayName = $d->isSameDay($nowDay) ? __('Today') : ($d->isSameDay($nowDay->copy()->addDay()) ? __('Tomorrow') : ($d->isSameDay($nowDay->copy()->subDay()) ? __('Yesterday') : \App\Support\Lang::fmt($d, 'l', 'l')));
+            @endphp
+            <section class="day-group">
+                <h3 class="day-h"><span>{{ $dayName }}</span> <small>{{ \App\Support\Lang::fmt($d, 'j F Y', 'Y年n月j日') }}</small> <em>{{ $dayBookings->count() === 1 ? __('1 booking') : __(':n bookings', ['n' => $dayBookings->count()]) }}</em></h3>
+                <div class="card day-card">
+                @foreach ($dayBookings as $b)
+                    @php
+                        $finished = $b->status === 'confirmed' && $b->ends_at->isPast();
+                        $s = $b->starts_at->copy()->setTimezone($tz);
+                    @endphp
+                    <div @class(['bk-line', 'finished' => $finished, 'is-'.$b->status => true])>
+                        <div class="bk-time"><b>{{ $s->format('H:i') }}</b><small>{{ __(':n min', ['n' => $b->service->duration_min]) }}</small></div>
+                        <div class="bk-main">
+                            <b>{{ $b->customer?->name ?: '-' }}</b> <small class="mute">{{ $b->customer?->phone }}</small>
+                            <div>{{ $b->service->label($lbl) }} <span class="mute">· {{ __('with') }} {{ $b->practitioner->name }}</span></div>
+                            @if ($b->status === 'confirmed' && ! $b->google_event_id && $b->practitioner->google_calendar_id)<small class="mute">{{ __('not in Google Calendar') }}</small>@endif
+                        </div>
+                        <div class="bk-status"><span class="tag {{ $finished ? 'warn' : ($b->status === 'confirmed' ? 'ok' : ($b->status === 'completed' ? 'ok' : 'warn')) }}">{{ $finished ? __('Finished? Mark it') : ($st[$b->status] ?? $b->status) }}</span></div>
+                        <div class="bk-actions">
+                            @if ($b->status === 'confirmed')
+                                @if ($b->starts_at->isPast())
+                                    <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="completed"><button class="btn small primary">{{ __('Done') }}</button></form>
+                                    <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/mark') }}">@csrf<input type="hidden" name="status" value="no_show"><button class="btn small">{{ __('No-show') }}</button></form>
+                                @endif
+                                <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/cancel') }}" onsubmit="return confirm({{ json_encode(__('Cancel this booking?'), JSON_UNESCAPED_UNICODE) }})">@csrf<button class="btn small danger">{{ __('Cancel') }}</button></form>
                             @endif
-                            <form method="post" action="{{ url('/admin/schedule/'.$b->id.'/cancel') }}" onsubmit="return confirm({{ json_encode(__('Cancel this booking?'), JSON_UNESCAPED_UNICODE) }})">@csrf<button class="btn small danger">{{ __('Cancel') }}</button></form>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="6" class="empty">{{ __('No bookings here yet. Book one in the test chat.') }}</td></tr>
-            @endforelse
-            </tbody>
-        </table>
+                        </div>
+                    </div>
+                @endforeach
+                </div>
+            </section>
+        @empty
+            <div class="card empty-card"><b>{{ __('No bookings here yet. Book one in the test chat.') }}</b></div>
+        @endforelse
     @endif
 
     @if ($view !== 'list')
@@ -130,6 +170,24 @@
     @endif
 @endsection
 @push('scripts')
+<script>
+    (function () {
+        // On a phone the week grid is cramped: the day-by-day list is the default there (the buttons above still switch).
+        try {
+            if (window.innerWidth < 700 && !/[?&]view=/.test(location.search) && !sessionStorage.getItem('sch-seen')) {
+                sessionStorage.setItem('sch-seen', '1');
+                location.replace(location.pathname + '?view=list');
+                return;
+            }
+        } catch (e) { /* storage blocked: stay on this view */ }
+        // The week grid opens at the current hour (this week) or at the first booking, not at midnight.
+        var ws = document.getElementById('week-scroll');
+        if (ws) {
+            var line = ws.querySelector('.nowline'), first = ws.querySelector('.ev'), target = line || first;
+            if (target) { ws.scrollTop = Math.max(0, target.offsetTop - 90); }
+        }
+    })();
+</script>
 <script>
     (function () {
         var dlg = document.getElementById('bk-dialog');

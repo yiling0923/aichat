@@ -1791,3 +1791,50 @@ details.au-card[open] > summary::after { content: none; }
 .composer .btn.attach svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .composer .btn.attach:disabled { opacity: .6; cursor: default; }
 @media (max-width: 640px) { .composer .row #c-hint { display: none; } .composer .row { justify-content: space-between; } }
+
+/* Schedule: summary strip, clearer week grid, list grouped by day */
+.sch-strip { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 12px; margin: 0 0 14px; align-items: stretch; }
+.sch-card { display: flex; flex-direction: column; gap: 1px; padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); text-decoration: none; min-width: 0; }
+.sch-card:hover { border-color: var(--accent); text-decoration: none; }
+.sch-card small { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--mute); }
+.sch-card b { font-size: 18px; line-height: 1.25; }
+.sch-card span { font-size: 12.5px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sch-card.next { border-left: 4px solid #2563eb; }
+.sch-card.todo { border-left: 4px solid var(--amber); background: #fffaf0; }
+.sch-card.todo b { color: var(--amber); }
+.sch-legend { display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.sch-legend .lg { font-size: 12px; font-weight: 600; padding: 1px 8px; border-left-width: 4px; border-left-style: solid; border-radius: 4px; }
+.week-scroll { max-height: min(70vh, 720px); overflow: auto; border-radius: var(--radius); }
+.week { border-radius: 0; }
+.week .wh { position: sticky; top: 0; z-index: 4; }
+.week .wh.today { background: color-mix(in srgb, var(--accent) 10%, #f8fafa); }
+.week .wd .shade { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(135deg, rgba(100, 121, 122, .10) 0 6px, rgba(100, 121, 122, .04) 6px 12px); pointer-events: none; z-index: 0; }
+.week .wd.closed { background-color: #f6f8f8; }
+.week .wd .nowline { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid #dc2626; z-index: 3; pointer-events: none; }
+.week .wd .nowline b { position: absolute; left: 0; top: -9px; font-size: 10px; color: #fff; background: #dc2626; padding: 0 5px; border-radius: 0 6px 6px 0; }
+.week .ev { z-index: 2; box-shadow: 0 1px 2px rgba(16, 40, 40, .12); }
+.week .ev b { font-weight: 700; }
+.day-group { margin-bottom: 18px; }
+.day-h { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; font-size: 15px; }
+.day-h small { font-size: 12.5px; font-weight: 500; color: var(--mute); }
+.day-h em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 600; color: var(--mute); }
+.day-card { padding: 0; overflow: hidden; }
+.bk-line { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line-s); border-left: 4px solid #2563eb; }
+.bk-line:last-child { border-bottom: 0; }
+.bk-line.is-completed { border-left-color: var(--green); }
+.bk-line.is-no_show, .bk-line.finished { border-left-color: var(--amber); }
+.bk-line.is-cancelled { border-left-color: #c4cdcd; opacity: .75; }
+.bk-line.finished { background: #fffaf0; }
+.bk-time { display: flex; flex-direction: column; line-height: 1.25; }
+.bk-time b { font-size: 16px; }
+.bk-time small { font-size: 11.5px; color: var(--mute); }
+.bk-main { min-width: 0; }
+.bk-main > div { font-size: 13px; }
+.bk-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.bk-actions form { margin: 0; }
+@media (max-width: 900px) {
+  .sch-strip { grid-template-columns: 1fr 1fr; }
+  .sch-legend { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+  .bk-line { grid-template-columns: 58px minmax(0, 1fr); gap: 8px 12px; }
+  .bk-status, .bk-actions { grid-column: 2; justify-content: flex-start; }
+}

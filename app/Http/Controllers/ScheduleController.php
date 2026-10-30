@@ -26,7 +26,7 @@ class ScheduleController extends Controller
         $practitionerId = $request->integer('practitioner') ?: null;
 
         $data = ['business' => $business, 'view' => $view, 'practitionerId' => $practitionerId,
-            'practitioners' => Practitioner::query()->orderBy('name')->get(), 'tz' => $tz];
+            'practitioners' => Practitioner::query()->orderBy('name')->get(), 'tz' => $tz] + $this->summary($practitionerId);
 
         if ($view === 'list') {
             $show = $request->query('show', 'upcoming');
@@ -77,10 +77,25 @@ class ScheduleController extends Controller
             'bookings' => $bookings, 'today' => Carbon::now($tz)->startOfDay(), 'active' => 'schedule'];
 
         if ($view === 'week') {
-            $data += $this->weekLayout($byDay, $tz);
+            $data += $this->weekLayout($byDay, $tz, $business);
         }
 
         return view('admin.schedule', $data);
+    }
+
+    /**
+     * The strip above the calendar: the next booking, and finished visits nobody has marked Done or No-show yet.
+     *
+     * @return array{nextBooking: ?Booking, toMark: int}
+     */
+    private function summary(?int $practitionerId): array
+    {
+        $scope = fn () => Booking::query()->where('status', 'confirmed')->when($practitionerId, fn ($q) => $q->where('practitioner_id', $practitionerId));
+
+        return [
+            'nextBooking' => $scope()->with(['service', 'practitioner', 'customer'])->where('starts_at', '>', now())->orderBy('starts_at')->first(),
+            'toMark' => $scope()->where('ends_at', '<', now())->where('ends_at', '>=', now()->subDays(30))->count(),
+        ];
     }
 
     /**
@@ -89,10 +104,9 @@ class ScheduleController extends Controller
      * @param  array<string, list<Booking>>  $byDay
      * @return array{startHour: int, endHour: int, lanes: array<int, array{lane: int, of: int}>}
      */
-    private function weekLayout(array $byDay, string $tz): array
+    private function weekLayout(array $byDay, string $tz, \App\Models\Business $business): array
     {
-        $startHour = 9;
-        $endHour = 19;
+        [$startHour, $endHour] = $this->businessHourRange($business);
         $lanes = [];
 
         foreach ($byDay as $list) {
@@ -100,6 +114,9 @@ class ScheduleController extends Controller
             foreach ($list as $b) {
                 $start = $b->starts_at->copy()->setTimezone($tz);
                 $end = $b->ends_at->copy()->setTimezone($tz);
+                if ($end->lte($start) || ! $end->isSameDay($start)) {   // an end that is missing, before the start or on another day still gets a sensible block
+                    $end = $start->copy()->addMinutes(max(15, (int) ($b->service->duration_min ?? 30)));
+                }
                 $startHour = min($startHour, $start->hour);
                 $endHour = max($endHour, $end->minute > 0 ? $end->hour + 1 : $end->hour);
 
@@ -119,7 +136,23 @@ class ScheduleController extends Controller
             }
         }
 
-        return ['startHour' => $startHour, 'endHour' => min(24, $endHour), 'lanes' => $lanes];
+        return ['startHour' => $startHour, 'endHour' => min(24, $endHour), 'lanes' => $lanes, 'openHours' => (array) ($business->settings['hours'] ?? []), 'closedDates' => (array) ($business->settings['closed_dates'] ?? [])];
+    }
+
+    /** The hours the week grid shows: from an hour before you open to an hour after you close (9 to 19 when no hours are set). @return array{0: int, 1: int} */
+    private function businessHourRange(\App\Models\Business $business): array
+    {
+        $opens = [];
+        $closes = [];
+
+        foreach ((array) ($business->settings['hours'] ?? []) as $window) {
+            if (is_array($window) && count($window) === 2) {
+                $opens[] = (int) substr((string) $window[0], 0, 2);
+                $closes[] = (int) ceil(((int) substr((string) $window[1], 0, 2)) + ((int) substr((string) $window[1], 3, 2)) / 60);
+            }
+        }
+
+        return $opens === [] ? [9, 19] : [max(0, min($opens) - 1), min(24, max($closes) + 1)];
     }
 
     public function cancel(Request $request, int $id, Bookings $bookings): RedirectResponse
