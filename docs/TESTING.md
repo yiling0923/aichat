@@ -807,3 +807,12 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 ## CV. Older notifications change language too
 
 1. Press 中文 in the staff area and open the bell: notifications created earlier ("New chat from Amy", "Amy needs a person", "New booking: Amy", reasons such as "Customer asked for a person") now read in Chinese. Names, services and messages the customer wrote stay as they are. Press English and they read English again.
+
+## CW. Google Calendar (Booking setup > Google Calendar)
+
+Needs your own free Google account. Allow about 10 minutes.
+1. Open Booking setup. In the "Google Calendar" section follow steps 1 to 4: create a Google Cloud project, turn on the Google Calendar API, create a service account and a JSON key, upload the key here.
+2. After uploading, the page shows an email address (the service account). In Google Calendar open each person's calendar, Settings and sharing, Share with specific people, paste that address, permission "Make changes to events". Copy the Calendar ID (Integrate calendar) into that person under Practitioners and press Save.
+3. Press Test next to the person. A green message "connected" means busy times are read and bookings can be added; a red message says what is wrong (calendar not shared, wrong ID, key not accepted).
+4. Make a booking in the chat: it appears in that Google Calendar. Add an event in Google Calendar: that time is no longer offered to customers. Cancel the booking: the event disappears.
+5. On a server shared by several businesses only the platform owner can upload the key.

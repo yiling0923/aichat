@@ -16,11 +16,79 @@ class GoogleCalendar
 {
     private const SCOPE = 'https://www.googleapis.com/auth/calendar';
 
-    public function enabled(): bool
+    /** The key file: the one named in .env, or the one uploaded on the Booking setup page. */
+    public function credentialsPath(): ?string
     {
         $path = config('services.google_calendar.credentials');
 
-        return $path && is_file($path);
+        if ($path && is_file($path)) {
+            return (string) $path;
+        }
+
+        $uploaded = storage_path('app/google-service-account.json');
+
+        return is_file($uploaded) ? $uploaded : null;
+    }
+
+    public function enabled(): bool
+    {
+        return $this->credentialsPath() !== null;
+    }
+
+    /** The email address staff must share each calendar with (from the key file), or null without a valid key. */
+    public function serviceAccountEmail(): ?string
+    {
+        $path = $this->credentialsPath();
+        $key = $path ? json_decode((string) file_get_contents($path), true) : null;
+
+        return is_array($key) && ! empty($key['client_email']) ? (string) $key['client_email'] : null;
+    }
+
+    /** Where the uploaded key is kept (only used when .env does not name a file). */
+    public static function uploadedKeyPath(): string
+    {
+        return storage_path('app/google-service-account.json');
+    }
+
+    /**
+     * Checks that a calendar can really be read and written: asks for its busy times, then adds a tiny event and removes it again.
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public function test(string $calendarId): array
+    {
+        $email = $this->serviceAccountEmail() ?? __('the service account');
+
+        try {
+            $this->busy($calendarId, now(), now()->addDay());
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => $this->explain($e->getMessage(), $email)];
+        }
+
+        try {
+            $start = now()->addDays(2)->setTime(3, 0);
+            $id = $this->createEvent($calendarId, 'Test from the booking assistant (safe to delete)', 'This event was made to test the connection and is removed straight away.', $start, $start->copy()->addMinutes(5));
+            $this->deleteEvent($calendarId, $id);
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => $this->explain($e->getMessage(), $email)];
+        }
+
+        return ['ok' => true, 'message' => __('Connected. The calendar can be read and bookings can be added to it.')];
+    }
+
+    private function explain(string $error, string $email): string
+    {
+        if (str_contains($error, '404') || str_contains($error, 'cannot read')) {
+            return __('Google cannot find or open this calendar. Check the Calendar ID, and share the calendar with :email (permission: Make changes to events).', ['email' => $email]);
+        }
+        if (str_contains($error, '403')) {
+            return __('This calendar is not shared with :email with the permission "Make changes to events". Share it again, then test.', ['email' => $email]);
+        }
+        if (str_contains($error, 'sign-in failed') || str_contains($error, 'not valid')) {
+            return __('Google did not accept the key file. Upload the JSON key again, or check that the Google Calendar API is turned on for the project.');
+        }
+
+        return __('Google Calendar did not answer: :why', ['why' => $error]);
     }
 
     /**
@@ -86,7 +154,7 @@ class GoogleCalendar
     private function token(): string
     {
         return Cache::remember('google-calendar-token', 3300, function (): string {
-            $key = json_decode((string) file_get_contents((string) config('services.google_calendar.credentials')), true);
+            $key = json_decode((string) file_get_contents((string) $this->credentialsPath()), true);
 
             if (! is_array($key) || empty($key['client_email']) || empty($key['private_key'])) {
                 throw new RuntimeException('The Google service account file is not valid.');

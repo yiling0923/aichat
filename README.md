@@ -285,6 +285,9 @@ to get the new booking steps.
 
 #### Connect Google Calendar (optional, free)
 
+**Easiest way:** open **Booking setup > Google Calendar**. It lists the steps, lets you upload the key file (no editing `.env`), shows the address to share each calendar with, and has a **Test** button on every practitioner that checks the calendar can be read and written. The manual steps below still work.
+
+
 Without this, bookings still work and double bookings are still blocked, using the app's own calendar.
 With it, the app also avoids times already busy in Google Calendar and adds each booking as an event.
 

@@ -10,6 +10,7 @@
         </div>
         <nav class="bk-jump" aria-label="{{ __('Booking setup') }}">
             <a href="#hours">{{ __('Opening hours and rules') }}</a>
+            <a href="#google">{{ __('Google Calendar') }}</a>
             <a href="#people">{{ __('Practitioners') }} <span>{{ $practitioners->count() }}</span></a>
             <a href="#services">{{ __('Services') }} <span>{{ $services->count() }}</span></a>
         </nav>
@@ -60,8 +61,46 @@
             </div>
         </form>
 
+        <h2 class="bk-h" id="google">{{ __('Google Calendar') }} <span class="tag {{ $googleOn ? 'ok' : '' }}">{{ $googleOn ? __('Key loaded') : __('Not connected') }}</span></h2>
+        <p class="mute bk-sub">{{ __('Optional and free. Bookings appear in each person\'s Google Calendar, and busy times in that calendar are blocked in the chat, so nobody is double booked.') }}</p>
+        <div class="card gcal">
+            @if ($googleOn)
+                <div class="gcal-ok">
+                    <div><b>{{ __('Share each calendar with this address') }}</b>
+                        <div class="copy-row" style="margin-top:6px;max-width:560px"><input type="text" readonly id="g-email" value="{{ $googleEmail ?? __('(the key file has no email)') }}"><button type="button" class="btn small" data-copy="g-email">{{ __('Copy') }}</button></div>
+                        <p class="mute small-note" style="padding:0;margin-top:6px">{{ __('In Google Calendar open the calendar, Settings and sharing, Share with specific people, paste the address, and choose "Make changes to events". Then paste the Calendar ID below and press Test.') }}</p></div>
+                    @if ($googleViaEnv)
+                        <p class="mute small-note" style="padding:0">{{ __('The key file is set in the .env file (GOOGLE_SERVICE_ACCOUNT_JSON).') }}</p>
+                    @elseif ($mayChangeGoogleKey)
+                        <form method="post" action="{{ url('/admin/booking-setup/google-key/remove') }}" onsubmit="return confirm({{ json_encode(__('Remove the Google key? Bookings will use the built-in calendar only.'), JSON_UNESCAPED_UNICODE) }})">@csrf<button class="btn small danger" type="submit">{{ __('Remove the key') }}</button></form>
+                    @endif
+                </div>
+            @endif
+            @if (! $googleOn || ($mayChangeGoogleKey && ! $googleViaEnv))
+                <details class="gcal-steps" @unless ($googleOn) open @endunless>
+                    <summary>{{ $googleOn ? __('Replace the key file') : __('How to connect (about 10 minutes, free)') }}</summary>
+                    <ol>
+                        <li>{!! __('Open :link and sign in with your Google account. Create a project (any name).', ['link' => '<a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud</a>']) !!}</li>
+                        <li>{!! __('Turn on the :api: in the menu choose APIs and services, Library, search for it and press Enable.', ['api' => '<b>Google Calendar API</b>']) !!}</li>
+                        <li>{{ __('Create a service account: IAM and admin, Service accounts, Create. Then open it, choose Keys, Add key, Create new key, JSON. A file downloads.') }}</li>
+                        <li>{{ __('Upload that file here:') }}</li>
+                    </ol>
+                    @if ($mayChangeGoogleKey)
+                        <form method="post" action="{{ url('/admin/booking-setup/google-key') }}" enctype="multipart/form-data" class="gcal-upload">
+                            @csrf
+                            <input type="file" name="key" accept=".json,application/json" required>
+                            <button class="btn primary" type="submit">{{ __('Upload the key') }}</button>
+                        </form>
+                    @else
+                        <p class="mute">{{ __('This server is shared by several businesses, so only the platform owner can upload the key.') }}</p>
+                    @endif
+                    <p class="mute small-note" style="padding:0">{{ __('The key is kept on this server only, never shown again. After uploading, this page shows the address to share your calendars with.') }}</p>
+                </details>
+            @endif
+        </div>
+
         <h2 class="bk-h" id="people">{{ __('Practitioners') }}</h2>
-        <p class="mute bk-sub">{{ __('One calendar per person or room. To use Google Calendar, share that calendar with the service account email (see README), then paste the calendar ID.') }}</p>
+        <p class="mute bk-sub">{{ __('One calendar per person or room. For Google Calendar, follow the steps above, then paste each calendar ID here and press Test.') }}</p>
         <div class="card bk-list bk-people">
             <div class="bk-cols" aria-hidden="true"><span>{{ __('Name') }}</span><span>{{ __('Google Calendar ID') }}</span><span>{{ __('Active') }}</span><span></span></div>
             @foreach ($practitioners as $p)
@@ -70,7 +109,7 @@
                     <label class="f"><span>{{ __('Name') }}</span><input type="text" name="name" value="{{ $p->name }}"></label>
                     <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" value="{{ $p->google_calendar_id }}" placeholder="{{ __('optional') }}"></label>
                     <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($p->active)><span>{{ __('Active') }}</span></label>
-                    <button class="btn" type="submit">{{ __('Save') }}</button>
+                    <span class="bk-btns"><button class="btn" type="submit">{{ __('Save') }}</button>@if ($googleOn)<button class="btn" type="submit" formaction="{{ url('/admin/booking-setup/practitioners/'.$p->id.'/google-test') }}" title="{{ __('Check that this calendar can be read and written') }}">{{ __('Test') }}</button>@endif</span>
                 </form>
             @endforeach
             <details class="bk-add">

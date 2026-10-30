@@ -121,6 +121,9 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::post('/booking-setup/services/{id}', [$c, 'updateService'])->whereNumber('id');
     Route::post('/booking-setup/practitioners', [$c, 'storePractitioner']);
     Route::post('/booking-setup/practitioners/{id}', [$c, 'updatePractitioner'])->whereNumber('id');
+    Route::post('/booking-setup/google-key', [\App\Http\Controllers\GoogleCalendarController::class, 'saveKey'])->middleware('throttle:10,1');
+    Route::post('/booking-setup/google-key/remove', [\App\Http\Controllers\GoogleCalendarController::class, 'removeKey']);
+    Route::post('/booking-setup/practitioners/{id}/google-test', [\App\Http\Controllers\GoogleCalendarController::class, 'test'])->whereNumber('id')->middleware('throttle:20,1');
 });
 
 // Phase 3: Today, all conversations, tasks, library (everyone); tags and library edits (owner or manager); settings (owner).

@@ -32,6 +32,9 @@ class BookingSetupController extends Controller
             'closedDates' => implode(', ', (array) ($business->settings['closed_dates'] ?? [])),
             'days' => self::DAYS,
             'googleOn' => $google->enabled(),
+            'googleEmail' => $google->serviceAccountEmail(),
+            'googleViaEnv' => (bool) (config('services.google_calendar.credentials') && is_file((string) config('services.google_calendar.credentials'))),
+            'mayChangeGoogleKey' => $request->user()->role === 'platform_owner' || \App\Models\Business::query()->withoutGlobalScopes()->count() <= 1,
         ]);
     }
 
