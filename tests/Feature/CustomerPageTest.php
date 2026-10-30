@@ -91,4 +91,72 @@ class CustomerPageTest extends TestCase
         $this->get('/admin/customers/'.$c->id)->assertSee('id="edit-dialog"', false)->assertSee('New Name');
         $this->get('/admin/customers/'.$theirs->id)->assertNotFound();
     }
+
+    public function test_two_records_of_one_person_can_be_joined(): void
+    {
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        [$keep, $drop, $chat, $other] = $this->in(function () {
+            $keep = Customer::create(['name' => 'Amy', 'phone' => '60123456789', 'score' => 'warm', 'notes' => 'Likes mornings']);
+            $drop = Customer::create(['name' => null, 'phone' => null, 'email' => 'amy@example.com', 'score' => 'hot', 'opted_out_at' => now()->subDay(), 'consented_at' => now()->subDays(5), 'notes' => 'Allergic to latex']);
+            $vip = Tag::create(['name' => 'VIP', 'type' => 'customer', 'color' => '#b45309']);
+            $drop->tags()->attach($vip->id);
+            $chat = Conversation::startFor('messenger');
+            $chat->forceFill(['customer_id' => $drop->id])->save();
+            Order::create(['customer_id' => $drop->id, 'amount' => 80, 'status' => 'paid', 'ordered_at' => now()]);
+            $other = Customer::create(['name' => 'Someone else', 'phone' => '60999000111']);
+
+            return [$keep, $drop, $chat, $other];
+        });
+
+        $this->actingAs($owner)->post('/admin/customers/'.$keep->id.'/merge', ['other_id' => $drop->id])->assertRedirect();
+
+        $this->in(function () use ($keep, $drop, $chat) {
+            $this->assertNull(Customer::find($drop->id));
+            $k = Customer::find($keep->id);
+            $this->assertSame('amy@example.com', $k->email);           // blank filled in
+            $this->assertSame('60123456789', $k->phone);               // kept
+            $this->assertSame('hot', $k->score);                       // the higher level
+            $this->assertNotNull($k->opted_out_at);                    // opting out is never lost
+            $this->assertStringContainsString('Likes mornings', $k->notes);
+            $this->assertStringContainsString('Allergic to latex', $k->notes);
+            $this->assertSame($keep->id, $chat->fresh()->customer_id);
+            $this->assertSame(1, Order::where('customer_id', $keep->id)->count());
+            $this->assertSame(['VIP'], $k->tags()->pluck('name')->all());
+        });
+
+        // Not with itself, not for staff.
+        $this->actingAs($owner)->post('/admin/customers/'.$keep->id.'/merge', ['other_id' => $keep->id])->assertSessionHasErrors('other_id');
+        $this->actingAs($this->staff)->post('/admin/customers/'.$keep->id.'/merge', ['other_id' => $other->id])->assertForbidden();
+    }
+
+    public function test_a_spreadsheet_of_customers_can_be_imported_without_duplicates_or_unwanted_consent(): void
+    {
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $this->in(fn () => Customer::create(['name' => 'Existing', 'phone' => '60123456789']));
+        $csv = "name,phone,email,language,tags,notes\nAmy Tan,+60 12-345 6789,amy@example.com,en,VIP;First visit,Likes mornings\n陈小明,60111222333,,zh,,\nBad Phone,123,,en,,\n,,,,,\n";
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('customers.csv', $csv);
+
+        $this->actingAs($owner)->post('/admin/customers/import', ['file' => $file])->assertRedirect();
+
+        $this->in(function () {
+            $this->assertSame(2, Customer::count());                               // one updated, one new, one skipped
+            $amy = Customer::where('phone', '60123456789')->first();
+            $this->assertSame('Existing', $amy->name);                             // existing data is kept
+            $this->assertSame('amy@example.com', $amy->email);                     // blanks filled
+            $this->assertEqualsCanonicalizing(['VIP', 'First visit'], $amy->tags()->pluck('name')->all());
+            $this->assertNull($amy->consented_at);                                 // imported people are not marketing contacts by default
+            $zh = Customer::where('phone', '60111222333')->first();
+            $this->assertSame('zh', $zh->language);
+        });
+
+        $again = \Illuminate\Http\UploadedFile::fake()->createWithContent('c.csv', "phone\n60777888999\n");
+        $this->actingAs($owner)->post('/admin/customers/import', ['file' => $again, 'agreed' => '1'])->assertRedirect();
+        $this->in(fn () => $this->assertNotNull(Customer::where('phone', '60777888999')->first()->consented_at));
+
+        $bad = \Illuminate\Http\UploadedFile::fake()->createWithContent('c.csv', "hello\nworld\n");
+        $this->actingAs($owner)->post('/admin/customers/import', ['file' => $bad])->assertSessionHasErrors('file');
+
+        $this->actingAs($owner)->get('/admin/customers/import-template')->assertOk();
+        $this->actingAs($this->staff)->post('/admin/customers/import', ['file' => $again])->assertForbidden();
+    }
 }

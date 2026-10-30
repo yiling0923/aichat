@@ -37,6 +37,7 @@
                     <summary class="btn" aria-label="{{ __('More') }}">&#8943;</summary>
                     <div class="menu-body">
                         <a href="{{ url('/admin/customers/'.$customer->id.'/export') }}">{{ __('Download their data') }}</a>
+                        <a href="#merge" id="open-merge">{{ __('Join with another customer') }}</a>
                         <form method="post" action="{{ url('/admin/customers/'.$customer->id.'/erase') }}" onsubmit="return confirm({{ json_encode(__('Delete this customer and all their chats for good? This cannot be undone.'), JSON_UNESCAPED_UNICODE) }})">@csrf<button type="submit" class="menu-danger">{{ __('Delete their data') }}</button></form>
                     </div>
                 </details>
@@ -128,10 +129,33 @@
             <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
         </form>
     </dialog>
+    @if (auth()->user()->canManage())
+    <dialog id="merge-dialog" class="dlg">
+        <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+        <h3>{{ __('Join with another customer') }}</h3>
+        <p class="mute" style="margin-top:4px">{{ __('Is this the same person on another channel, or typed twice? Pick the other record. Its chats, bookings, orders, tasks and tags move here, blanks are filled in, and the other record is removed. This cannot be undone.') }}</p>
+        <form method="post" action="{{ url('/admin/customers/'.$customer->id.'/merge') }}">
+            @csrf
+            <label class="f" style="margin-top:12px"><span>{{ __('Search the other customer') }}</span><input type="search" id="merge-q" placeholder="{{ __('Name or phone') }}" autocomplete="off"></label>
+            <label class="f"><span>{{ __('The other customer') }}</span>
+                <select name="other_id" id="merge-pick" size="6" required>@foreach ($others as $o)<option value="{{ $o->id }}">{{ $o->name ?: __('No name') }} · {{ $o->phone ?: '-' }}</option>@endforeach</select></label>
+            <div class="dlg-foot"><button class="btn primary" type="submit" onclick="return confirm({{ json_encode(__('Join these two records? This cannot be undone.'), JSON_UNESCAPED_UNICODE) }})">{{ __('Join them') }}</button></div>
+        </form>
+    </dialog>
+    @endif
 @endsection
 @push('scripts')
 <script>
 (function () {
+  var md = document.getElementById('merge-dialog');
+  if (md) {
+    document.getElementById('open-merge').addEventListener('click', function (e) { e.preventDefault(); var m = this.closest('details'); if (m) { m.open = false; } md.showModal(); document.getElementById('merge-q').focus(); });
+    md.addEventListener('click', function (e) { if (e.target === md || e.target.closest('.dlg-x')) { md.close(); } });
+    document.getElementById('merge-q').addEventListener('input', function () {
+      var q = this.value.trim().toLowerCase();
+      document.querySelectorAll('#merge-pick option').forEach(function (o) { o.hidden = q !== '' && o.textContent.toLowerCase().indexOf(q) === -1; });
+    });
+  }
   var dlg = document.getElementById('edit-dialog');
   document.getElementById('edit-customer').addEventListener('click', function () { dlg.showModal(); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });

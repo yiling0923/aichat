@@ -121,6 +121,9 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::get('/manage', [\App\Http\Controllers\ManageController::class, 'index'])->name('manage');
     Route::get('/customers/{id}/export', [\App\Http\Controllers\CustomerController::class, 'export'])->whereNumber('id');
     Route::post('/customers/{id}/erase', [\App\Http\Controllers\CustomerController::class, 'erase'])->whereNumber('id');
+    Route::post('/customers/{id}/merge', [\App\Http\Controllers\CustomerController::class, 'merge'])->whereNumber('id');
+    Route::get('/customers/import-template', [\App\Http\Controllers\CustomerController::class, 'importTemplate']);
+    Route::post('/customers/import', [\App\Http\Controllers\CustomerController::class, 'import'])->middleware('throttle:10,1');
 
     $t = \App\Http\Controllers\TagController::class;
     Route::get('/tags', [$t, 'index'])->name('tags');

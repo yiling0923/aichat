@@ -52,6 +52,7 @@ class CustomerController extends Controller
         $business = $request->user()->business;
         $tz = $business->timezone ?: 'UTC';
 
+        $others = Customer::query()->whereKeyNot($customer->id)->orderBy('name')->limit(400)->get(['id', 'name', 'phone']);
         $orders = Order::query()->where('customer_id', $customer->id)->orderByDesc('ordered_at')->limit(20)->get();
         $surveys = Survey::query()->where('customer_id', $customer->id)->whereNotNull('rating')->orderByDesc('answered_at')->limit(20)->get();
         $bookings = $customer->bookings->sortByDesc('starts_at')->values();
@@ -79,6 +80,7 @@ class CustomerController extends Controller
             'business' => $business,
             'active' => 'customers',
             'customer' => $customer,
+            'others' => $others,
             'allTags' => Tag::query()->where('type', 'customer')->orderBy('name')->get(),
             'tasks' => Task::query()->where('customer_id', $customer->id)->whereNull('done_at')->get(),
             'orders' => $orders,
@@ -127,6 +129,47 @@ class CustomerController extends Controller
         ];
 
         return response()->streamDownload(fn () => print json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'customer-'.$customer->id.'.json', ['Content-Type' => 'application/json']);
+    }
+
+    /** Join another record of the same person into this one. */
+    public function merge(Request $request, int $id, \App\Services\CustomerMerger $merger): RedirectResponse
+    {
+        $data = $request->validate(['other_id' => ['required', 'integer']]);
+        $keep = Customer::query()->findOrFail($id);
+        $drop = Customer::query()->whereKeyNot($keep->id)->find($data['other_id']);
+
+        if ($drop === null) {
+            return back()->withErrors(['other_id' => __('Choose a different customer to join with this one.')]);
+        }
+
+        $name = $drop->name ?: $drop->phone ?: '#'.$drop->id;
+        $merger->merge($keep, $drop);
+
+        return back()->with('status', __('Joined ":name" into this customer. Their chats, bookings, orders and tags are all here now.', ['name' => $name]));
+    }
+
+    /** A sample file to fill in. */
+    public function importTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        return response()->streamDownload(function () {
+            echo "\xEF\xBB\xBFname,phone,email,language,tags,notes\n";
+            echo "Amy Tan,60123456789,amy@example.com,en,VIP;First visit,Prefers afternoons\n";
+            echo "陈小明,60111222333,,zh,,\n";
+        }, 'customers-sample.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** Add customers from a spreadsheet (CSV). People already in the list (same phone) are updated, never duplicated. */
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate(['file' => ['required', 'file', 'max:2048', 'mimes:csv,txt']], ['file.mimes' => __('Please choose a CSV file (in Excel: File, Save as, CSV).')]);
+        $agreed = $request->boolean('agreed');
+        $result = (new \App\Services\CustomerImporter)->import((string) file_get_contents($request->file('file')->getRealPath()), $agreed);
+
+        if ($result['error'] !== null) {
+            return back()->withErrors(['file' => __($result['error'])]);
+        }
+
+        return back()->with('status', __('Imported: :new new, :updated updated, :skipped skipped.', ['new' => $result['new'], 'updated' => $result['updated'], 'skipped' => $result['skipped']]));
     }
 
     /** Delete a customer and their chats for good (privacy request). Future bookings are cancelled first. */

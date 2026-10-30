@@ -1,7 +1,7 @@
 @extends('admin.layout')
 @section('title', __('Customers'))
 @section('content')
-    <h1>{{ __('Customers') }}</h1>
+    <div class="page-head"><h1>{{ __('Customers') }}</h1>@if (auth()->user()->canManage())<button type="button" class="btn" id="open-import">{{ __('Import from a spreadsheet') }}</button>@endif</div>
     <p class="mute">{{ __('One record per person (matched by phone number). Open a customer to see their chats, bookings and notes. Lead level: Ready to book = booked or ready to buy, Interested = left their details, Just browsing = low interest.') }}</p>
     <form method="get" class="fbar">
         <input type="search" name="q" value="{{ $search }}" placeholder="{{ __('Search name, phone or interest') }}">
@@ -54,4 +54,26 @@
         </table>
     </form>
     <div class="pager">{{ $customers->links('pagination.bar') }}</div>
+@if (auth()->user()->canManage())
+    <dialog id="import-dialog" class="dlg">
+        <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+        <h3>{{ __('Import customers') }}</h3>
+        <p class="mute" style="margin-top:4px">{{ __('Choose a CSV file. The first row names the columns: name, phone, email, language, tags, notes. People with a phone number that is already here are updated, not added twice. Up to 2000 rows.') }} <a href="{{ url('/admin/customers/import-template') }}">{{ __('Download a sample file') }}</a></p>
+        <form method="post" action="{{ url('/admin/customers/import') }}" enctype="multipart/form-data">
+            @csrf
+            <label class="f" style="margin-top:12px"><span>{{ __('CSV file') }}</span><input type="file" name="file" accept=".csv,text/csv,text/plain" required></label>
+            <label class="chk"><input type="checkbox" name="agreed" value="1"> {{ __('These people agreed to receive messages from us (broadcasts and automations). Leave this unticked if you are not sure.') }}</label>
+            <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Import') }}</button></div>
+        </form>
+    </dialog>
+    @push('scripts')
+    <script>
+    (function () {
+      var d = document.getElementById('import-dialog'), b = document.getElementById('open-import');
+      b.addEventListener('click', function () { d.showModal(); });
+      d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('.dlg-x')) { d.close(); } });
+    })();
+    </script>
+    @endpush
+    @endif
 @endsection

@@ -788,3 +788,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. In the Inbox press the paperclip next to Send reply, choose a JPG/PNG photo, an MP4 video, a voice note, a PDF or an Office file (up to 16 MB). Text typed in the box becomes the caption.
 2. WhatsApp, Messenger and Instagram customers receive it (Messenger/Instagram get the caption as a second message). The website chat shows the picture, player or file link in the bubble.
 3. The file address Meta fetches uses APP_URL, so the tunnel must be running and APP_URL must be its address. Other file types (for example .exe) are refused.
+
+## CS. Join duplicate customers, and import from a spreadsheet
+
+1. Open a customer, press the three dots, choose "Join with another customer". Search the other record, pick it, press Join them and confirm. Its chats, bookings, orders, tasks and tags move over, blanks are filled in (name, phone, email, notes are combined), the higher lead level is kept, and if either record opted out the person stays opted out. The other record disappears.
+2. Customers > Import from a spreadsheet (owners and managers). Download the sample file, fill it in (name, phone, email, language, tags, notes), upload it. People with a phone number already in the list are updated, never added twice. Imported people are not marketing contacts unless you tick "These people agreed to receive messages".
