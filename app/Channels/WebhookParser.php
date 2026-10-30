@@ -19,6 +19,32 @@ class WebhookParser
         };
     }
 
+    /**
+     * What happened to messages we sent: sent, delivered, read, or failed with a reason (WhatsApp only).
+     *
+     * @return list<array{id: string, status: string, errors: array<int, array<string, mixed>>}>
+     */
+    public function statuses(array $body): array
+    {
+        if (($body['object'] ?? '') !== 'whatsapp_business_account') {
+            return [];
+        }
+
+        $found = [];
+
+        foreach ((array) ($body['entry'] ?? []) as $entry) {
+            foreach ((array) ($entry['changes'] ?? []) as $change) {
+                foreach ((array) ($change['value']['statuses'] ?? []) as $s) {
+                    if (! empty($s['id']) && ! empty($s['status'])) {
+                        $found[] = ['id' => (string) $s['id'], 'status' => (string) $s['status'], 'errors' => (array) ($s['errors'] ?? [])];
+                    }
+                }
+            }
+        }
+
+        return $found;
+    }
+
     /** @return list<InboundEvent> */
     private function whatsapp(array $body): array
     {

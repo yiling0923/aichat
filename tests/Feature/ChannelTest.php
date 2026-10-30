@@ -759,4 +759,54 @@ class ChannelTest extends TestCase
         $this->assertStringContainsString('Fix connection', $r->json('message.delivery_error'));
         $this->assertStringContainsString('expired', (string) $this->in(fn () => Channel::query()->first()->last_error));
     }
+
+    private function waStatus(string $id, string $status, array $errors = []): array
+    {
+        $body = $this->waText('x');
+        unset($body['entry'][0]['changes'][0]['value']['messages']);
+        $body['entry'][0]['changes'][0]['value']['statuses'] = [['id' => $id, 'status' => $status, 'recipient_id' => '60123456789'] + ($errors ? ['errors' => $errors] : [])];
+
+        return $body;
+    }
+
+    public function test_the_later_delivery_news_from_whatsapp_reaches_the_inbox(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->hook($this->waText('hi', 'wamid.1'));
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $id = $this->in(fn () => Conversation::query()->first()->id);
+        $this->actingAs($staff)->postJson("/admin/api/conversations/{$id}/reply", ['text' => 'Hello'])->assertOk();    // the fake answers with message id wamid.OUT
+
+        $this->hook($this->waStatus('wamid.OUT', 'delivered'))->assertOk();
+        $this->in(fn () => $this->assertSame('delivered', Message::query()->where('external_id', 'wamid.OUT')->first()->payload['receipt']));
+
+        $this->hook($this->waStatus('wamid.OUT', 'read'))->assertOk();
+        $this->hook($this->waStatus('wamid.OUT', 'sent'))->assertOk();                                           // never goes backwards
+        $this->in(fn () => $this->assertSame('read', Message::query()->where('external_id', 'wamid.OUT')->first()->payload['receipt']));
+
+        $shown = $this->actingAs($staff)->getJson("/admin/api/conversations/{$id}?after=9999")->json('receipts');
+        $this->assertContains('read', array_column($shown, 'receipt'));
+    }
+
+    public function test_a_message_accepted_by_whatsapp_but_never_delivered_shows_the_real_reason(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->hook($this->waText('hi', 'wamid.1'));
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $id = $this->in(fn () => Conversation::query()->first()->id);
+        $this->actingAs($staff)->post("/admin/api/conversations/{$id}/attach", ['file' => $this->png()], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('message.delivery', 'sent');
+
+        $this->hook($this->waStatus('wamid.OUT', 'failed', [['code' => 131053, 'title' => 'Media upload error', 'message' => 'Media upload error', 'error_data' => ['details' => 'Unable to download the media']]]))->assertOk();
+
+        $msg = $this->in(fn () => Message::query()->where('external_id', 'wamid.OUT')->first());
+        $this->assertSame('failed', $msg->payload['delivery']);
+        $this->assertStringContainsString('could not download the file', $msg->payload['delivery_error']);
+        $this->assertStringContainsString('APP_URL', $msg->payload['delivery_error']);
+
+        $note = $this->in(fn () => \App\Models\StaffNotification::query()->where('title', 'like', 'Message to%was not delivered')->count());
+        $this->assertGreaterThan(0, $note);
+
+        // A status for a message we do not know is ignored.
+        $this->hook($this->waStatus('wamid.NOPE', 'failed', [['code' => 1]]))->assertOk();
+    }
 }

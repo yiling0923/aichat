@@ -56,6 +56,14 @@ class MetaWebhookController extends Controller
             return response('Forbidden', 403);
         }
 
+        foreach ($parser->statuses((array) $request->json()->all()) as $status) {
+            try {
+                app(\App\Channels\DeliveryStatus::class)->apply($status);
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
         $events = $parser->parse((array) $request->json()->all());
         Log::info('Meta webhook received', ['messages' => count($events)]);
         self::note('received', count($events));

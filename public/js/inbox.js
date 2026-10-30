@@ -96,6 +96,25 @@
     return box;
   }
 
+  // Sent, delivered, read, or "Not delivered" with the reason. WhatsApp reports this after the message was accepted, so older bubbles are updated too.
+  function applyReceipts(list) {
+    (list || []).forEach(function (r) {
+      var el = logEl.querySelector('[data-mid="' + r.id + '"]');
+      if (!el) { return; }
+      var f = el.querySelector('.fail'), rc = el.querySelector('.rc');
+      if (r.delivery === 'failed') {
+        if (rc) { rc.remove(); }
+        if (!f) { f = document.createElement('small'); f.className = 'fail'; el.appendChild(f); }
+        f.textContent = __t('Not delivered:') + ' ' + (r.delivery_error || __t('unknown problem'));
+      } else if (r.receipt && el.classList.contains('bot') + el.classList.contains('staff') > 0) {
+        if (f) { f.remove(); }
+        if (!rc) { rc = document.createElement('small'); rc.className = 'rc'; el.appendChild(rc); }
+        rc.className = 'rc ' + r.receipt;
+        rc.textContent = r.receipt === 'read' ? '\u2713\u2713 ' + __t('Read') : (r.receipt === 'delivered' ? '\u2713\u2713 ' + __t('Delivered') : '\u2713 ' + __t('Sent'));
+      }
+    });
+  }
+
   function addLine(m) {
     if (seen[m.id]) { return; }
     seen[m.id] = true;
@@ -118,6 +137,7 @@
     var div = document.createElement('div');
     var sys = m.from === 'system' && m.private;
     div.className = 'm ' + (sys ? 'system' : (m.private ? 'private' : m.from));
+    div.dataset.mid = m.id;
     var body = document.createElement('div'); body.className = 'mt'; body.textContent = m.text || '';
     if (m.private && !sys) { var lock = document.createElement('span'); lock.className = 'lock'; lock.textContent = __t('Private note'); div.appendChild(lock); }
     if (m.media) {
@@ -133,12 +153,8 @@
       t.textContent = [who, when ? when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''].filter(Boolean).join(' · ');
       div.appendChild(t);
     }
-    if (m.delivery === 'failed') {
-      var f = document.createElement('small'); f.className = 'fail';
-      f.textContent = __t('Not delivered:') + ' ' + (m.delivery_error || __t('unknown problem'));
-      div.appendChild(f);
-    }
     logEl.appendChild(div);
+    applyReceipts([m]);
     if (m.from === 'customer') { unseen++; }
   }
 
@@ -257,6 +273,7 @@
       if (force || key !== lastInfoKey) { lastInfoKey = key; renderInfo(data); }
       var before = unseen; unseen = 0;
       data.messages.forEach(addLine);
+      applyReceipts(data.receipts);
       if (askChanged) { askChanged = false; suggest(); }
       if (stick) { toBottom(); }
       else if (unseen > 0) { jumpBtn.textContent = (unseen === 1 ? __t('1 new message') : __t(':n new messages', { n: unseen })) + ' ↓'; jumpBtn.classList.remove('hidden'); }
@@ -291,18 +308,18 @@
   }
   document.querySelectorAll('.c-tabs button').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); textEl.focus(); }); });
   // Attach a photo, video, voice note or file: the text in the box becomes its caption.
-  var fileEl = document.getElementById('file-pick'), attachBtn = document.getElementById('btn-attach');
+  var fileEl = document.getElementById('file-pick'), attachBtn = document.getElementById('btn-attach'), attachLabel = document.getElementById('attach-label');
   attachBtn.addEventListener('click', function () { if (mode === 'note') { setMode('reply'); } fileEl.click(); });
   fileEl.addEventListener('change', function () {
     var f = fileEl.files[0]; fileEl.value = '';
     if (!f || !current) { return; }
     if (f.size > 16 * 1024 * 1024) { toast(__t('That file is larger than 16 MB.'), true); return; }
     var fd = new FormData(); fd.append('file', f); fd.append('caption', textEl.value.trim());
-    attachBtn.disabled = true; attachBtn.textContent = __t('Sending...');
+    attachBtn.disabled = true; attachLabel.textContent = __t('Sending...');
     api('/conversations/' + current + '/attach', { method: 'POST', body: fd }).then(function (d) {
       if (d && (d.error || d.message === undefined && d.errors)) { toast(d.error || (d.errors && d.errors.file && d.errors.file[0]) || __t('Could not send the file.'), true); } else { textEl.value = ''; grow(); }
       refreshThread(false, true); loadList();
-    }).catch(function () { toast(__t('Could not send the file.'), true); }).then(function () { attachBtn.disabled = false; attachBtn.textContent = '\uD83D\uDCCE'; });
+    }).catch(function () { toast(__t('Could not send the file.'), true); }).then(function () { attachBtn.disabled = false; attachLabel.textContent = __t('Attach'); });
   });
   document.getElementById('btn-send').addEventListener('click', send);
   textEl.addEventListener('input', grow);

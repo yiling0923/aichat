@@ -818,3 +818,9 @@ Needs your own free Google account. Allow about 10 minutes.
 5. Each business uploads and keeps its own Google key, so on a server with several businesses nobody sees or uses another business's key.
 
 (CW/booking, updated) Booking setup now has four numbered tabs: 1. Opening hours and rules, 2. Practitioners, 3. Services, 4. Google Calendar (optional). The tab you used stays selected after you press Save, and a failed Google test opens the Google Calendar tab.
+
+## CX. Delivery ticks and the real reason a message did not arrive
+
+1. Send a WhatsApp reply from the Inbox. Under your message a small tick appears: ✓ Sent, ✓✓ Delivered, ✓✓ Read (blue). This follows WhatsApp's own news, so it can take a few seconds.
+2. If WhatsApp accepted a message but could not deliver it (for example it could not download a photo from your server, the 24-hour window closed, the phone is not allowed or offline), the bubble turns red within seconds and says why, and the bell tells your team. The first red message may say "Not delivered: Authentication Error" for an expired token.
+3. The Attach button on the left of the reply row has a paperclip icon and the word Attach.

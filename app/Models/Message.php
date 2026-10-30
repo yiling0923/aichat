@@ -70,6 +70,7 @@ class Message extends Model
             'time' => $this->created_at?->toIso8601String(),
             'ai' => $this->sender_type === 'ai' ? ['status' => $this->payload['status'] ?? 'pending', 'intent' => $this->payload['intent'] ?? null, 'mood' => $this->payload['mood'] ?? null] : null,
             'media' => $this->mediaArray(),
+            'receipt' => $this->payload['receipt'] ?? null,
             'delivery' => $this->payload['delivery'] ?? null,
             'delivery_error' => $this->payload['delivery_error'] ?? null,
         ];

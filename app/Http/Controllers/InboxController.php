@@ -73,7 +73,11 @@ class InboxController extends Controller
             ->values()
             ->map(fn (Message $m) => $m->toChatArray());
 
+        $receipts = Message::query()->where('conversation_id', $conversation->id)->where('direction', 'out')->where('is_private', false)->whereIn('sender_type', ['staff', 'bot'])
+            ->latest('id')->limit(15)->get()->map(fn (Message $m) => ['id' => $m->id, 'delivery' => $m->payload['delivery'] ?? null, 'delivery_error' => $m->payload['delivery_error'] ?? null, 'receipt' => $m->payload['receipt'] ?? null])->values();
+
         return response()->json([
+            'receipts' => $receipts,
             'conversation' => [
                 'id' => $conversation->id,
                 'name' => $conversation->contact_name ?: __('Visitor :n', ['n' => $conversation->id]),

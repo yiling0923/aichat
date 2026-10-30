@@ -85,9 +85,12 @@
                     <div class="qr-sugg" id="qr-sugg" hidden><span>{{ __('Suggested') }}</span></div>
                     <textarea id="reply-text" rows="2" placeholder="{{ __('Write a reply. Enter sends, Shift+Enter starts a new line.') }}"></textarea>
                     <div class="row">
-                        <span class="mute" id="c-hint">{{ __('Replying makes you the owner of the chat, so the bot stays quiet.') }}</span>
                         <input type="file" id="file-pick" hidden accept="image/jpeg,image/png,video/mp4,audio/ogg,audio/mpeg,application/pdf,.doc,.docx,.xls,.xlsx,.txt">
-                        <button class="btn" id="btn-attach" type="button" title="{{ __('Send a photo or file') }}" aria-label="{{ __('Send a photo or file') }}">&#128206;</button>
+                        <button class="btn attach" id="btn-attach" type="button" title="{{ __('Send a photo or file') }}" aria-label="{{ __('Send a photo or file') }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.4 11.6l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>
+                            <span id="attach-label">{{ __('Attach') }}</span>
+                        </button>
+                        <span class="mute" id="c-hint">{{ __('Replying makes you the owner of the chat, so the bot stays quiet.') }}</span>
                         <button class="btn primary" id="btn-send" type="button">{{ __('Send reply') }}</button>
                     </div>
                 </div>
