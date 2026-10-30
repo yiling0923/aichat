@@ -37,12 +37,12 @@ class BotEngine
 
             // Staff are in charge, but the AI can still offer them a suggested reply. In Auto mode, while the customer is still
             // waiting for a first reply from a person, a plain factual answer (hours, prices, location) is sent straight away.
+            if ($conversation->channel !== 'preview' && $conversation->business !== null && ($sent = $this->answerWhileWaiting($conversation, $incoming, $flow)) !== []) {
+                return $sent;
+            }
+
             if ($conversation->channel !== 'preview' && $conversation->business !== null && $this->ai->active($conversation->business)) {
                 try {
-                    if ($this->ai->mode($conversation->business) === 'auto' && ($sent = $this->answerWhileWaiting($conversation, $incoming)) !== []) {
-                        return $sent;
-                    }
-
                     $this->ai->suggest($conversation);
                 } catch (\Throwable $e) {
                     report($e);
@@ -63,7 +63,7 @@ class BotEngine
      *
      * @return list<Message>
      */
-    private function answerWhileWaiting(Conversation $conversation, Message $incoming): array
+    private function answerWhileWaiting(Conversation $conversation, Message $incoming, ?Flow $flow = null): array
     {
         $since = $conversation->handover_at;
 
@@ -78,13 +78,25 @@ class BotEngine
             return [];
         }
 
+        $language = $conversation->language ?? 'en';
+
+        // The menu's own information (prices, hours, location, promotions) needs no AI: if the customer's words point to it, send it.
+        $flow ??= $this->flows->published($conversation->business);
+        $info = $this->menu->infoAnswer($conversation, $flow, (string) $incoming->body);
+        if ($info !== null) {
+            return [$conversation->addMessage('out', 'bot', $info."\n\n".Strings::get('ai_waiting_note', $language), ['waiting_answer' => true, 'ai_waiting' => true])];
+        }
+
+        if ($this->ai->mode($conversation->business) !== 'auto' || ! $this->ai->active($conversation->business)) {
+            return [];
+        }
+
         $answer = $this->ai->answer($conversation, 'reply');
 
         if ($answer === null || $answer->intent !== 'faq' || $answer->wantsHuman || ! in_array($answer->mood, ['calm', 'happy'], true)) {
             return [];
         }
 
-        $language = $conversation->language ?? 'en';
         $text = $answer->text;
         if (! Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'bot')->where('payload->ai', true)->exists()) {
             $text .= "\n".Strings::get('ai_disclosure', $language);

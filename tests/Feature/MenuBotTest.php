@@ -212,4 +212,24 @@ class MenuBotTest extends TestCase
         $this->say('你们的价格是多少', $token);
         $this->assertSame('zh', $this->inBusiness(fn () => Conversation::query()->where('token', $token)->first()->language));
     }
+
+    public function test_a_customer_waiting_for_a_person_still_gets_the_menu_information_they_ask_for(): void
+    {
+        $token = $this->say('hi')->json('token');
+        $this->say('English', $token, 'lang_en');
+        $this->say('x', $token, 'staff');                                  // Talk to staff: waiting for a person
+
+        $r = $this->say('what time do you open', $token);
+        $texts = implode(' | ', array_column(array_filter($r->json('messages'), fn ($m) => $m['from'] === 'bot'), 'text'));
+        $this->assertStringContainsString('We are open', $texts);
+        $this->assertStringContainsString('will still reply', $texts);
+        $this->assertSame('human', $r->json('mode'));                      // still waiting for a person
+
+        // Booking and "talk to a person" are not answered by the bot while a person is on the way.
+        foreach (['I want to book an appointment', 'Can I talk to a person?'] as $text) {
+            $r = $this->say($text, $token);
+            $bots = array_filter($r->json('messages'), fn ($m) => $m['from'] === 'bot' && str_contains($m['text'], 'will still reply'));
+            $this->assertCount(0, $bots, $text);                           // nothing new from the bot
+        }
+    }
 }

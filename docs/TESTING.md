@@ -754,3 +754,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 2. As a customer choose "Talk to staff", then ask something factual such as "what time are you open". Without waiting for anyone the customer gets the answer plus "Our team has your message and will still reply as soon as possible." It is sent at most 3 times while nobody has replied.
 3. "Can I talk to a person?", complaints and refund requests are never answered by the AI.
 4. As soon as a team member replies, the AI stops answering by itself in that chat and only offers draft cards. In Suggest mode nothing is sent by itself.
+
+## CN. Menu information for a customer who is waiting for a person (no AI needed)
+
+1. As a customer choose "Talk to staff". While nobody has replied, ask "what time do you open", "price" or "where are you": the bot sends the matching menu information (hours, prices, location, promotions) plus "Our team has your message and will still reply as soon as possible." At most 3 times.
+2. Booking requests and "Can I talk to a person?" are not answered by the bot. Once a team member replies, the bot stays quiet again.
+3. This works with AI off. In Auto mode the AI can also answer other plain factual questions.

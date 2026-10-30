@@ -542,6 +542,36 @@ class MenuBot
      * @param  array<string, mixed>  $state
      * @return array<string, mixed>
      */
+    /**
+     * The text of an information step (prices, opening hours, location, promotions) the typed words point to on the main menu,
+     * or null when they point to nothing, or to something that is not plain information (booking, staff, my booking).
+     */
+    public function infoAnswer(Conversation $conversation, Flow $flow, string $text): ?string
+    {
+        $main = $flow->node($flow->mainNodeId());
+
+        if ($main === null) {
+            return null;
+        }
+
+        $option = $this->match($flow, $main, $text, null);
+
+        if ($option === null || ! empty($option['action']) || empty($option['goto'])) {
+            return null;
+        }
+
+        $target = $flow->node((string) $option['goto']);
+
+        if ($target === null || ($target['type'] ?? '') !== 'message') {
+            return null;
+        }
+
+        $language = $conversation->language ?? $flow->defaultLanguage();
+        $answer = trim(Text::fill($flow->localize($target['text'] ?? [], $language), $this->placeholders($conversation, [])));
+
+        return $answer !== '' ? $answer : null;
+    }
+
     private function placeholders(Conversation $conversation, array $state): array
     {
         return ($state['data'] ?? []) + ['business' => $conversation->business->name];
