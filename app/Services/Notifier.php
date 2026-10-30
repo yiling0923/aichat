@@ -59,6 +59,18 @@ class Notifier
         }
     }
 
+    /** A customer who writes for the first time: tell the team, even though the bot is answering (switch off in Settings). */
+    public function newChat(Conversation $conversation, string $text): void
+    {
+        $business = $conversation->business;
+
+        if ($business === null || ($business->settings['alert_new_chat'] ?? true) === false || $conversation->channel === 'preview') {
+            return;
+        }
+
+        $this->notify($business, 'message', 'New chat from '.self::chatName($conversation), $text !== '' ? $text : null, route('inbox', ['c' => $conversation->id]));
+    }
+
     public static function chatName(Conversation $c): string
     {
         return $c->contact_name ?: ($c->customer?->name ?: 'Visitor '.$c->id);

@@ -81,6 +81,10 @@ class InboundHandler
             $incoming = $conversation->addMessage('in', 'customer', $event->text);
             $incoming->forceFill(['external_id' => $event->messageId])->save();
 
+            if ($isNew) {
+                app(\App\Services\Notifier::class)->newChat($conversation, (string) $event->text);
+            }
+
             // A message that arrives long after it was written (the tunnel was down, Meta retried): keep it for the
             // team, but do not answer it now. The customer has moved on and a late answer would only confuse them.
             if ($stale) {

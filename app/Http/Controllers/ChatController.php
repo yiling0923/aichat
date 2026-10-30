@@ -55,6 +55,10 @@ class ChatController extends Controller
         }
 
         $incoming = $conversation->addMessage('in', 'customer', (string) ($data['text'] ?? ''));
+
+        if ($isNew && (string) ($data['text'] ?? '') !== '') {
+            app(\App\Services\Notifier::class)->newChat($conversation, (string) $data['text']);
+        }
         $bot->respond($conversation, $incoming, $data['option_id'] ?? null);
 
         return response()->json([

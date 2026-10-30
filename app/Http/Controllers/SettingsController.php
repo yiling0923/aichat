@@ -102,6 +102,7 @@ class SettingsController extends Controller
         $settings = (array) $business->settings;
         $settings['auto_tag'] = $request->boolean('auto_tag');
         $settings['daily_email'] = $request->boolean('daily_email');
+        $settings['alert_new_chat'] = $request->boolean('alert_new_chat');
         $business->update(['settings' => $settings]);
 
         return back()->with('status', __('Saved.'));

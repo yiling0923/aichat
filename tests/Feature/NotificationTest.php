@@ -47,7 +47,7 @@ class NotificationTest extends TestCase
 
         $this->assertSame(1, StaffNotification::where('user_id', $this->owner->id)->where('type', 'handover')->count());
         $this->assertSame(1, StaffNotification::where('user_id', $this->staff->id)->where('type', 'handover')->count());
-        $this->assertSame(2, StaffNotification::count());   // not the switched-off user, not the other business
+        $this->assertSame(2, StaffNotification::where('type', 'handover')->count());   // not the switched-off user, not the other business
         $this->assertSame(0, StaffNotification::where('user_id', $stranger->id)->count());
     }
 
@@ -144,5 +144,16 @@ class NotificationTest extends TestCase
     {
         $owner = User::factory()->create(['business_id' => Business::factory()->create()->id, 'role' => 'owner']);
         $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('bell-sound', false)->assertSee('Sound is on');
+    }
+
+    public function test_a_new_chat_alerts_the_team_even_while_the_bot_answers_and_it_can_be_switched_off(): void
+    {
+        $this->say('hello')->assertOk();
+        $this->assertSame(1, StaffNotification::where('user_id', $this->owner->id)->where('title', 'like', 'New chat from%')->count());
+        $this->assertSame(1, StaffNotification::where('user_id', $this->staff->id)->where('title', 'like', 'New chat from%')->count());
+
+        $this->business->update(['settings' => ['alert_new_chat' => false]]);
+        $this->say('hi again')->assertOk();
+        $this->assertSame(2, StaffNotification::where('title', 'like', 'New chat from%')->count());
     }
 }
