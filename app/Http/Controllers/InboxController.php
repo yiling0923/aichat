@@ -114,7 +114,7 @@ class InboxController extends Controller
         return $this->sendStaffReply(Conversation::query()->findOrFail($id), $data['text']);
     }
 
-    private function sendStaffReply(Conversation $conversation, string $text): JsonResponse
+    private function sendStaffReply(Conversation $conversation, string $text, ?array $payload = null): JsonResponse
     {
         if (! $conversation->windowOpen()) {
             return response()->json(['error' => $conversation->channelAccount?->type === 'whatsapp'
@@ -130,7 +130,7 @@ class InboxController extends Controller
         // Writing in a resolved chat means it is not finished after all.
         $conversation->reopen();
 
-        $message = $conversation->addMessage('out', 'staff', $text);
+        $message = $conversation->addMessage('out', 'staff', $text, $payload);
 
         return response()->json(['message' => $message->toChatArray(), 'mode' => $conversation->mode]);
     }
@@ -145,7 +145,11 @@ class InboxController extends Controller
         abort_unless(($draft->payload['status'] ?? 'pending') === 'pending', 422, 'This suggestion was already used.');
 
         $text = trim((string) ($data['text'] ?? '')) !== '' ? $data['text'] : (string) $draft->body;
-        $response = $this->sendStaffReply($conversation, $text);
+        // A booking answer says "tap Book now", so it must carry that button, like the bot's own answers do.
+        $payload = ($draft->payload['intent'] ?? '') === 'booking'
+            ? ['options' => \App\Marketing\Outreach::bookNowButton($conversation->language ?? 'en')]
+            : null;
+        $response = $this->sendStaffReply($conversation, $text, $payload);
 
         if ($response->getStatusCode() === 200) {
             $draft->forceFill(['payload' => array_merge((array) $draft->payload, ['status' => 'used'])])->save();

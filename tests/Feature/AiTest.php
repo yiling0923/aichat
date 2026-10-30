@@ -618,4 +618,21 @@ class AiTest extends TestCase
         $this->assertStringNotContainsString('will still reply', $this->texts($r));
         $this->in(fn () => $this->assertSame(1, Message::query()->where('sender_type', 'ai')->count()));
     }
+
+    public function test_a_booking_suggestion_sent_by_staff_carries_the_book_now_button(): void
+    {
+        $this->setMode('suggest');
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $token = $this->chat();
+        $this->say('x', $token, 'staff');
+        $this->say('I want to book', $token);
+        $c = $this->conversation($token);
+        $card = $this->in(fn () => Message::query()->where('sender_type', 'ai')->first());
+        $this->assertSame('booking', $card->payload['intent'] ?? null);
+
+        $this->actingAs($staff)->postJson("/admin/api/conversations/{$c->id}/ai/{$card->id}/send")->assertOk();
+
+        $sent = $this->in(fn () => Message::query()->where('sender_type', 'staff')->latest('id')->first());
+        $this->assertSame('__book', $sent->payload['options'][0]['id'] ?? null);
+    }
 }

@@ -107,6 +107,6 @@ class BotEngine
 
     private function wantsMenu(string $text, ?string $optionId): bool
     {
-        return $optionId === '__menu' || in_array(\App\Bot\Text::normalize($text), ['menu', 'main menu', 'back to menu', 'bot', '菜单', '主菜单', '返回菜单', '菜單', '主菜單', '返回菜單'], true);
+        return in_array($optionId, ['__menu', '__book'], true) || in_array(\App\Bot\Text::normalize($text), ['menu', 'main menu', 'back to menu', 'bot', '菜单', '主菜单', '返回菜单', '菜單', '主菜單', '返回菜單'], true);
     }
 }

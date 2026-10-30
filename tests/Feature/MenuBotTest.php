@@ -232,4 +232,17 @@ class MenuBotTest extends TestCase
             $this->assertCount(0, $bots, $text);                           // nothing new from the bot
         }
     }
+
+    public function test_tapping_book_now_wakes_the_bot_even_when_a_person_has_the_chat(): void
+    {
+        $token = $this->say('hi')->json('token');
+        $this->say('English', $token, 'lang_en');
+        $this->say('x', $token, 'staff');
+
+        $r = $this->say('Book now', $token, '__book');
+
+        // The bot answered about booking (this test business has no services or hours, so it says there are no free times).
+        [$text] = $this->last($r);
+        $this->assertMatchesRegularExpression('/Which service|no free times/', $text);
+    }
 }

@@ -760,3 +760,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. As a customer choose "Talk to staff". While nobody has replied, ask "what time do you open", "price" or "where are you": the bot sends the matching menu information (hours, prices, location, promotions) plus "Our team has your message and will still reply as soon as possible." At most 3 times.
 2. Booking requests and "Can I talk to a person?" are not answered by the bot. Once a team member replies, the bot stays quiet again.
 3. This works with AI off. In Auto mode the AI can also answer other plain factual questions.
+
+## CO. "Book now" button when a person (or the AI draft) tells the customer to book
+
+1. In a chat a person has, the customer types "I want to book" and the AI card says to tap Book now. Press **Send now** on the card: the customer's WhatsApp message now has a **Book now** button.
+2. The customer taps **Book now**: the bot wakes up and starts the booking (service, day, time), even though a person had the chat.
