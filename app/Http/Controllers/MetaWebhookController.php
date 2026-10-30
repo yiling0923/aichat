@@ -6,6 +6,7 @@ use App\Channels\InboundHandler;
 use App\Channels\WebhookParser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -22,10 +23,24 @@ class MetaWebhookController extends Controller
         $expected = (string) config('services.meta.verify_token');
 
         if ($mode === 'subscribe' && $expected !== '' && hash_equals($expected, $token)) {
+            self::note('verified');
+
             return response((string) $request->query('hub_challenge', $request->query('hub.challenge')), 200)->header('Content-Type', 'text/plain');
         }
 
+        self::note('verify_failed');
+
         return response('Forbidden', 403);
+    }
+
+    /** Remembers the last call from Meta, so the Channels page can say in plain words whether messages are arriving. */
+    public static function note(string $result, int $messages = 0): void
+    {
+        try {
+            Cache::put('meta_webhook_last', ['at' => now()->toIso8601String(), 'result' => $result, 'messages' => $messages], now()->addDays(14));
+        } catch (Throwable) {
+            // a diagnostic must never break the webhook
+        }
     }
 
     public function receive(Request $request, WebhookParser $parser, InboundHandler $handler): Response
@@ -36,12 +51,14 @@ class MetaWebhookController extends Controller
         // Only Meta knows the app secret, so a valid signature proves the message is from Meta.
         if ($secret === '' || ! hash_equals('sha256='.hash_hmac('sha256', $request->getContent(), $secret), $given)) {
             Log::warning('Meta webhook rejected: missing app secret or bad signature');
+            self::note($secret === '' ? 'no_secret' : 'bad_signature');
 
             return response('Forbidden', 403);
         }
 
         $events = $parser->parse((array) $request->json()->all());
         Log::info('Meta webhook received', ['messages' => count($events)]);
+        self::note('received', count($events));
 
         foreach ($events as $event) {
             try {

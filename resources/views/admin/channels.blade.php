@@ -12,6 +12,10 @@
             ['ok' => $verifyToken !== '', 'text' => __('Verify token'), 'fix' => __('Add META_VERIFY_TOKEN to .env (any long random word).')],
         ];
         $problems = collect($checks)->where('ok', false)->count();
+        $hook = \Illuminate\Support\Facades\Cache::get('meta_webhook_last');
+        $hookWhen = $hook ? \Carbon\Carbon::parse($hook['at'])->diffForHumans() : null;
+        $hookBad = $hook && in_array($hook['result'], ['no_secret', 'bad_signature', 'verify_failed', 'unknown_channel', 'channel_off'], true);
+        $hookId = (string) \Illuminate\Support\Facades\Cache::get('meta_webhook_unknown_id', '');
     @endphp
     <div class="page-head"><div><h1>{{ __('Channels') }}</h1><p class="mute">{{ __('Where customers can message you. Everyone lands in the same Inbox.') }}</p></div>
         <button type="button" class="btn primary" id="open-connect">{{ __('+ Connect a channel') }}</button></div>
@@ -147,11 +151,29 @@
 
     </dialog>
 
-    <details class="card fold" id="meta-setup" @if ($problems) open @endif>
+    <details class="card fold" id="meta-setup" @if ($problems || $hookBad || ! $hook) open @endif>
         <summary><span><b>{{ __('Meta app connection') }}</b> {{ __('(advanced, set up once)') }}
             <span class="tag {{ $problems ? 'warn' : 'ok' }}">{{ $problems ? $problems.' to fix' : 'All set' }}</span>
             <small class="mute fold-help">{{ __('The address Meta sends messages to. Needed for WhatsApp, Messenger and Instagram, not for the website chat.') }}</small></span></summary>
         <div style="padding:0 18px 18px">
+            <div class="note {{ ! $hook || $hookBad ? 'warn' : 'ok' }}" id="hook-status" style="margin:0 0 12px">
+                <b>{{ __('Is Meta reaching this app?') }}</b><br>
+                @if (! $hook)
+                    {{ __('Meta has not contacted this app yet. Check that the tunnel is running, APP_URL is the tunnel address, and the callback address is saved in Meta (WhatsApp > Configuration) with "messages" subscribed. Then send a message from your phone.') }}
+                @elseif ($hook['result'] === 'verified')
+                    {{ __('Meta checked the callback address :when. Good. Now send a message from your phone to your WhatsApp number.', ['when' => $hookWhen]) }}
+                @elseif ($hook['result'] === 'received')
+                    {{ __('Meta last sent :n message(s) :when.', ['n' => $hook['messages'], 'when' => $hookWhen]) }}
+                @elseif ($hook['result'] === 'no_secret' || $hook['result'] === 'bad_signature')
+                    {{ __('Meta reached this app :when but the message was rejected, because the app secret is missing or wrong. Copy the App secret from your Meta app (Settings > Basic) into META_APP_SECRET in .env, then run php artisan config:clear.', ['when' => $hookWhen]) }}
+                @elseif ($hook['result'] === 'verify_failed')
+                    {{ __('Meta tried to verify the callback address :when but the verify token did not match. Press "Save these in Meta for me", or paste the Verify token below into Meta.', ['when' => $hookWhen]) }}
+                @elseif ($hook['result'] === 'unknown_channel')
+                    {{ __('A message arrived :when for the ID :id, but no channel here has that ID. The Phone number ID of your WhatsApp account must be exactly that number.', ['when' => $hookWhen, 'id' => $hookId]) }}
+                @else
+                    {{ __('A message arrived :when but that channel is switched off here. Set its Status to On in its settings.', ['when' => $hookWhen]) }}
+                @endif
+            </div>
             <ul class="checks">
                 @foreach ($checks as $ch)
                     <li class="{{ $ch['ok'] ? 'ok' : 'bad' }}"><span class="ci">{{ $ch['ok'] ? '✓' : '!' }}</span><span><b>{{ $ch['text'] }}</b>@unless ($ch['ok'])<br><span class="mute">{{ $ch['fix'] }}</span>@endunless</span></li>

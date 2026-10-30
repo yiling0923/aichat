@@ -714,3 +714,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. On Channels press "Subscribe to messages" or "Check connection". A message pops up near the bottom of the screen wherever you are scrolled (green if it worked, red with Meta's reason if not). Click it to close.
 2. A failed Subscribe or Check no longer opens the "Connect a channel" window by mistake.
+
+## CG. Channels: "Is Meta reaching this app?"
+
+1. Open Channels, then "Meta app connection". The top box says in plain words what the last call from Meta did: never contacted, address checked, messages received, rejected (app secret), wrong verify token, unknown Phone number ID, or channel switched off.
+2. Send a WhatsApp message to your number and reload: the box should say Meta sent 1 message and the chat appears in the Inbox.

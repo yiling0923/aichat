@@ -581,4 +581,23 @@ class ChannelTest extends TestCase
         config(['services.meta.app_secret' => '', 'services.meta.verify_token' => '']);
         $this->get('/admin/channels')->assertSee('connect-dialog', false)->assertSee('Settings')->assertSee('2 to fix')->assertSee('Add META_APP_SECRET to .env')->assertSee('Add META_VERIFY_TOKEN to .env');
     }
+
+    public function test_the_channels_page_says_what_the_last_call_from_meta_did(): void
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+
+        $this->actingAs($owner)->get('/admin/channels')->assertSee('Meta has not contacted this app yet');
+
+        $this->hook($this->waText('hi'), 'wrong-secret')->assertForbidden();
+        $this->actingAs($owner)->get('/admin/channels')->assertSee('the message was rejected');
+
+        $body = $this->waText('hi');
+        $body['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'] = 'NOT-MINE';
+        $this->hook($body)->assertOk();
+        $this->actingAs($owner)->get('/admin/channels')->assertSee('no channel here has that ID')->assertSee('NOT-MINE');
+
+        $this->hook($this->waText('hello'))->assertOk();
+        $this->actingAs($owner)->get('/admin/channels')->assertSee('Meta last sent 1 message(s)');
+    }
 }

@@ -27,6 +27,11 @@ class InboundHandler
 
         if ($channel === null || ! $channel->active) {
             Log::info('Meta message for an unknown or switched-off channel', ['type' => $event->type, 'key' => $event->channelKey]);
+            \App\Http\Controllers\MetaWebhookController::note($channel === null ? 'unknown_channel' : 'channel_off', 1);
+            try {
+                \Illuminate\Support\Facades\Cache::put('meta_webhook_unknown_id', (string) $event->channelKey, now()->addDays(14));
+            } catch (\Throwable) {
+            }
 
             return;
         }
