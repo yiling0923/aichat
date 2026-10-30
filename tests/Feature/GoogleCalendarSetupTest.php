@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Support\CurrentBusiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -21,20 +20,26 @@ class GoogleCalendarSetupTest extends TestCase
 
     private User $owner;
 
+    private ?Business $other = null;
+
     protected function setUp(): void
     {
         parent::setUp();
         config(['services.google_calendar.credentials' => null]);
-        @unlink(GoogleCalendar::uploadedKeyPath());
-        Cache::forget('google-calendar-token');
         $this->business = Business::factory()->create(['slug' => 'gc-co']);
         $this->owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        @unlink($this->keyPath());
+    }
+
+    private function keyPath(?Business $b = null): string
+    {
+        return GoogleCalendar::uploadedKeyPath(($b ?? $this->business)->id);
     }
 
     protected function tearDown(): void
     {
-        @unlink(GoogleCalendar::uploadedKeyPath());
-        Cache::forget('google-calendar-token');
+        @unlink($this->keyPath());
+        @unlink($this->keyPath($this->other ?? $this->business));
         parent::tearDown();
     }
 
@@ -57,28 +62,38 @@ class GoogleCalendarSetupTest extends TestCase
 
         $this->actingAs($this->owner)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile()])->assertRedirect();
 
-        $this->assertFileExists(GoogleCalendar::uploadedKeyPath());
+        $this->assertFileExists($this->keyPath());
         $this->actingAs($this->owner)->get('/admin/booking-setup')->assertOk()->assertSee('Key loaded')->assertSee('bot@proj.iam.gserviceaccount.com')->assertSee('Share each calendar with this address');
-        $this->assertTrue(app(GoogleCalendar::class)->enabled());
+        $this->assertTrue(app(CurrentBusiness::class)->runAs($this->business, fn () => app(GoogleCalendar::class)->enabled()));
 
         $this->actingAs($this->owner)->post('/admin/booking-setup/google-key/remove')->assertRedirect();
-        $this->assertFalse(app(GoogleCalendar::class)->enabled());
+        $this->assertFalse(app(CurrentBusiness::class)->runAs($this->business, fn () => app(GoogleCalendar::class)->enabled()));
     }
 
     public function test_a_file_that_is_not_a_service_account_key_is_refused(): void
     {
         $bad = UploadedFile::fake()->createWithContent('x.json', json_encode(['hello' => 'world']));
         $this->actingAs($this->owner)->post('/admin/booking-setup/google-key', ['key' => $bad])->assertSessionHasErrors('key');
-        $this->assertFileDoesNotExist(GoogleCalendar::uploadedKeyPath());
+        $this->assertFileDoesNotExist($this->keyPath());
     }
 
-    public function test_on_a_server_shared_by_several_businesses_only_the_platform_owner_changes_the_key(): void
+    public function test_every_business_keeps_its_own_key_even_on_a_server_with_several_businesses(): void
     {
-        Business::factory()->create(['slug' => 'other-co']);
-        $this->actingAs($this->owner)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile()])->assertForbidden();
+        $this->other = Business::factory()->create(['slug' => 'other-co']);
+        $otherOwner = User::factory()->create(['business_id' => $this->other->id, 'role' => 'owner']);
 
-        $platform = User::factory()->create(['business_id' => null, 'role' => 'platform_owner']);
-        $this->actingAs($platform)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile()])->assertStatus(302);
+        $this->actingAs($this->owner)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile('a@proj.iam.gserviceaccount.com')])->assertRedirect();
+        $this->assertFileExists($this->keyPath());
+        $this->assertFileDoesNotExist($this->keyPath($this->other));
+
+        // The other business does not see it, and can upload its own.
+        $this->flushSession();
+        $this->actingAs($otherOwner)->get('/admin/booking-setup')->assertOk()->assertDontSee('a@proj.iam.gserviceaccount.com');
+        $this->actingAs($otherOwner)->post('/admin/booking-setup/google-key', ['key' => $this->keyFile('b@proj.iam.gserviceaccount.com')])->assertRedirect();
+        $this->flushSession();
+        $this->actingAs($otherOwner)->get('/admin/booking-setup')->assertSee('b@proj.iam.gserviceaccount.com')->assertDontSee('a@proj.iam.gserviceaccount.com');
+        $this->flushSession();
+        $this->actingAs($this->owner)->get('/admin/booking-setup')->assertSee('a@proj.iam.gserviceaccount.com')->assertDontSee('b@proj.iam.gserviceaccount.com');
     }
 
     public function test_a_calendar_can_be_tested_for_reading_and_writing(): void

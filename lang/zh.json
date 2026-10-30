@@ -1314,7 +1314,7 @@
  "The email could not be sent.": "邮件发送失败。",
  "The first row must name the columns, for example: name, phone, email, language, tags, notes.": "第一行必须写列名，例如：name、phone、email、language、tags、notes。",
  "The key file is set in the .env file (GOOGLE_SERVICE_ACCOUNT_JSON).": "密钥文件是在 .env 文件中设置的（GOOGLE_SERVICE_ACCOUNT_JSON）。",
- "The key is kept on this server only, never shown again. After uploading, this page shows the address to share your calendars with.": "密钥只保存在这台服务器上，之后不会再显示。上传后，本页会显示要分享日历的地址。",
+ "The key is kept on this server only, never shown again, and each business uses its own. After uploading, this page shows the address to share your calendars with.": "密钥只保存在这台服务器上，之后不会再显示，每个生意使用自己的密钥。上传后，本页会显示要分享日历的地址。",
  "The language of the staff screens, just for you. Other team members keep their own.": "员工后台的显示语言，只对您生效。其他团队成员保持各自的设置。",
  "The language setting needs a database update first. Close this page and run: php artisan migrate": "语言设置需要先更新数据库。请关闭此页面并运行：php artisan migrate",
  "The last :n days": "最近 :n 天",

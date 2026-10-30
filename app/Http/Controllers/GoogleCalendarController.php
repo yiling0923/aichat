@@ -3,24 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Booking\GoogleCalendar;
-use App\Models\Business;
 use App\Models\Practitioner;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 /** Connect Google Calendar from the Booking setup page: upload the key, remove it, and test a calendar. */
 class GoogleCalendarController extends Controller
 {
-    /** One key serves the whole server. On a server shared by several businesses only the platform owner changes it. */
-    private function mayChangeKey(Request $request): bool
-    {
-        return $request->user()->role === 'platform_owner' || Business::query()->withoutGlobalScopes()->count() <= 1;
-    }
-
     public function saveKey(Request $request): RedirectResponse
     {
-        abort_unless($this->mayChangeKey($request), 403);
         $request->validate(['key' => ['required', 'file', 'max:64']], ['key.max' => __('That file is too big to be a Google key.')]);
 
         $key = json_decode((string) file_get_contents($request->file('key')->getRealPath()), true);
@@ -30,18 +21,16 @@ class GoogleCalendarController extends Controller
         }
 
         $path = GoogleCalendar::uploadedKeyPath();
+        @mkdir(dirname($path), 0700, true);
         file_put_contents($path, json_encode($key, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         @chmod($path, 0600);
-        Cache::forget('google-calendar-token');
 
         return back()->with('status', __('Google key saved. Now share each calendar with :email and press Test.', ['email' => $key['client_email']]));
     }
 
     public function removeKey(Request $request): RedirectResponse
     {
-        abort_unless($this->mayChangeKey($request), 403);
         @unlink(GoogleCalendar::uploadedKeyPath());
-        Cache::forget('google-calendar-token');
 
         return back()->with('status', __('Google key removed. Bookings use the built-in calendar only.'));
     }

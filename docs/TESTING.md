@@ -815,6 +815,6 @@ Needs your own free Google account. Allow about 10 minutes.
 2. After uploading, the page shows an email address (the service account). In Google Calendar open each person's calendar, Settings and sharing, Share with specific people, paste that address, permission "Make changes to events". Copy the Calendar ID (Integrate calendar) into that person under Practitioners and press Save.
 3. Press Test next to the person. A green message "connected" means busy times are read and bookings can be added; a red message says what is wrong (calendar not shared, wrong ID, key not accepted).
 4. Make a booking in the chat: it appears in that Google Calendar. Add an event in Google Calendar: that time is no longer offered to customers. Cancel the booking: the event disappears.
-5. On a server shared by several businesses only the platform owner can upload the key.
+5. Each business uploads and keeps its own Google key, so on a server with several businesses nobody sees or uses another business's key.
 
 (CW/booking, updated) Booking setup now has four numbered tabs: 1. Opening hours and rules, 2. Practitioners, 3. Services, 4. Google Calendar (optional). The tab you used stays selected after you press Save, and a failed Google test opens the Google Calendar tab.

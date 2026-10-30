@@ -141,14 +141,14 @@
                     <div><b>{{ __('Share each calendar with this address') }}</b>
                         <div class="copy-row" style="margin-top:6px;max-width:560px"><input type="text" readonly id="g-email" value="{{ $googleEmail ?? __('(the key file has no email)') }}"><button type="button" class="btn small" data-copy="g-email">{{ __('Copy') }}</button></div>
                         <p class="mute small-note" style="padding:0;margin-top:6px">{{ __('In Google Calendar open the calendar, Settings and sharing, Share with specific people, paste the address, and choose "Make changes to events". Then paste the Calendar ID below and press Test.') }}</p></div>
-                    @if ($googleViaEnv)
+                    @if (! $googleOwnKey && $googleViaEnv)
                         <p class="mute small-note" style="padding:0">{{ __('The key file is set in the .env file (GOOGLE_SERVICE_ACCOUNT_JSON).') }}</p>
-                    @elseif ($mayChangeGoogleKey)
+                    @elseif ($googleOwnKey)
                         <form method="post" action="{{ url('/admin/booking-setup/google-key/remove') }}" onsubmit="return confirm({{ json_encode(__('Remove the Google key? Bookings will use the built-in calendar only.'), JSON_UNESCAPED_UNICODE) }})">@csrf<button class="btn small danger" type="submit">{{ __('Remove the key') }}</button></form>
                     @endif
                 </div>
             @endif
-            @if (! $googleOn || ($mayChangeGoogleKey && ! $googleViaEnv))
+            @if (true)
                 <details class="gcal-steps" @unless ($googleOn) open @endunless>
                     <summary>{{ $googleOn ? __('Replace the key file') : __('How to connect (about 10 minutes, free)') }}</summary>
                     <ol>
@@ -157,16 +157,12 @@
                         <li>{{ __('Create a service account: IAM and admin, Service accounts, Create. Then open it, choose Keys, Add key, Create new key, JSON. A file downloads.') }}</li>
                         <li>{{ __('Upload that file here:') }}</li>
                     </ol>
-                    @if ($mayChangeGoogleKey)
-                        <form method="post" action="{{ url('/admin/booking-setup/google-key') }}" enctype="multipart/form-data" class="gcal-upload">
-                            @csrf
-                            <input type="file" name="key" accept=".json,application/json" required>
-                            <button class="btn primary" type="submit">{{ __('Upload the key') }}</button>
-                        </form>
-                    @else
-                        <p class="mute">{{ __('This server is shared by several businesses, so only the platform owner can upload the key.') }}</p>
-                    @endif
-                    <p class="mute small-note" style="padding:0">{{ __('The key is kept on this server only, never shown again. After uploading, this page shows the address to share your calendars with.') }}</p>
+                    <form method="post" action="{{ url('/admin/booking-setup/google-key') }}" enctype="multipart/form-data" class="gcal-upload">
+                        @csrf
+                        <input type="file" name="key" accept=".json,application/json" required>
+                        <button class="btn primary" type="submit">{{ __('Upload the key') }}</button>
+                    </form>
+                    <p class="mute small-note" style="padding:0">{{ __('The key is kept on this server only, never shown again, and each business uses its own. After uploading, this page shows the address to share your calendars with.') }}</p>
                 </details>
             @endif
         </div>

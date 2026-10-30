@@ -16,18 +16,27 @@ class GoogleCalendar
 {
     private const SCOPE = 'https://www.googleapis.com/auth/calendar';
 
-    /** The key file: the one named in .env, or the one uploaded on the Booking setup page. */
+    /**
+     * The key file in use: the one this business uploaded on the Booking setup page, else the one named in .env
+     * (a key shared by the whole server), else an older server-wide upload.
+     */
     public function credentialsPath(): ?string
     {
+        $own = self::uploadedKeyPath();
+
+        if (is_file($own)) {
+            return $own;
+        }
+
         $path = config('services.google_calendar.credentials');
 
         if ($path && is_file($path)) {
             return (string) $path;
         }
 
-        $uploaded = storage_path('app/google-service-account.json');
+        $legacy = storage_path('app/google-service-account.json');
 
-        return is_file($uploaded) ? $uploaded : null;
+        return is_file($legacy) ? $legacy : null;
     }
 
     public function enabled(): bool
@@ -44,10 +53,10 @@ class GoogleCalendar
         return is_array($key) && ! empty($key['client_email']) ? (string) $key['client_email'] : null;
     }
 
-    /** Where the uploaded key is kept (only used when .env does not name a file). */
-    public static function uploadedKeyPath(): string
+    /** Where this business's own uploaded key is kept (every business can use its own Google account). */
+    public static function uploadedKeyPath(?int $businessId = null): string
     {
-        return storage_path('app/google-service-account.json');
+        return storage_path('app/google/'.($businessId ?? app(\App\Support\CurrentBusiness::class)->id() ?? 0).'.json');
     }
 
     /**
@@ -153,7 +162,7 @@ class GoogleCalendar
 
     private function token(): string
     {
-        return Cache::remember('google-calendar-token', 3300, function (): string {
+        return Cache::remember('google-calendar-token-'.md5((string) $this->credentialsPath().'|'.@filemtime((string) $this->credentialsPath())), 3300, function (): string {
             $key = json_decode((string) file_get_contents((string) $this->credentialsPath()), true);
 
             if (! is_array($key) || empty($key['client_email']) || empty($key['private_key'])) {
