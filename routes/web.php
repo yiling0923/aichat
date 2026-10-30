@@ -12,6 +12,9 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+// A file the team sent to a customer (the address contains a long random code).
+Route::get('/f/{id}/{token}', [\App\Http\Controllers\PublicFileController::class, 'show'])->whereNumber('id')->where('token', '[A-Za-z0-9]{40}')->middleware('throttle:120,1')->name('file');
+
 // Language switch for public pages (remembered in a cookie).
 Route::get('/lang/{locale}', function (string $locale) {
     abort_unless(array_key_exists($locale, \App\Support\Lang::LOCALES), 404);
@@ -41,6 +44,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/api/conversations/{id}', [InboxController::class, 'show'])->whereNumber('id');
     Route::get('/api/messages/{id}/media', [\App\Http\Controllers\MediaController::class, 'show'])->whereNumber('id');
     Route::post('/api/conversations/{id}/reply', [InboxController::class, 'reply'])->whereNumber('id');
+    Route::post('/api/conversations/{id}/attach', [InboxController::class, 'attach'])->whereNumber('id')->middleware('throttle:30,1');
     Route::post('/api/conversations/{id}/note', [InboxController::class, 'note'])->whereNumber('id');
     Route::post('/api/conversations/{id}/give-back', [InboxController::class, 'giveBack'])->whereNumber('id');
     Route::post('/api/conversations/{id}/resolve', [InboxController::class, 'resolve'])->whereNumber('id');

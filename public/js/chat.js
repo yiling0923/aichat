@@ -31,7 +31,7 @@
     if (last < text.length) { el.appendChild(document.createTextNode(text.slice(last))); }
   }
 
-  function line(from, text, options) {
+  function line(from, text, options, media) {
     var div = document.createElement('div');
     div.className = 'bubble ' + from;
     if (from === 'staff') {
@@ -40,7 +40,13 @@
       who.textContent = 'Staff';
       div.appendChild(who);
     }
-    appendText(div, text || '');
+    if (media && media.url) {
+      if (media.type === 'image') { var im = document.createElement('img'); im.src = media.url; im.alt = ''; im.className = 'chat-img'; var ia = document.createElement('a'); ia.href = media.url; ia.target = '_blank'; ia.rel = 'noopener'; ia.appendChild(im); div.appendChild(ia); }
+      else if (media.type === 'audio') { var au = document.createElement('audio'); au.controls = true; au.src = media.url; div.appendChild(au); }
+      else if (media.type === 'video') { var vi = document.createElement('video'); vi.controls = true; vi.src = media.url; vi.className = 'chat-img'; div.appendChild(vi); }
+      else { var fa = document.createElement('a'); fa.href = media.url; fa.target = '_blank'; fa.rel = 'noopener'; fa.textContent = '\uD83D\uDCC4 ' + (media.filename || 'File'); div.appendChild(fa); div.appendChild(document.createElement('br')); }
+    }
+    appendText(div, media && !media.caption ? '' : (text || ''));
     var stamp = document.createElement('time');
     stamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     div.appendChild(stamp);
@@ -83,7 +89,7 @@
       if (seen[m.id]) { return; }
       seen[m.id] = true;
       if (m.id > lastId) { lastId = m.id; }
-      line(m.from, m.text, m.options);
+      line(m.from, m.text, m.options, m.media);
     });
   }
 

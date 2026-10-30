@@ -782,3 +782,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 3. In the Inbox the photo appears as a picture (click to open it large), the voice note and video have a player, a file has a download link, and a location links to Google Maps.
 4. A sticker is kept without a reply. Reactions are ignored.
 5. Files are fetched from Meta the first time you open them and kept on the server. Only staff of the same business can open them, and risky file types are always downloaded, never opened in the page.
+
+## CR. Sending photos and files to customers
+
+1. In the Inbox press the paperclip next to Send reply, choose a JPG/PNG photo, an MP4 video, a voice note, a PDF or an Office file (up to 16 MB). Text typed in the box becomes the caption.
+2. WhatsApp, Messenger and Instagram customers receive it (Messenger/Instagram get the caption as a second message). The website chat shows the picture, player or file link in the bubble.
+3. The file address Meta fetches uses APP_URL, so the tunnel must be running and APP_URL must be its address. Other file types (for example .exe) are refused.

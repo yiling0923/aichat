@@ -15,7 +15,7 @@
   function api(path, opts) {
     opts = opts || {};
     opts.headers = Object.assign({ 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }, opts.headers || {});
-    if (opts.body && typeof opts.body !== 'string') {
+    if (opts.body && typeof opts.body !== 'string' && !(window.FormData && opts.body instanceof FormData)) {
       opts.headers['Content-Type'] = 'application/json';
       opts.body = JSON.stringify(opts.body);
     }
@@ -78,7 +78,7 @@
 
   // A photo, video, voice note, file or location pin in the thread. The file itself comes through the media address (staff only).
   function mediaEl(m) {
-    var x = m.media, src = base + '/messages/' + m.id + '/media', box = document.createElement('div'); box.className = 'media';
+    var x = m.media, src = x.url || (base + '/messages/' + m.id + '/media'), box = document.createElement('div'); box.className = 'media';
     function link(text, href) { var a = document.createElement('a'); a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.className = 'media-link'; a.textContent = text; return a; }
     if (x.type === 'location') {
       var maps = 'https://www.google.com/maps?q=' + encodeURIComponent(x.lat + ',' + x.lng);
@@ -290,6 +290,20 @@
     });
   }
   document.querySelectorAll('.c-tabs button').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); textEl.focus(); }); });
+  // Attach a photo, video, voice note or file: the text in the box becomes its caption.
+  var fileEl = document.getElementById('file-pick'), attachBtn = document.getElementById('btn-attach');
+  attachBtn.addEventListener('click', function () { if (mode === 'note') { setMode('reply'); } fileEl.click(); });
+  fileEl.addEventListener('change', function () {
+    var f = fileEl.files[0]; fileEl.value = '';
+    if (!f || !current) { return; }
+    if (f.size > 16 * 1024 * 1024) { toast(__t('That file is larger than 16 MB.'), true); return; }
+    var fd = new FormData(); fd.append('file', f); fd.append('caption', textEl.value.trim());
+    attachBtn.disabled = true; attachBtn.textContent = __t('Sending...');
+    api('/conversations/' + current + '/attach', { method: 'POST', body: fd }).then(function (d) {
+      if (d && (d.error || d.message === undefined && d.errors)) { toast(d.error || (d.errors && d.errors.file && d.errors.file[0]) || __t('Could not send the file.'), true); } else { textEl.value = ''; grow(); }
+      refreshThread(false, true); loadList();
+    }).catch(function () { toast(__t('Could not send the file.'), true); }).then(function () { attachBtn.disabled = false; attachBtn.textContent = '\uD83D\uDCCE'; });
+  });
   document.getElementById('btn-send').addEventListener('click', send);
   textEl.addEventListener('input', grow);
   textEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });

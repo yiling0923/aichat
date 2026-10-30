@@ -55,6 +55,7 @@ class Message extends Model
             'lat' => $m['lat'] ?? null,
             'lng' => $m['lng'] ?? null,
             'place' => trim(($m['name'] ?? '').' '.($m['address'] ?? '')),
+            'url' => ! empty($m['token']) && $this->direction === 'out' ? url('/f/'.$this->id.'/'.$m['token']) : null,
         ];
     }
 

@@ -11,15 +11,54 @@ use App\Models\Message;
  */
 class OutboundFormatter
 {
-    /** @return array{path: string, json: array<string, mixed>} */
+    /** @return array{path: string, json: array<string, mixed>, then?: ?array<string, mixed>} */
     public function format(Channel $channel, string $to, Message $message): array
     {
         $options = array_values($message->payload['options'] ?? []);
         $text = (string) $message->body;
+        $media = (array) ($message->payload['media'] ?? []);
+
+        if ($media !== [] && ! empty($media['token'])) {
+            return $this->media($channel, $to, $message, $media);
+        }
 
         return $channel->type === 'whatsapp'
             ? $this->whatsapp($channel, $to, $text, $options)
             : $this->quickReplies($channel, $to, $text, $options);
+    }
+
+    /**
+     * A file the team sent. Meta downloads it from our public file address, so APP_URL must be the address Meta can reach.
+     *
+     * @param  array<string, mixed>  $media
+     * @return array{path: string, json: array<string, mixed>}
+     */
+    private function media(Channel $channel, string $to, Message $message, array $media): array
+    {
+        $type = (string) $media['type'];
+        $link = rtrim((string) config('app.url'), '/').'/f/'.$message->id.'/'.$media['token'];
+        $caption = (string) ($media['caption'] ?? '');
+
+        if ($channel->type === 'whatsapp') {
+            $body = ['link' => $link];
+            if ($caption !== '' && $type !== 'audio') {
+                $body['caption'] = mb_substr($caption, 0, 1000);
+            }
+            if ($type === 'document') {
+                $body['filename'] = (string) ($media['filename'] ?: 'file');
+            }
+
+            return ['path' => $channel->external_id.'/messages', 'json' => ['messaging_product' => 'whatsapp', 'recipient_type' => 'individual', 'to' => $to, 'type' => $type, $type => $body]];
+        }
+
+        $kind = $type === 'document' ? 'file' : $type;
+
+        return [
+            'path' => $channel->external_id.'/messages',
+            'json' => ['recipient' => ['id' => $to], 'messaging_type' => 'RESPONSE', 'message' => ['attachment' => ['type' => $kind, 'payload' => ['url' => $link, 'is_reusable' => true]]]],
+            // Messenger and Instagram have no caption: the words go as a second message.
+            'then' => $caption !== '' ? ['recipient' => ['id' => $to], 'messaging_type' => 'RESPONSE', 'message' => ['text' => mb_substr($caption, 0, 1900)]] : null,
+        ];
     }
 
     /**

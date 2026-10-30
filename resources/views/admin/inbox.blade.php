@@ -85,6 +85,8 @@
                     <textarea id="reply-text" rows="2" placeholder="{{ __('Write a reply. Enter sends, Shift+Enter starts a new line.') }}"></textarea>
                     <div class="row">
                         <span class="mute" id="c-hint">{{ __('Replying makes you the owner of the chat, so the bot stays quiet.') }}</span>
+                        <input type="file" id="file-pick" hidden accept="image/jpeg,image/png,video/mp4,audio/ogg,audio/mpeg,application/pdf,.doc,.docx,.xls,.xlsx,.txt">
+                        <button class="btn" id="btn-attach" type="button" title="{{ __('Send a photo or file') }}" aria-label="{{ __('Send a photo or file') }}">&#128206;</button>
                         <button class="btn primary" id="btn-send" type="button">{{ __('Send reply') }}</button>
                     </div>
                 </div>

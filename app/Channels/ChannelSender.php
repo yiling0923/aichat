@@ -38,6 +38,10 @@ class ChannelSender
             $response = $this->graph->orFail($this->graph->post($request['path'], $channel->access_token, $request['json']));
 
             $id = $response->json('messages.0.id') ?? $response->json('message_id');
+
+            if (! empty($request['then'])) {
+                $this->graph->orFail($this->graph->post($request['path'], $channel->access_token, $request['then']));
+            }
             $this->mark($message, 'sent', null, $id);
         } catch (Throwable $e) {
             Log::warning('Channel send failed', ['channel' => $channel->id, 'error' => $e->getMessage()]);

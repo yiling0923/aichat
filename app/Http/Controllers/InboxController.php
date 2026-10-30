@@ -135,6 +135,36 @@ class InboxController extends Controller
         return response()->json(['message' => $message->toChatArray(), 'mode' => $conversation->mode]);
     }
 
+    /** Send a photo, video, voice note or file to the customer (the box text becomes its caption). */
+    public function attach(Request $request, int $id): JsonResponse
+    {
+        $request->validate(['file' => ['required', 'file', 'max:16384'], 'caption' => ['nullable', 'string', 'max:1000']]);
+        $conversation = Conversation::query()->findOrFail($id);
+        $file = $request->file('file');
+        $mime = strtolower((string) $file->getMimeType());
+
+        $type = match (true) {
+            in_array($mime, ['image/jpeg', 'image/png'], true) => 'image',
+            in_array($mime, ['video/mp4', 'video/3gpp'], true) => 'video',
+            in_array($mime, ['audio/ogg', 'audio/mpeg', 'audio/aac', 'audio/amr'], true) => 'audio',
+            in_array($mime, ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip', 'image/webp', 'image/gif'], true) => 'document',
+            default => null,
+        };
+
+        if ($type === null) {
+            return response()->json(['error' => 'This file type cannot be sent. Use a photo (JPG or PNG), video (MP4), voice note, PDF or Office file.'], 422);
+        }
+
+        $path = 'chat-media/'.$conversation->business_id.'/out-'.\Illuminate\Support\Str::random(24);
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path, file_get_contents($file->getRealPath()));
+        $caption = trim((string) $request->input('caption', ''));
+        $name = mb_substr(preg_replace('/[^\p{L}\p{N}._ -]+/u', '_', (string) $file->getClientOriginalName()), 0, 80);
+
+        $media = ['type' => $type, 'mime' => $mime, 'filename' => $name, 'caption' => $caption, 'path' => $path, 'token' => \Illuminate\Support\Str::random(40)];
+
+        return $this->sendStaffReply($conversation, $caption !== '' ? $caption : \App\Channels\InboundEvent::mediaLabel($type), ['media' => $media]);
+    }
+
     /** Send the AI's drafted reply (optionally edited) as a staff message. */
     public function aiSend(Request $request, int $id, int $messageId): JsonResponse
     {

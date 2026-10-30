@@ -680,4 +680,69 @@ class ChannelTest extends TestCase
         $this->assertSame('application/octet-stream', $r->headers->get('Content-Type'));
         $this->assertStringContainsString('attachment', (string) $r->headers->get('Content-Disposition'));
     }
+
+    private function png(): \Illuminate\Http\UploadedFile
+    {
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+
+        return \Illuminate\Http\UploadedFile::fake()->createWithContent('shop.png', $png);
+    }
+
+    public function test_staff_can_send_a_photo_and_a_pdf_on_whatsapp_and_the_customer_link_works(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        config(['app.url' => 'https://abc.example']);
+        $this->hook($this->waText('hi', 'wamid.1'));
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $id = $this->in(fn () => Conversation::query()->first()->id);
+
+        $this->actingAs($staff)->post("/admin/api/conversations/{$id}/attach", ['file' => $this->png(), 'caption' => 'Our shop'], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('message.delivery', 'sent');
+
+        $all = $this->sent();
+        $last = end($all);
+        $this->assertSame('image', $last['type']);
+        $this->assertSame('Our shop', $last['image']['caption']);
+        $this->assertMatchesRegularExpression('#^https://abc\.example/f/\d+/[A-Za-z0-9]{40}$#', $last['image']['link']);
+
+        // The customer (Meta) opens that link without logging in; a wrong code opens nothing.
+        $path = parse_url($last['image']['link'], PHP_URL_PATH);
+        $this->get($path)->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->get(substr($path, 0, -3).'xyz')->assertNotFound();
+
+        $pdf = \Illuminate\Http\UploadedFile::fake()->createWithContent('price list.pdf', "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF");
+        $this->actingAs($staff)->post("/admin/api/conversations/{$id}/attach", ['file' => $pdf], ['Accept' => 'application/json'])->assertOk();
+        $all = $this->sent();
+        $last = end($all);
+        $this->assertSame('document', $last['type']);
+        $this->assertSame('price list.pdf', $last['document']['filename']);
+    }
+
+    public function test_attachments_that_could_be_harmful_are_refused_and_other_businesses_cannot_use_a_chat(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->hook($this->waText('hi', 'wamid.1'));
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $id = $this->in(fn () => Conversation::query()->first()->id);
+
+        $exe = \Illuminate\Http\UploadedFile::fake()->createWithContent('run.exe', "MZ\x90\x00\x03\x00\x00\x00");
+        $this->actingAs($staff)->post("/admin/api/conversations/{$id}/attach", ['file' => $exe], ['Accept' => 'application/json'])->assertStatus(422);
+
+        $stranger = User::factory()->create(['business_id' => $this->other->id, 'role' => 'staff']);
+        $this->actingAs($stranger)->post("/admin/api/conversations/{$id}/attach", ['file' => $this->png()], ['Accept' => 'application/json'])->assertNotFound();
+    }
+
+    public function test_a_photo_sent_on_messenger_goes_as_an_attachment_with_the_caption_after_it(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'PAGE9', 'access_token' => 'tok-fb']));
+        $this->hook(['object' => 'page', 'entry' => [['id' => 'PAGE9', 'messaging' => [['sender' => ['id' => 'PSID1'], 'timestamp' => now()->timestamp * 1000, 'message' => ['mid' => 'm.1', 'text' => 'hello']]]]]]);
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $id = $this->in(fn () => Conversation::query()->where('channel', 'messenger')->first()->id);
+
+        $this->actingAs($staff)->post("/admin/api/conversations/{$id}/attach", ['file' => $this->png(), 'caption' => 'Here it is'], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('message.delivery', 'sent');
+
+        $all = $this->sent();
+        $this->assertSame('image', $all[count($all) - 2]['message']['attachment']['type']);
+        $this->assertSame('Here it is', end($all)['message']['text']);
+    }
 }
