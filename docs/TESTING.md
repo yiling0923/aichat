@@ -730,3 +730,7 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. Stay on any staff page and send a WhatsApp message (or website chat message) from another phone. Within about 6 seconds a small card drops down under the bell with the customer's name and message, the bell rings, and the chime plays (after you have clicked on the page once).
 2. Click the card to open that chat. Press the x to close it, or wait: it hides after about 9 seconds (hover to keep it).
 3. If several arrive at once the card shows the latest and "+ N more".
+
+## CJ. Notification links never point at an old tunnel
+
+1. Restart the tunnel so its address changes, then click a notification that was created before (bell, pop-up card or phone alert). It opens on the address you are using now, not on the old tunnel address.

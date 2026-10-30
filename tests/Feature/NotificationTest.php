@@ -162,4 +162,19 @@ class NotificationTest extends TestCase
         $this->say('someone else')->assertOk();
         $this->assertSame(2, StaffNotification::where('type', 'message')->count());
     }
+
+    public function test_notification_links_are_paths_so_they_open_on_the_address_you_use_now(): void
+    {
+        $this->assertSame('/admin?c=5', \App\Services\Notifier::path('https://old-tunnel.lhr.life/admin?c=5'));
+        $this->assertSame('/aichat/public/admin/tasks', \App\Services\Notifier::path('http://localhost/aichat/public/admin/tasks'));
+        $this->assertSame('/admin', \App\Services\Notifier::path('/admin'));
+        $this->assertNull(\App\Services\Notifier::path(null));
+
+        $this->say('hello')->assertOk();
+        $row = StaffNotification::where('user_id', $this->owner->id)->first();
+        $this->assertStringStartsWith('/', (string) $row->url);
+
+        $row->forceFill(['url' => 'https://dead-tunnel.lhr.life/admin?c=9'])->save();
+        $this->actingAs($this->owner)->getJson('/admin/api/notifications')->assertJsonPath('items.0.url', '/admin?c=9');
+    }
 }

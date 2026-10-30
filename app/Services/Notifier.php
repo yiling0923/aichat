@@ -21,6 +21,8 @@ class Notifier
      */
     public function notify(Business $business, string $type, string $title, ?string $body = null, ?string $url = null, ?array $roles = null, ?int $userId = null): void
     {
+        $url = self::path($url);
+
         try {
             $users = User::query()->where('business_id', $business->id)->where('active', true)
                 ->when($userId !== null, fn ($q) => $q->whereKey($userId))
@@ -47,7 +49,7 @@ class Notifier
 
             // The same alert on their phones and computers, after the page has been sent so nobody waits for it.
             if ($pushTo !== [] && PushSender::configured()) {
-                $target = $url ?? route('inbox');
+                $target = $url ?? self::path(route('inbox'));
                 dispatch(fn () => app(PushSender::class)->toUsers($pushTo, $title, (string) $body, $target, $type.'-'.md5($target)))->afterResponse();
             }
         } catch (Throwable $e) {
@@ -69,6 +71,18 @@ class Notifier
         }
 
         $this->notify($business, 'message', ($isNew ? 'New chat from ' : 'New message from ').self::chatName($conversation), $text !== '' ? $text : null, route('inbox', ['c' => $conversation->id]));
+    }
+
+    /** A link inside the app as a path only (/admin/...), so it opens on whatever address you are using now, not on an old tunnel address. */
+    public static function path(?string $url): ?string
+    {
+        if ($url === null || $url === '' || ! preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+
+        $parts = parse_url($url);
+
+        return ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '').(isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
     }
 
     public static function chatName(Conversation $c): string
