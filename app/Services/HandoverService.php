@@ -14,6 +14,26 @@ class HandoverService
 {
     public function __construct(private N8nNotifier $n8n) {}
 
+    /** When switched on in Settings, a chat that needs a person goes to the least busy active team member. */
+    private function autoAssign(Conversation $conversation): void
+    {
+        $business = $conversation->business;
+
+        if ($conversation->assigned_to !== null || ! ($business->settings['auto_assign'] ?? false)) {
+            return;
+        }
+
+        $load = \App\Models\Conversation::query()->withoutGlobalScopes()->where('business_id', $business->id)->where('status', 'open')->where('mode', 'human')
+            ->whereNotNull('assigned_to')->selectRaw('assigned_to, count(*) as n')->groupBy('assigned_to')->pluck('n', 'assigned_to');
+
+        $user = \App\Models\User::query()->where('business_id', $business->id)->where('active', true)->whereIn('role', ['owner', 'manager', 'staff'])->orderBy('id')->get()
+            ->sortBy(fn ($u) => (int) ($load[$u->id] ?? 0))->first();
+
+        if ($user !== null) {
+            $conversation->forceFill(['assigned_to' => $user->id])->save();
+        }
+    }
+
     /**
      * @param  array<string, mixed>  $context  what the bot has collected so far
      */
@@ -25,6 +45,7 @@ class HandoverService
         }
 
         $conversation->handOverToStaff($reason);
+        $this->autoAssign($conversation);
 
         $state = $conversation->state ?? [];
         $state['handover_stage'] = 0;

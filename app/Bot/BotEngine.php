@@ -53,8 +53,31 @@ class BotEngine
         }
 
         $flow ??= $this->flows->published($conversation->business);
+        $first = $conversation->channel !== 'preview' && $conversation->business !== null
+            && ! Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'bot')->exists();
 
-        return $this->menu->respond($conversation, $flow, (string) $incoming->body, $optionId);
+        $out = $this->menu->respond($conversation, $flow, (string) $incoming->body, $optionId);
+
+        // A customer who writes while the business is closed is told so once, at the start of the chat.
+        if ($first && ! $conversation->isHandledByStaff() && ($conversation->business->settings['away_notice'] ?? true) !== false && ! \App\Bot\BusinessHours::isOpen($conversation->business)) {
+            $out[] = $conversation->addMessage('out', 'bot', $this->awayNotice($conversation));
+        }
+
+        return $out;
+    }
+
+    private function awayNotice(Conversation $conversation): string
+    {
+        $language = $conversation->language ?? 'en';
+        $next = \App\Bot\BusinessHours::nextOpening($conversation->business);
+
+        if ($next === null) {
+            return Strings::get('away_notice_open_unknown', $language);
+        }
+
+        $when = $next->copy()->locale($language === 'zh' ? 'zh' : 'en')->isoFormat($language === 'zh' ? 'dddd H:mm' : 'dddd [at] H:mm');
+
+        return str_replace('{when}', $when, Strings::get('away_notice', $language));
     }
 
     /**

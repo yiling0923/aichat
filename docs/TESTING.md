@@ -793,3 +793,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. Open a customer, press the three dots, choose "Join with another customer". Search the other record, pick it, press Join them and confirm. Its chats, bookings, orders, tasks and tags move over, blanks are filled in (name, phone, email, notes are combined), the higher lead level is kept, and if either record opted out the person stays opted out. The other record disappears.
 2. Customers > Import from a spreadsheet (owners and managers). Download the sample file, fill it in (name, phone, email, language, tags, notes), upload it. People with a phone number already in the list are updated, never added twice. Imported people are not marketing contacts unless you tick "These people agreed to receive messages".
+
+## CT. "We are closed" notice and automatic assignment
+
+1. Settings > Smart helpers > "Tell customers when we are closed" (on by default). A chat that starts outside your opening hours gets one extra bot line at the start: "We are closed right now and will be back Wednesday at 10:00. You can still use this menu and book any time." (Chinese in a Chinese chat). Nothing is added while you are open.
+2. Settings > Smart helpers > "Give new chats that need a person to the least busy team member" (off by default). When a chat needs a person it is assigned to the active team member with the fewest open chats; you can still change the person in the chat.
