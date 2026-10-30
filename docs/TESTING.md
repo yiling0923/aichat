@@ -704,3 +704,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 2. Practitioners and Services are now tidy tables with one header row. Change a name or price and press Save on that row.
 3. Press "+ New practitioner" or "+ Add service" to open the add form, add one and check it appears.
 4. On the phone (narrow window) each row becomes a clean card and nothing runs off the right edge. Check in 中文 too.
+
+## CE. Channels: Manage / Fix connection buttons
+
+1. Channels page: a card with one account has a Manage button (or a green Fix connection button when something is wrong). It opens that account's settings window straight away, where you can paste a new access token.
+2. A card with two or more accounts still jumps to the list below. "Connect" on an unconnected card opens the Connect window.

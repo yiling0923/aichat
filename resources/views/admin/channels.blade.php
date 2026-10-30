@@ -45,7 +45,13 @@
                         {{ $list->max('last_inbound_at') ? __('last message :when', ['when' => \Carbon\Carbon::parse($list->max('last_inbound_at'))->diffForHumans()]) : __('no message yet') }}
                     @endif
                 </p>
-                <a class="btn small {{ $list->isEmpty() ? 'primary' : '' }}" href="#{{ $list->isEmpty() ? 'connect' : 'accounts' }}" @if ($list->isEmpty()) data-pick="{{ $type }}" @endif>{{ $list->isEmpty() ? __('Connect') : __('Manage') }}</a>
+                @if ($list->isEmpty())
+                    <a class="btn small primary" href="#connect" data-pick="{{ $type }}">{{ __('Connect') }}</a>
+                @elseif ($list->count() === 1)
+                    <button type="button" class="btn small {{ $bad ? 'primary' : '' }}" data-open="acct-{{ $list->first()->id }}">{{ $bad ? __('Fix connection') : __('Manage') }}</button>
+                @else
+                    <a class="btn small" href="#accounts">{{ __('Manage') }}</a>
+                @endif
             </div>
         @endforeach
     </div>
