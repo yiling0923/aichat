@@ -742,3 +742,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. On WhatsApp (or the website chat) choose English, then type "Can I talk to a person?". The bot hands over to your team (it no longer says "sorry, I did not understand").
 2. Type "I want a refund" (or 我要退款): with AI off, the chat goes straight to a person.
 3. Choose 中文, then type an English sentence such as "what are your prices please": the bot switches to English. Type Chinese again and it switches back.
+
+## CL. Fewer useless AI suggestions
+
+1. With AI on (suggest mode), in a chat a person already handles, the customer types "Can I talk to a person?" several times: no "AI suggestion" cards appear (the chat already needs a person, and you get the bell alert).
+2. The generic "I can help with prices, booking..." suggestion (labelled other, confused) no longer appears, and the same suggestion is never added twice while the first one is still waiting.

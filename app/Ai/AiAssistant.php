@@ -102,9 +102,25 @@ class AiAssistant
     /** A suggested reply for staff, saved as a private card in the chat. */
     public function suggest(Conversation $conversation): ?Message
     {
+        $last = (string) Message::query()->where('conversation_id', $conversation->id)->where('direction', 'in')->latest('id')->value('body');
+        $normalized = \App\Bot\Text::normalize($last);
+
+        // A customer who just asks for a person needs a person, not a suggested reply.
+        if (\App\Bot\Text::isCommand($normalized, (array) config('aichat.keywords.human')) || \App\Bot\Text::isCommand($normalized, (array) config('aichat.keywords.upset'))) {
+            return null;
+        }
+
         $answer = $this->answer($conversation, 'suggest');
 
-        return $answer === null ? null : $this->saveDraft($conversation, $answer);
+        // The generic "I can help with prices..." fallback tells staff nothing, and the same suggestion twice is clutter.
+        if ($answer === null || ($answer->intent === 'other' && $answer->mood === 'confused')) {
+            return null;
+        }
+
+        $already = Message::query()->where('conversation_id', $conversation->id)->where('sender_type', 'ai')->where('body', $answer->text)
+            ->where('payload->ai_draft', true)->where('payload->status', 'pending')->exists();
+
+        return $already ? null : $this->saveDraft($conversation, $answer);
     }
 
     public function saveDraft(Conversation $conversation, AiAnswer $answer): Message

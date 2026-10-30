@@ -564,4 +564,21 @@ class AiTest extends TestCase
         $r = $this->actingAs($manager)->get('/admin/ai')->assertOk();
         $r->assertSee('of 100 AI replies used')->assertSee('Almost at the limit')->assertSee('Your plan also allows 100 a month');
     }
+
+    public function test_a_customer_asking_for_a_person_gets_no_suggestion_and_repeats_are_not_piled_up(): void
+    {
+        $this->setMode('suggest');
+        $token = $this->chat();
+        $this->say('x', $token, 'staff');
+
+        foreach (range(1, 3) as $_) {
+            $this->say('Can I talk to a person?', $token);
+        }
+        $this->in(fn () => $this->assertSame(0, Message::query()->where('sender_type', 'ai')->count()));
+
+        foreach (range(1, 3) as $_) {
+            $this->say('what time are you around', $token);
+        }
+        $this->in(fn () => $this->assertSame(1, Message::query()->where('sender_type', 'ai')->count()));
+    }
 }
