@@ -1742,3 +1742,13 @@ details.au-card[open] > summary::after { content: none; }
 .bell-pop .bp-x:hover { color: var(--ink); }
 @keyframes bell-pop-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .bell-pop { animation: none; } }
+
+/* AI assistant: clearer */
+.ai-now { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin: 4px 0 8px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.ai-now b { display: block; font-size: 14.5px; }
+.ai-now .mute { font-size: 12.5px; line-height: 1.5; }
+.ai-now-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: #c4cdcd; }
+.ai-now-dot.on { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-l); }
+.mode .mode-who { display: block; margin-top: 6px; font-size: 12px; line-height: 1.45; color: var(--mute); }
+.mode .mode-who em { font-style: normal; font-weight: 700; color: var(--ink); }
+.ai-save { margin-top: 12px; }

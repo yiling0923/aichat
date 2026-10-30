@@ -765,3 +765,10 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. In a chat a person has, the customer types "I want to book" and the AI card says to tap Book now. Press **Send now** on the card: the customer's WhatsApp message now has a **Book now** button.
 2. The customer taps **Book now**: the bot wakes up and starts the booking (service, day, time), even though a person had the chat.
+
+## CP. AI assistant page, clearer
+
+1. Open AI assistant. A line at the top says "Right now: <mode>" with what customers see and what your team does.
+2. Four pills jump to: 1. Choose how it helps, 2. Teach it, 3. Try it, Usage and history.
+3. Each mode card says what customers see and what your team does. Pick one and press Save right under the cards.
+4. Tone and the spending limit are tucked into one folded card. Usage, "Everything the AI knows" and recent calls are at the bottom.

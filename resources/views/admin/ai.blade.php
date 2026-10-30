@@ -6,18 +6,29 @@
         $pct = $effective > 0 ? min(100, round($calls / $effective * 100)) : 100;
         $purpose = ['reply' => __('Answer to a customer'), 'suggest' => __('Suggestion for staff'), 'summary' => __('Chat summary'), 'preview' => __('Test box'), 'setup' => __('Setup draft')];
         $modes = [
-            'off' => [__('Off'), __('Only the menu bot answers. No AI at all.')],
-            'suggest' => [__('Suggest'), __('The AI writes ideas for your team. Customers never see AI text.')],
-            'approve' => [__('Approve'), __('The AI drafts an answer and your team checks it before it is sent.')],
-            'auto' => [__('Auto'), __('The AI answers typed questions by itself, straight away.')],
+            'off' => [__('Off'), __('Only the menu bot answers. No AI at all.'), __('Only the menu bot answers.'), __('Nothing changes.')],
+            'suggest' => [__('Suggest'), __('The AI writes ideas for your team. Customers never see AI text.'), __('No AI text. The usual menu.'), __('Draft ideas appear in the Inbox. You choose what to send.')],
+            'approve' => [__('Approve'), __('The AI drafts an answer and your team checks it before it is sent.'), __('"One moment, I am checking this with our team."'), __('You approve or edit the AI\'s draft, then send it.')],
+            'auto' => [__('Auto'), __('The AI answers typed questions by itself, straight away.'), __('The AI\'s answer, straight away.'), __('Nothing to do, unless the customer needs a person.')],
         ];
         $styles = [__('Friendly and short'), __('Polite and formal'), __('Never use emojis'), __('Use first names'), __('Answer in the customer\'s language')];
     @endphp
     <div class="page-head">
         <div><h1>{{ __('AI assistant') }}</h1>
-            <p class="mute">{{ __('Answers the questions your menu cannot, drafts replies for your team and summarises chats. It only uses information you gave it, and every answer is checked first.') }}</p></div>
-        <span class="tag {{ $provider === 'claude' && $keySet ? 'ok' : 'warn' }}">{{ $provider === 'claude' ? ($keySet ? 'Real AI' : 'AI key missing') : ($provider === 'fake' ? 'Practice AI' : 'AI off') }}</span>
+            <p class="mute">{{ __('The AI can answer customers for you, or write replies for your team. Choose what you want in step 1, teach it in step 2 and test it in step 3. It only uses information you gave it, and every answer is checked first.') }}</p></div>
+        <span class="tag {{ $provider === 'claude' && $keySet ? 'ok' : 'warn' }}">{{ $provider === 'claude' ? ($keySet ? __('Real AI') : __('AI key missing')) : ($provider === 'fake' ? __('Practice AI') : __('AI off')) }}</span>
     </div>
+    <div class="ai-now">
+        <span class="ai-now-dot {{ $mode === 'off' ? '' : 'on' }}"></span>
+        <div><b>{{ __('Right now: :mode', ['mode' => $modes[$mode][0] ?? $mode]) }}</b>
+            <span class="mute">{{ __('Customers see:') }} {{ $modes[$mode][2] ?? '' }} &nbsp;·&nbsp; {{ __('Your team:') }} {{ $modes[$mode][3] ?? '' }}</span></div>
+    </div>
+    <nav class="bk-jump" aria-label="{{ __('AI assistant') }}">
+        <a href="#step-mode">{{ __('1. Choose how it helps') }}</a>
+        <a href="#step-teach">{{ __('2. Teach it') }}</a>
+        <a href="#try">{{ __('3. Try it') }}</a>
+        <a href="#usage">{{ __('Usage and history') }}</a>
+    </nav>
 
     @if ($provider === 'off')
         <div class="note warn">{{ __('The AI is switched off for the whole system, so nothing below will answer yet.') }} <details class="inline"><summary>{{ __('How to turn it on') }}</summary>{!! __('Set :fake in :env (free practice AI) or :claude with your :key, then run :clear.', ['fake' => '<code>AI_PROVIDER=fake</code>', 'env' => '<code>.env</code>', 'claude' => '<code>AI_PROVIDER=claude</code>', 'key' => '<code>ANTHROPIC_API_KEY</code>', 'clear' => '<code>php artisan config:clear</code>']) !!}</details></div>
@@ -29,18 +40,23 @@
 
     <form method="post" action="{{ url('/admin/ai') }}">
         @csrf
-        <h2 style="margin-top:6px">{{ __('How should the AI help?') }}</h2>
+        <h2 class="bk-h" id="step-mode" style="margin-top:14px">{{ __('1. How should the AI help?') }}</h2>
+        <p class="mute bk-sub">{{ __('Not sure? Start with Approve. Switch to Auto when you are happy with its answers.') }}</p>
         <div class="mode-cards" role="radiogroup">
-            @foreach ($modes as $key => [$name, $text])
+            @foreach ($modes as $key => [$name, $text, $customer, $team])
                 <label class="mode {{ $mode === $key ? 'on' : '' }}">
                     <input type="radio" name="mode" value="{{ $key }}" @checked($mode === $key)>
                     <b>{{ $name }}@if ($key === 'approve') <span class="tag ok">{{ __('Good start') }}</span>@endif</b>
                     <span>{{ $text }}</span>
+                    <small class="mode-who"><em>{{ __('Customers see:') }}</em> {{ $customer }}</small>
+                    <small class="mode-who"><em>{{ __('Your team:') }}</em> {{ $team }}</small>
                 </label>
             @endforeach
         </div>
 
-        <div class="card" style="margin-top:14px">
+        <div class="ai-save"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
+        <details class="card fold" style="margin-top:14px"><summary><b>{{ __('Tone, style and spending limit') }}</b> <small class="mute fold-help">{{ __('Optional. How the AI sounds, and the most it may use each month.') }}</small></summary>
+        <div style="padding:0 18px 16px">
             <label class="f"><span>{{ __('Tone and style (optional)') }}</span>
                 <textarea name="instructions" id="ai-style" rows="2" placeholder="{{ __('For example: friendly and short, never use emojis.') }}">{{ old('instructions', $instructions) }}</textarea></label>
             <div class="var-row">@foreach ($styles as $st)<button type="button" class="btn small" data-style="{{ $st }}">+ {{ $st }}</button>@endforeach</div>
@@ -48,32 +64,10 @@
                 <label class="f" style="margin-top:10px;max-width:320px"><span>{{ __('Most AI calls per month') }}</span><input type="number" name="monthly_cap" value="{{ $cap }}" min="0" max="100000"></label>
                 <p class="mute small-note" style="padding:0">{{ __('Protects your bill.') }} @if ($planLimit !== null) {{ __('Your plan also allows :n a month.', ['n' => number_format($planLimit)]) }} @endif</p></details>
             <div style="margin-top:14px"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
-        </div>
+        </div></details>
     </form>
 
-    <div class="card ai-usage">
-        <div class="bar spread"><b>{{ __('This month') }}</b><span class="mute">{{ __('Resets on :date', ['date' => $resets]) }}</span></div>
-        <div class="usage-line"><span>{!! __(':a of :b AI replies used', ['a' => '<b>'.number_format($calls).'</b>', 'b' => number_format($effective)]) !!}</span>
-            @if ($cost > 0)<span class="mute">{{ __('about US$:n so far', ['n' => number_format($cost, 2)]) }}</span>@endif</div>
-        <div class="progress {{ $pct >= 90 ? 'hot' : '' }}"><span style="width: {{ $pct }}%"></span></div>
-        @if ($pct >= 90)<p class="mute" style="margin-top:6px">{{ $calls >= $effective ? 'The limit is reached: the AI is paused and chats still reach your inbox.' : 'Almost at the limit.' }} <a href="{{ route('billing') }}">{{ __('Plan and billing') }}</a></p>@endif
-        <div class="usage-sub">
-            <span><b>{{ $blocked }}</b> {{ __('stopped by the safety check') }}</span>
-            <span><b>{{ $failed }}</b> {{ __('failed') }}</span>
-        </div>
-    </div>
-
-    <h2>{{ __('Try it') }}</h2>
-    <div class="card" id="try">
-        <p class="mute small-note" style="padding:0">{{ __('Ask a question as a customer would. Nothing is sent to anyone.') }}</p>
-        <div class="try-chips">
-            @foreach (array_filter([$firstService ? __('How much is :x?', ['x' => $firstService]) : null, __('What time do you open?'), __('Can I book tomorrow?'), __('I want a refund'), __('Can I talk to a person?')]) as $q)<button type="button" class="btn small" data-q="{{ $q }}">{{ $q }}</button>@endforeach
-        </div>
-        <div class="copy-row"><input type="text" id="try-text" placeholder="{{ __('Type a question') }}" maxlength="500"><button class="btn primary" id="try-btn" type="button">{{ __('Ask') }}</button></div>
-        <div id="try-out"></div>
-    </div>
-
-    <h2>{{ __('Extra answers you teach the AI') }}</h2>
+    <h2 class="bk-h" id="step-teach">{{ __('2. Teach it: extra answers') }}</h2>
     <p class="mute" style="margin-top:-4px">{{ __('Opening hours, services with prices and the information screens of your menu are added automatically. Add anything else customers ask.') }}</p>
     <div class="bar" style="margin-bottom:10px"><button type="button" class="btn primary" id="new-answer">{{ __('Add an answer') }}</button></div>
     <div class="masonry">
@@ -94,6 +88,16 @@
             <div class="idea-row">@foreach ($ideas as $t)<button type="button" class="btn small" data-idea="{{ $t }}">+ {{ $t }}</button>@endforeach</div></div>
     @endif
 
+    <h2 class="bk-h" id="try-h">{{ __('3. Try it') }}</h2>
+    <div class="card" id="try">
+        <p class="mute small-note" style="padding:0">{{ __('Ask a question as a customer would. Nothing is sent to anyone.') }}</p>
+        <div class="try-chips">
+            @foreach (array_filter([$firstService ? __('How much is :x?', ['x' => $firstService]) : null, __('What time do you open?'), __('Can I book tomorrow?'), __('I want a refund'), __('Can I talk to a person?')]) as $q)<button type="button" class="btn small" data-q="{{ $q }}">{{ $q }}</button>@endforeach
+        </div>
+        <div class="copy-row"><input type="text" id="try-text" placeholder="{{ __('Type a question') }}" maxlength="500"><button class="btn primary" id="try-btn" type="button">{{ __('Ask') }}</button></div>
+        <div id="try-out"></div>
+    </div>
+
     <div class="card safe">
         <b>{{ __('What the AI will never do') }}</b>
         <ul>
@@ -102,6 +106,19 @@
             <li>{{ __('Keep talking to an upset customer. It passes them to your team.') }}</li>
             <li>{{ __('Pretend to be a person. It says it is a virtual assistant.') }}</li>
         </ul>
+    </div>
+
+    <h2 class="bk-h" id="usage" style="margin-top:22px">{{ __('Usage and history') }}</h2>
+    <div class="card ai-usage">
+        <div class="bar spread"><b>{{ __('This month') }}</b><span class="mute">{{ __('Resets on :date', ['date' => $resets]) }}</span></div>
+        <div class="usage-line"><span>{!! __(':a of :b AI replies used', ['a' => '<b>'.number_format($calls).'</b>', 'b' => number_format($effective)]) !!}</span>
+            @if ($cost > 0)<span class="mute">{{ __('about US$:n so far', ['n' => number_format($cost, 2)]) }}</span>@endif</div>
+        <div class="progress {{ $pct >= 90 ? 'hot' : '' }}"><span style="width: {{ $pct }}%"></span></div>
+        @if ($pct >= 90)<p class="mute" style="margin-top:6px">{{ $calls >= $effective ? 'The limit is reached: the AI is paused and chats still reach your inbox.' : 'Almost at the limit.' }} <a href="{{ route('billing') }}">{{ __('Plan and billing') }}</a></p>@endif
+        <div class="usage-sub">
+            <span><b>{{ $blocked }}</b> {{ __('stopped by the safety check') }}</span>
+            <span><b>{{ $failed }}</b> {{ __('failed') }}</span>
+        </div>
     </div>
 
     <details class="card fold"><summary><b>{{ __('Everything the AI knows right now') }}</b><small class="mute fold-help">{{ __('Built from your services, hours, menu texts and the answers above.') }}</small></summary>
