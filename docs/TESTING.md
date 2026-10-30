@@ -803,3 +803,7 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. My account > "Install as an app". In Chrome or Edge press Install (or the install icon in the address bar); on iPhone use Share > Add to Home Screen. The staff area then opens in its own window with the green "A" icon.
 2. Phone alerts work best from the installed app (turn them on in the same page).
+
+## CV. Older notifications change language too
+
+1. Press 中文 in the staff area and open the bell: notifications created earlier ("New chat from Amy", "Amy needs a person", "New booking: Amy", reasons such as "Customer asked for a person") now read in Chinese. Names, services and messages the customer wrote stay as they are. Press English and they read English again.

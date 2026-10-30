@@ -189,4 +189,24 @@ class NotificationTest extends TestCase
 
         $this->assertSame('/aichat/public/admin?c=4', $json['items'][0]['url']);
     }
+
+    public function test_older_notifications_follow_the_language_of_the_reader(): void
+    {
+        foreach ([['New chat from Amy', 'Hi there'], ['Amy needs a person', 'Customer asked for a person'], ['New booking: Amy', 'Hydrating Facial'], ['URGENT: Visitor 12 has waited 10 minutes', 'Nobody has replied yet.']] as [$title, $body]) {
+            StaffNotification::create(['business_id' => $this->business->id, 'user_id' => $this->owner->id, 'type' => 'message', 'title' => $title, 'body' => $body, 'url' => '/admin?c='.md5($title)]);
+        }
+
+        $en = $this->actingAs($this->owner)->getJson('/admin/api/notifications')->json('items');
+        $this->assertContains('New chat from Amy', array_column($en, 'title'));
+
+        $this->owner->forceFill(['locale' => 'zh'])->save();
+        $zh = $this->actingAs($this->owner)->getJson('/admin/api/notifications')->json('items');
+        $titles = array_column($zh, 'title');
+        $this->assertContains('来自 Amy 的新聊天', $titles);
+        $this->assertContains('Amy 需要真人', $titles);
+        $this->assertContains('新预约：Amy', $titles);
+        $this->assertContains('紧急： 访客 12 已等待 10 分钟', $titles);
+        $this->assertNotContains('Customer asked for a person', array_column($zh, 'body'));   // the reason is shown in Chinese too
+        $this->assertContains('Hydrating Facial', array_column($zh, 'body'));   // text the business wrote stays as it is
+    }
 }

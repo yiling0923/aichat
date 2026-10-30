@@ -16,7 +16,7 @@ class NotificationController extends Controller
         return response()->json([
             'unread' => (clone $mine)->whereNull('read_at')->count(),
             'items' => (clone $mine)->orderByDesc('updated_at')->orderByDesc('id')->limit(15)->get()->map(fn (StaffNotification $n) => [
-                'id' => $n->id, 'type' => $n->type, 'title' => $n->title, 'body' => $n->body, 'url' => \App\Services\Notifier::open($n->url),
+                'id' => $n->id, 'type' => $n->type, 'title' => \App\Support\NotificationText::title((string) $n->title), 'body' => \App\Support\NotificationText::body($n->body), 'url' => \App\Services\Notifier::open($n->url),
                 'read' => $n->read_at !== null, 'time' => $n->updated_at?->toIso8601String(),
             ]),
         ]);
