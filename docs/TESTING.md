@@ -774,3 +774,11 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 4. Tone and the spending limit are tucked into one folded card. Usage, "Everything the AI knows" and recent calls are at the bottom.
 
 (CP, updated) The AI assistant page now has four tabs: 1. Choose how it helps (modes, Save, tone and limit, what the AI never does), 2. Teach it (extra answers and ideas), 3. Try it (test box), Usage and history (this month, everything the AI knows, recent calls). The tab stays selected after a reload, and an address ending in #teach opens that tab. On a phone the tab bar scrolls sideways.
+
+## CQ. Photos, voice notes, videos, files and locations from customers
+
+1. From a WhatsApp phone, send a photo (with or without a caption), a voice note, a PDF and a location pin. Messenger and Instagram work the same way.
+2. The bot answers "Thanks, I received it. I am passing it to our team…" and the chat shows as needing a person. The bell alerts the team.
+3. In the Inbox the photo appears as a picture (click to open it large), the voice note and video have a player, a file has a download link, and a location links to Google Maps.
+4. A sticker is kept without a reply. Reactions are ignored.
+5. Files are fetched from Meta the first time you open them and kept on the server. Only staff of the same business can open them, and risky file types are always downloaded, never opened in the page.

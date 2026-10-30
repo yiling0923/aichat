@@ -76,6 +76,26 @@
   function nearBottom() { return logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight < 90; }
   function toBottom() { logEl.scrollTop = logEl.scrollHeight; jumpBtn.classList.add('hidden'); unseen = 0; }
 
+  // A photo, video, voice note, file or location pin in the thread. The file itself comes through the media address (staff only).
+  function mediaEl(m) {
+    var x = m.media, src = base + '/messages/' + m.id + '/media', box = document.createElement('div'); box.className = 'media';
+    function link(text, href) { var a = document.createElement('a'); a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.className = 'media-link'; a.textContent = text; return a; }
+    if (x.type === 'location') {
+      var maps = 'https://www.google.com/maps?q=' + encodeURIComponent(x.lat + ',' + x.lng);
+      box.appendChild(link('\uD83D\uDCCD ' + (x.place || __t('Location')) + ' (' + __t('open in Maps') + ')', maps));
+    } else if (x.type === 'image' || x.type === 'sticker') {
+      var img = document.createElement('img'); img.src = src; img.alt = __t('Photo'); img.loading = 'lazy';
+      var a = link('', src); a.appendChild(img); box.appendChild(a);
+    } else if (x.type === 'audio') {
+      var au = document.createElement('audio'); au.controls = true; au.preload = 'none'; au.src = src; box.appendChild(au);
+    } else if (x.type === 'video') {
+      var v = document.createElement('video'); v.controls = true; v.preload = 'metadata'; v.src = src; box.appendChild(v);
+    } else {
+      box.appendChild(link('\uD83D\uDCC4 ' + (x.filename || __t('Open the file')), src));
+    }
+    return box;
+  }
+
   function addLine(m) {
     if (seen[m.id]) { return; }
     seen[m.id] = true;
@@ -100,7 +120,13 @@
     div.className = 'm ' + (sys ? 'system' : (m.private ? 'private' : m.from));
     var body = document.createElement('div'); body.className = 'mt'; body.textContent = m.text || '';
     if (m.private && !sys) { var lock = document.createElement('span'); lock.className = 'lock'; lock.textContent = __t('Private note'); div.appendChild(lock); }
-    div.appendChild(body);
+    if (m.media) {
+      body.textContent = m.media.caption || '';
+      div.appendChild(mediaEl(m));
+      if (m.media.caption) { div.appendChild(body); }
+    } else {
+      div.appendChild(body);
+    }
     if (!sys) {
       var t = document.createElement('small');
       var who = m.private ? '' : (m.from === 'bot' ? __t('Bot') : (m.from === 'staff' ? __t('Staff') : ''));

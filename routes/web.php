@@ -39,6 +39,7 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/', [InboxController::class, 'index'])->name('inbox');
     Route::get('/api/conversations', [InboxController::class, 'conversations']);
     Route::get('/api/conversations/{id}', [InboxController::class, 'show'])->whereNumber('id');
+    Route::get('/api/messages/{id}/media', [\App\Http\Controllers\MediaController::class, 'show'])->whereNumber('id');
     Route::post('/api/conversations/{id}/reply', [InboxController::class, 'reply'])->whereNumber('id');
     Route::post('/api/conversations/{id}/note', [InboxController::class, 'note'])->whereNumber('id');
     Route::post('/api/conversations/{id}/give-back', [InboxController::class, 'giveBack'])->whereNumber('id');

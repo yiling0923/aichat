@@ -1752,3 +1752,10 @@ details.au-card[open] > summary::after { content: none; }
 .mode .mode-who { display: block; margin-top: 6px; font-size: 12px; line-height: 1.45; color: var(--mute); }
 .mode .mode-who em { font-style: normal; font-weight: 700; color: var(--ink); }
 .ai-save { margin-top: 12px; }
+
+/* Photos, voice notes, files and locations in the Inbox thread */
+.m .media { margin-bottom: 4px; }
+.m .media img { display: block; max-width: min(280px, 100%); max-height: 300px; border-radius: 10px; background: #eef2f2; }
+.m .media video { display: block; max-width: min(300px, 100%); border-radius: 10px; }
+.m .media audio { display: block; width: min(280px, 100%); height: 38px; }
+.m .media .media-link { font-weight: 600; font-size: 13px; }

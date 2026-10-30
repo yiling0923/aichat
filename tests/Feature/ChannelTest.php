@@ -237,9 +237,9 @@ class ChannelTest extends TestCase
         $body['entry'][0]['changes'][0]['value']['statuses'] = [['id' => 'wamid.OUT', 'status' => 'delivered']];
         $this->hook($body)->assertOk();
 
-        $image = $this->waText('x');
-        $image['entry'][0]['changes'][0]['value']['messages'][0] = ['from' => '6011', 'id' => 'wamid.img', 'type' => 'image', 'image' => ['id' => 'M1']];
-        $this->hook($image)->assertOk();
+        $reaction = $this->waText('x');
+        $reaction['entry'][0]['changes'][0]['value']['messages'][0] = ['from' => '6011', 'id' => 'wamid.react', 'type' => 'reaction', 'reaction' => ['emoji' => '👍']];
+        $this->hook($reaction)->assertOk();
 
         $this->in(fn () => $this->assertSame(0, Conversation::count()));
     }
@@ -599,5 +599,85 @@ class ChannelTest extends TestCase
 
         $this->hook($this->waText('hello'))->assertOk();
         $this->actingAs($owner)->get('/admin/channels')->assertSee('Meta last sent 1 message(s)');
+    }
+
+    private function waMedia(string $type, array $item, string $id): array
+    {
+        $body = $this->waText('x', $id);
+        $body['entry'][0]['changes'][0]['value']['messages'][0] = ['from' => '60123456789', 'id' => $id, 'timestamp' => (string) now()->timestamp, 'type' => $type, $type => $item];
+
+        return $body;
+    }
+
+    public function test_a_photo_is_kept_the_bot_says_thanks_and_a_person_gets_the_chat(): void
+    {
+        $this->hook($this->waMedia('image', ['id' => 'MEDIA1', 'mime_type' => 'image/jpeg', 'caption' => 'my rash'], 'wamid.img1'))->assertOk();
+
+        $this->in(function () {
+            $c = Conversation::query()->first();
+            $this->assertSame('human', $c->mode);
+            $photo = Message::query()->where('direction', 'in')->first();
+            $this->assertSame('my rash', $photo->body);
+            $this->assertSame('MEDIA1', $photo->payload['media']['id']);
+            $this->assertSame('image', $photo->toChatArray()['media']['type']);
+            $this->assertTrue($photo->toChatArray()['media']['file']);
+            $this->assertStringContainsString('I received it', (string) Message::query()->where('sender_type', 'bot')->latest('id')->value('body'));
+        });
+    }
+
+    public function test_a_voice_note_without_text_shows_a_label_and_a_location_keeps_its_pin_and_a_sticker_is_silent(): void
+    {
+        $this->hook($this->waMedia('audio', ['id' => 'AUD1', 'mime_type' => 'audio/ogg; codecs=opus'], 'wamid.a1'))->assertOk();
+        $this->in(fn () => $this->assertSame('🎤 Voice message', Message::query()->where('direction', 'in')->first()->body));
+
+        $this->hook($this->waMedia('location', ['latitude' => 3.139, 'longitude' => 101.687, 'name' => 'Plaza Example'], 'wamid.l1'))->assertOk();
+        $this->in(function () {
+            $loc = Message::query()->where('direction', 'in')->latest('id')->first();
+            $this->assertSame('location', $loc->payload['media']['type']);
+            $this->assertEqualsWithDelta(3.139, $loc->toChatArray()['media']['lat'], 0.0001);
+            $this->assertSame('Plaza Example', $loc->toChatArray()['media']['place']);
+        });
+
+        $bots = $this->in(fn () => Message::query()->where('sender_type', 'bot')->count());
+        $this->hook($this->waMedia('sticker', ['id' => 'ST1', 'mime_type' => 'image/webp'], 'wamid.s1'))->assertOk();
+        $this->in(fn () => $this->assertSame($bots, Message::query()->where('sender_type', 'bot')->count()));
+    }
+
+    public function test_messenger_attachments_are_parsed_and_staff_can_open_a_photo_through_the_media_address(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $page = $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'PAGE9', 'access_token' => 'tok-fb']));
+        $body = ['object' => 'page', 'entry' => [['id' => 'PAGE9', 'messaging' => [['sender' => ['id' => 'PSID1'], 'timestamp' => now()->timestamp * 1000,
+            'message' => ['mid' => 'm.1', 'attachments' => [['type' => 'image', 'payload' => ['url' => 'https://cdn.example/pic.jpg']]]]]]]]];
+        $this->hook($body)->assertOk();
+
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $msg = $this->in(fn () => Message::query()->where('direction', 'in')->first());
+        $this->assertSame('https://cdn.example/pic.jpg', $msg->payload['media']['url']);
+
+        $this->meta(['cdn.example/*' => Http::response('PNGDATA', 200, ['Content-Type' => 'image/png'])]);
+        $r = $this->actingAs($staff)->get('/admin/api/messages/'.$msg->id.'/media')->assertOk();
+        $this->assertSame('image/png', $r->headers->get('Content-Type'));
+        $this->assertSame('PNGDATA', $r->getContent());
+
+        // A second request is served from the kept copy, and another business can never open it.
+        $this->meta([]);
+        $this->actingAs($staff)->get('/admin/api/messages/'.$msg->id.'/media')->assertOk();
+        $strangerStaff = User::factory()->create(['business_id' => $this->other->id, 'role' => 'staff']);
+        $this->actingAs($strangerStaff)->get('/admin/api/messages/'.$msg->id.'/media')->assertNotFound();
+    }
+
+    public function test_a_customer_file_that_could_run_code_is_only_offered_as_a_download(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->hook($this->waMedia('document', ['id' => 'DOC1', 'mime_type' => 'text/html', 'filename' => 'x.html'], 'wamid.d1'))->assertOk();
+        $staff = User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+        $msg = $this->in(fn () => Message::query()->where('direction', 'in')->first());
+
+        $this->meta(['graph.facebook.com/*/DOC1*' => Http::response(['url' => 'https://lookaside.example/doc', 'mime_type' => 'text/html']), 'lookaside.example/*' => Http::response('<script>alert(1)</script>', 200)]);
+        $r = $this->actingAs($staff)->get('/admin/api/messages/'.$msg->id.'/media')->assertOk();
+
+        $this->assertSame('application/octet-stream', $r->headers->get('Content-Type'));
+        $this->assertStringContainsString('attachment', (string) $r->headers->get('Content-Disposition'));
     }
 }

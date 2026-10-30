@@ -38,6 +38,26 @@ class Message extends Model
      *
      * @return array<string, mixed>
      */
+    /** What the Inbox needs to show a photo, voice note, file or location (the file itself is opened through the media address). */
+    private function mediaArray(): ?array
+    {
+        $m = (array) ($this->payload['media'] ?? []);
+
+        if ($m === []) {
+            return null;
+        }
+
+        return [
+            'type' => $m['type'] ?? 'other',
+            'caption' => $m['caption'] ?? '',
+            'filename' => $m['filename'] ?? '',
+            'file' => ($m['type'] ?? '') !== 'location' && (! empty($m['id']) || ! empty($m['url']) || ! empty($m['path'])),
+            'lat' => $m['lat'] ?? null,
+            'lng' => $m['lng'] ?? null,
+            'place' => trim(($m['name'] ?? '').' '.($m['address'] ?? '')),
+        ];
+    }
+
     public function toChatArray(): array
     {
         return [
@@ -48,6 +68,7 @@ class Message extends Model
             'private' => $this->is_private,
             'time' => $this->created_at?->toIso8601String(),
             'ai' => $this->sender_type === 'ai' ? ['status' => $this->payload['status'] ?? 'pending', 'intent' => $this->payload['intent'] ?? null, 'mood' => $this->payload['mood'] ?? null] : null,
+            'media' => $this->mediaArray(),
             'delivery' => $this->payload['delivery'] ?? null,
             'delivery_error' => $this->payload['delivery_error'] ?? null,
         ];

@@ -38,6 +38,7 @@ class WebhookParser
                     $type = (string) ($m['type'] ?? '');
                     $text = '';
                     $option = null;
+                    $media = null;
 
                     if ($type === 'text') {
                         $text = (string) ($m['text']['body'] ?? '');
@@ -47,15 +48,22 @@ class WebhookParser
                         $text = (string) ($reply['title'] ?? '');
                     } elseif ($type === 'button') {
                         $text = (string) ($m['button']['text'] ?? '');
+                    } elseif (in_array($type, ['image', 'video', 'audio', 'document', 'sticker'], true)) {
+                        $item = (array) ($m[$type] ?? []);
+                        $media = ['type' => $type, 'id' => (string) ($item['id'] ?? ''), 'mime' => (string) ($item['mime_type'] ?? ''), 'caption' => (string) ($item['caption'] ?? ''), 'filename' => (string) ($item['filename'] ?? '')];
+                        $text = $media['caption'];
+                    } elseif ($type === 'location') {
+                        $loc = (array) ($m['location'] ?? []);
+                        $media = ['type' => 'location', 'lat' => $loc['latitude'] ?? null, 'lng' => $loc['longitude'] ?? null, 'name' => (string) ($loc['name'] ?? ''), 'address' => (string) ($loc['address'] ?? '')];
                     } else {
-                        continue; // images, audio, location ... not handled yet
+                        continue; // reactions, contacts, orders ... not handled
                     }
 
                     if ($phoneId === '' || $from === '' || empty($m['id'])) {
                         continue;
                     }
 
-                    $events[] = new InboundEvent('whatsapp', $phoneId, $from, (string) $m['id'], $text, $option, $names[$from] ?? null, isset($m['timestamp']) ? (int) $m['timestamp'] : null);
+                    $events[] = new InboundEvent('whatsapp', $phoneId, $from, (string) $m['id'], $text, $option, $names[$from] ?? null, isset($m['timestamp']) ? (int) $m['timestamp'] : null, $media);
                 }
             }
         }
@@ -86,16 +94,43 @@ class WebhookParser
                     continue;
                 }
 
-                if (empty($message['mid']) || (! isset($message['text']) && ! isset($message['quick_reply']))) {
-                    continue; // attachments, reactions ... not handled yet
+                $media = $this->attachment($message);
+
+                if (empty($message['mid']) || (! isset($message['text']) && ! isset($message['quick_reply']) && $media === null)) {
+                    continue; // reactions, read marks ... not handled
                 }
 
                 $option = isset($message['quick_reply']['payload']) ? (string) $message['quick_reply']['payload'] : null;
-                $events[] = new InboundEvent($type, $accountId, $from, (string) $message['mid'], (string) ($message['text'] ?? ''), $option, null, $this->seconds($m['timestamp'] ?? null));
+                $events[] = new InboundEvent($type, $accountId, $from, (string) $message['mid'], (string) ($message['text'] ?? ''), $option, null, $this->seconds($m['timestamp'] ?? null), $media);
             }
         }
 
         return $events;
+    }
+
+    /** The first attachment of a Messenger or Instagram message (photo, video, voice note, file or location pin). */
+    private function attachment(array $message): ?array
+    {
+        $item = (array) (((array) ($message['attachments'] ?? []))[0] ?? []);
+        $type = (string) ($item['type'] ?? '');
+
+        if ($type === '') {
+            return null;
+        }
+
+        $payload = (array) ($item['payload'] ?? []);
+
+        if ($type === 'location') {
+            $c = (array) ($payload['coordinates'] ?? []);
+
+            return ['type' => 'location', 'lat' => $c['lat'] ?? null, 'lng' => $c['long'] ?? null, 'name' => (string) ($item['title'] ?? ''), 'address' => ''];
+        }
+
+        $type = match ($type) {
+            'image' => 'image', 'video' => 'video', 'audio' => 'audio', 'file' => 'document', default => 'other',
+        };
+
+        return ['type' => $type, 'url' => (string) ($payload['url'] ?? ''), 'mime' => '', 'caption' => (string) ($message['text'] ?? ''), 'filename' => ''];
     }
 
     private function seconds(mixed $ms): ?int

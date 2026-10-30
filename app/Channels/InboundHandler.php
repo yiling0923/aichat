@@ -78,7 +78,8 @@ class InboundHandler
             ])->save();
             $channel->forceFill(['last_inbound_at' => now(), 'last_error' => null])->save();
 
-            $incoming = $conversation->addMessage('in', 'customer', $event->text);
+            $isMedia = $event->media !== null;
+            $incoming = $conversation->addMessage('in', 'customer', $isMedia && $event->text === '' ? InboundEvent::mediaLabel($event->media['type'] ?? null) : $event->text, $isMedia ? ['media' => $event->media] : null);
             $incoming->forceFill(['external_id' => $event->messageId])->save();
 
             app(\App\Services\Notifier::class)->newChat($conversation, (string) $event->text, $isNew);
@@ -92,7 +93,8 @@ class InboundHandler
                 return;
             }
 
-            $replies = $this->bot->respond($conversation, $incoming, $event->optionId);
+            // A photo, voice note, file or location pin: the bot cannot read it, so a person looks at it. Stickers are just kept.
+            $replies = $isMedia ? $this->bot->receiveMedia($conversation, $incoming, (string) ($event->media['type'] ?? '')) : $this->bot->respond($conversation, $incoming, $event->optionId);
 
             // A trace for troubleshooting: what arrived and what the bot did with it.
             Log::info('Meta message handled', [

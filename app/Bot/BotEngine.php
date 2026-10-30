@@ -58,6 +58,34 @@ class BotEngine
     }
 
     /**
+     * A customer sent something that is not text (photo, voice note, file, location). The bot cannot read it: it says thanks
+     * and passes the chat to a person. If a person already has the chat, the bell alert is all that is needed. Stickers are kept silently.
+     *
+     * @return list<Message>
+     */
+    public function receiveMedia(Conversation $conversation, Message $incoming, string $type): array
+    {
+        if ($conversation->business === null || $conversation->channel === 'preview') {
+            return [];
+        }
+
+        if ($conversation->isHandledByStaff()) {
+            app(\App\Services\Notifier::class)->notify($conversation->business, 'message', 'New message from '.\App\Services\Notifier::chatName($conversation), (string) $incoming->body, route('inbox', ['c' => $conversation->id]));
+
+            return [];
+        }
+
+        if ($type === 'sticker') {
+            return [];
+        }
+
+        $out = [$conversation->addMessage('out', 'bot', Strings::get('media_received', $conversation->language ?? 'en'))];
+        app(\App\Services\HandoverService::class)->start($conversation, 'Customer sent a '.strtolower(ltrim(\App\Channels\InboundEvent::mediaLabel($type), '📷🎬🎤📄📍 ')));
+
+        return $out;
+    }
+
+    /**
      * The customer asked for a person and nobody has answered yet. If the AI knows a plain factual answer, send it now
      * (at most 3 times, never when the customer is upset or asking for a person), and say the team will still reply.
      *
