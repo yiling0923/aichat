@@ -187,16 +187,18 @@
 (function () {
   var csrf = document.querySelector('meta[name="csrf-token"]').content;
 
-  // Tabs: remembered in the address (#teach), so a reload or a link opens the same tab.
+  // Tabs: remembered in the address (#teach) and for this visit, so a reload, a link or pressing Save keeps the same tab.
   var tabs = document.querySelectorAll('#ai-tabs a'), panels = document.querySelectorAll('[data-tab-panel]');
-  function showTab(name) {
+  function showTab(name, remember) {
     if (!document.querySelector('[data-tab-panel="' + name + '"]')) { name = 'mode'; }
     tabs.forEach(function (a) { a.classList.toggle('on', a.dataset.tab === name); });
     panels.forEach(function (p) { p.hidden = p.dataset.tabPanel !== name; });
+    if (remember) { try { sessionStorage.setItem('ai-tab', name); } catch (e) { /* storage blocked: fine */ } }
   }
-  tabs.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.dataset.tab); history.replaceState(null, '', '#' + a.dataset.tab); }); });
-  window.addEventListener('hashchange', function () { showTab(location.hash.replace('#', '')); });
-  showTab(location.hash.replace('#', '') || 'mode');
+  tabs.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.dataset.tab, true); history.replaceState(null, '', '#' + a.dataset.tab); }); });
+  window.addEventListener('hashchange', function () { showTab(location.hash.replace('#', ''), true); });
+  var saved = ''; try { saved = sessionStorage.getItem('ai-tab') || ''; } catch (e) { /* ignore */ }
+  showTab(location.hash.replace('#', '') || saved || 'mode', false);
 
   // Mode cards.
   document.querySelectorAll('.mode input').forEach(function (r) {

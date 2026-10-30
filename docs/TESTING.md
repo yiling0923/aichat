@@ -839,3 +839,5 @@ Needs your own free Google account. Allow about 10 minutes.
 3. Marketing: people you can message, new opt-ins, opt-outs, survey answer rate, happy customers and review links. Below: which channel brings chats, details and bookings, what customers ask about (chat tags), when they write, customers by language and tag, whether each broadcast was followed by bookings and payments within 7 days, how many automatic messages were sent, and customers to win back (booked before, nothing for 60 days, nothing booked now, best spenders first, with a mark if they never agreed to marketing).
 4. Each block has an Export CSV button (sales numbers, by service, by practitioner, best customers, funnel, channels, topics, broadcasts, automatic messages, win-back). Open the file in Excel or Google Sheets.
 5. Press 中文: every label on both tabs is in Chinese. On a phone the tiles show two per row and the funnel stacks.
+
+(CZ/ai tab) AI assistant: after you add, edit or delete an answer in "2. Teach it", the page comes back on the same tab instead of the first one. The same works after Save in "1. Choose how it helps".
