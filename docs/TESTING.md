@@ -798,3 +798,8 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. Settings > Smart helpers > "Tell customers when we are closed" (on by default). A chat that starts outside your opening hours gets one extra bot line at the start: "We are closed right now and will be back Wednesday at 10:00. You can still use this menu and book any time." (Chinese in a Chinese chat). Nothing is added while you are open.
 2. Settings > Smart helpers > "Give new chats that need a person to the least busy team member" (off by default). When a chat needs a person it is assigned to the active team member with the fewest open chats; you can still change the person in the chat.
+
+## CU. Install as an app
+
+1. My account > "Install as an app". In Chrome or Edge press Install (or the install icon in the address bar); on iPhone use Share > Add to Home Screen. The staff area then opens in its own window with the green "A" icon.
+2. Phone alerts work best from the installed app (turn them on in the same page).

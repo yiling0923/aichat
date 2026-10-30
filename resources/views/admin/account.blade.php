@@ -42,6 +42,13 @@
         </div>
     </div>
 
+    <div class="card ac-alerts" id="install-app">
+        <h3>{{ __('Install as an app') }}</h3>
+        <p class="mute" style="margin:0 0 14px;line-height:1.5">{{ __('Put this on your phone or computer like an app, with its own icon and window. Phone alerts work best this way.') }}</p>
+        <div id="ia-status" class="mute" style="margin:0 0 12px"></div>
+        <button type="button" class="btn" id="ia-btn" hidden>{{ __('Install') }}</button>
+    </div>
+
     <div class="card ac-alerts" id="phone-alerts">
         <h3>{{ __('Phone alerts') }}</h3>
         <p class="mute" style="margin:0 0 16px;line-height:1.5">{{ __('Get a pop-up on this phone or computer for new chats and bookings, even when the page is closed. Turn it on for each device you use.') }}</p>
@@ -53,6 +60,17 @@
         <p id="pa-msg" class="mute" style="margin:0"></p>
     </div>
     </div>
+    <script>
+    (function () {
+      var deferred = null, btn = document.getElementById('ia-btn'), st = document.getElementById('ia-status');
+      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      if (standalone) { st.textContent = @json(__('This is already running as an app.')); return; }
+      st.textContent = ios ? @json(__('On iPhone or iPad: tap the Share button in Safari, then "Add to Home Screen".')) : @json(__('If the Install button does not appear, open the browser menu and choose "Install app" or "Add to Home screen".'));
+      window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; btn.hidden = false; st.textContent = @json(__('Your browser can install this as an app.')); });
+      btn.addEventListener('click', function () { if (deferred) { deferred.prompt(); deferred.userChoice.finally(function () { deferred = null; btn.hidden = true; }); } });
+    })();
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
       var P = window.aichatPush, st = document.getElementById('pa-text'), dot = document.getElementById('pa-dot'), box = document.getElementById('pa-status'), tg = document.getElementById('pa-toggle'), ts = document.getElementById('pa-test'), msg = document.getElementById('pa-msg');

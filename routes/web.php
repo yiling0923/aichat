@@ -12,6 +12,26 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+// So the staff area can be installed on a phone or computer like an app.
+Route::get('/manifest.webmanifest', function () {
+    return response()->json([
+        'name' => 'AI Messaging Sales Assistant',
+        'short_name' => 'Inbox',
+        'description' => 'Customer chats, bookings and alerts for your team.',
+        // Relative to this file, so it works on any address and in a folder such as /aichat/public.
+        'start_url' => 'admin',
+        'scope' => './',
+        'display' => 'standalone',
+        'background_color' => '#f5f7f7',
+        'theme_color' => '#0f766e',
+        'icons' => [
+            ['src' => asset('icons/icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+            ['src' => asset('icons/icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+            ['src' => asset('icons/icon-maskable-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+        ],
+    ])->header('Content-Type', 'application/manifest+json');
+})->name('manifest');
+
 // A file the team sent to a customer (the address contains a long random code).
 Route::get('/f/{id}/{token}', [\App\Http\Controllers\PublicFileController::class, 'show'])->whereNumber('id')->where('token', '[A-Za-z0-9]{40}')->middleware('throttle:120,1')->name('file');
 

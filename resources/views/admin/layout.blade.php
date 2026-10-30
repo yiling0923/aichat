@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title'): {{ $business->name }}</title>
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
+    @include('admin._pwa')
     @include('admin._push')
     @include('admin._i18n')
 </head>

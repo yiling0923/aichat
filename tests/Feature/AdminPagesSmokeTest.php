@@ -63,4 +63,21 @@ class AdminPagesSmokeTest extends TestCase
             }
         }
     }
+
+    public function test_the_staff_area_can_be_installed_as_an_app(): void
+    {
+        $manifest = $this->get('/manifest.webmanifest')->assertOk();
+        $this->assertStringContainsString('application/manifest+json', (string) $manifest->headers->get('Content-Type'));
+        $this->assertSame('admin', $manifest->json('start_url'));
+        $this->assertSame('standalone', $manifest->json('display'));
+        foreach (['icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'] as $icon) {
+            $this->assertFileExists(public_path('icons/'.$icon));
+        }
+
+        $business = Business::factory()->create();
+        $owner = User::factory()->create(['business_id' => $business->id, 'role' => 'owner']);
+        foreach (['', 'today'] as $page) {
+            $this->actingAs($owner)->get('/admin/'.$page)->assertSee('rel="manifest"', false)->assertSee('apple-touch-icon', false);
+        }
+    }
 }
