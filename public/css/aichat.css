@@ -1838,3 +1838,11 @@ details.au-card[open] > summary::after { content: none; }
   .bk-line { grid-template-columns: 58px minmax(0, 1fr); gap: 8px 12px; }
   .bk-status, .bk-actions { grid-column: 2; justify-content: flex-start; }
 }
+
+/* AI assistant, "Teach it" tab: breathing room */
+[data-tab-panel="teach"] > h2 { margin-top: 10px; margin-bottom: 8px; }
+[data-tab-panel="teach"] > p.mute { margin: 0 0 18px !important; line-height: 1.55; max-width: 720px; }
+[data-tab-panel="teach"] > .bar { margin: 0 0 22px !important; }
+[data-tab-panel="teach"] .masonry { margin-bottom: 22px; }
+[data-tab-panel="teach"] .card.ideas { margin: 0 0 22px; padding: 18px 20px; }
+[data-tab-panel="teach"] .card.ideas .idea-row { margin-top: 12px; gap: 10px; }
