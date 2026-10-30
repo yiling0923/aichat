@@ -19,8 +19,12 @@ class ReportsController extends Controller
     {
         $business = $request->user()->business;
         $data = new ReportData($business, $request, $flows);
+        $sm = new \App\Reports\SalesMarketing($data);
 
         return view('admin.reports', [
+            'sales' => $sm->sales(),
+            'marketing' => $sm->marketing(),
+            'cur' => $business->settings['currency'] ?? 'RM',
             'business' => $business,
             'active' => 'reports',
             'r' => $data,
@@ -38,8 +42,8 @@ class ReportsController extends Controller
     {
         $business = $request->user()->business;
         $data = new ReportData($business, $request, $flows);
-        $section = array_key_exists((string) $request->query('section'), ReportData::EXPORTS) ? (string) $request->query('section') : 'summary';
-        [$header, $rows] = $data->export($section);
+        $section = array_key_exists((string) $request->query('section'), ReportData::EXPORTS) || array_key_exists((string) $request->query('section'), ReportData::DETAIL_EXPORTS) ? (string) $request->query('section') : 'summary';
+        [$header, $rows] = (new \App\Reports\SalesMarketing($data))->export($section) ?? $data->export($section);
 
         $name = 'report-'.$section.'-'.$data->from->format('Ymd').'-'.$data->to->format('Ymd').'.csv';
 

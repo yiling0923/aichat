@@ -113,6 +113,29 @@ class ReportsTest extends TestCase
         $this->assertStringContainsString('Date,"Chats started","New customers","Bookings made"', $this->get('/admin/reports/export?section=daily')->streamedContent());
     }
 
+    public function test_sales_and_marketing_tabs_show_money_funnel_and_win_back(): void
+    {
+        $this->seedData();
+        $this->in(function () {
+            $old = Customer::create(['name' => 'Lapsed Lee', 'phone' => '699', 'language' => 'en', 'marketing_opt_in' => true]);
+            $svc = Service::first();
+            Booking::create(['customer_id' => $old->id, 'service_id' => $svc->id, 'practitioner_id' => Practitioner::first()->id, 'starts_at' => now()->subDays(90), 'ends_at' => now()->subDays(90)->addMinutes(30), 'status' => 'completed']);
+            Order::create(['customer_id' => $old->id, 'amount' => 80, 'status' => 'pending', 'ordered_at' => now()->subDays(20)]);
+        });
+
+        $page = $this->actingAs($this->user)->get('/admin/reports?period=30d')->assertOk()
+            ->assertSee('id="tab-sales"', false)->assertSee('id="tab-marketing"', false)
+            ->assertSee('Money taken')->assertSee('From first message to payment')->assertSee('Customers to win back')
+            ->assertSee('Lapsed Lee')->assertSee('Where customers come from');
+        $this->assertStringContainsString('50.00', $page->getContent());
+
+        foreach (['sales_summary', 'sales_service', 'sales_person', 'sales_customers', 'sales_funnel', 'mk_channels', 'mk_topics', 'mk_broadcasts', 'mk_automations', 'mk_winback'] as $section) {
+            $this->get('/admin/reports/export?section='.$section)->assertOk();
+        }
+        $this->assertStringContainsString('Lapsed Lee', $this->get('/admin/reports/export?section=mk_winback')->streamedContent());
+        $this->assertStringContainsString('Amy', $this->get('/admin/reports/export?section=sales_customers')->streamedContent());
+    }
+
     public function test_reports_and_exports_never_include_another_business_and_need_a_login(): void
     {
         $this->seedData();

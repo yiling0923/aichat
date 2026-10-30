@@ -1858,3 +1858,35 @@ details.au-card[open] > summary::after { content: none; }
 .teach-empty { text-align: center; padding: 30px 20px; border-style: dashed; }
 .teach-empty p { margin: 6px auto 0; max-width: 460px; line-height: 1.5; }
 @media (max-width: 640px) { .teach-head { flex-direction: column; } .teach-head .btn { width: 100%; } }
+
+/* Reports: Sales and Marketing tabs */
+.rp-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
+.rp-tiles .tile { position: relative; gap: 6px; padding: 16px 18px; box-shadow: var(--shadow); }
+.rp-tiles .tile:hover { transform: none; border-color: var(--line); }
+.rp-tiles .tile small { font-size: 13px; font-weight: 600; color: var(--mute); }
+.rp-tiles .tile b { font-size: 26px; letter-spacing: -.02em; line-height: 1.15; }
+.rp-tiles .tile .pill { align-self: flex-start; }
+.rp-tiles .tile.warn { border-color: var(--red); background: var(--reds); }
+.rp-funnel { padding: 18px 20px; margin-bottom: 14px; }
+.rp-funnel h3 { margin: 0; font-size: 16px; }
+.fn-row { display: grid; grid-template-columns: minmax(120px, 210px) 1fr 54px 44px; gap: 12px; align-items: center; padding: 6px 0; font-size: 14px; }
+.fn-track { height: 22px; border-radius: 8px; background: var(--line-s); overflow: hidden; }
+.fn-track i { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent-m), var(--accent)); min-width: 4px; }
+.fn-row b { text-align: right; } .fn-row small { color: var(--faint); font-size: 12px; }
+.two-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.two-nums > div { display: flex; flex-direction: column; gap: 4px; }
+.two-nums small { font-size: 13px; font-weight: 600; color: var(--mute); }
+.two-nums b { font-size: 24px; letter-spacing: -.02em; }
+.two-nums b.bad { color: var(--red); }
+.mini-track { display: inline-block; vertical-align: middle; width: 90px; height: 8px; border-radius: 6px; background: var(--line-s); overflow: hidden; margin-right: 6px; }
+.mini-track i { display: block; height: 100%; background: var(--accent); }
+.rp-note { margin: 4px 2px 18px; font-size: 13px; }
+.rtab > .card { margin-bottom: 14px; padding: 18px 20px; }
+.rtab > .card h3 { margin: 0; font-size: 16px; }
+@media (max-width: 900px) { .rp-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+    .rp-tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .rp-tiles .tile b { font-size: 21px; }
+    .fn-row { grid-template-columns: 1fr 44px 38px; } .fn-row .fn-l { grid-column: 1 / -1; font-weight: 600; } .fn-row .fn-track { grid-column: 1; }
+    .two-nums { grid-template-columns: 1fr; }
+}

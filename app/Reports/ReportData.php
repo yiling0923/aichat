@@ -92,8 +92,19 @@ class ReportData
         return $this->channel !== null || $this->serviceId !== null || $this->practitionerId !== null;
     }
 
+    public function timezone(): string
+    {
+        return $this->tz;
+    }
+
+    /** Chats started in a period (all channels), for the funnel. */
+    public function chatCount(CarbonInterface $from, CarbonInterface $to): int
+    {
+        return Conversation::query()->where('channel', '!=', 'preview')->whereBetween('created_at', [$from, $to])->count();
+    }
+
     /** The period right before this one, same length. @return array{0: Carbon, 1: Carbon} */
-    private function previous(): array
+    public function previous(): array
     {
         $days = $this->from->diffInDays($this->to) + 1;
 
@@ -266,6 +277,12 @@ class ReportData
         'customers' => 'New customers (detail)',
         'orders' => 'Orders (detail)',
         'surveys' => 'Survey answers (detail)',
+    ];
+
+    /** CSV files offered next to the Sales and Marketing tabs (built in SalesMarketing). */
+    public const DETAIL_EXPORTS = [
+        'sales_summary' => 'Sales numbers', 'sales_service' => 'Money by service', 'sales_person' => 'Money by practitioner', 'sales_customers' => 'Best customers', 'sales_funnel' => 'First message to payment',
+        'mk_channels' => 'Where customers come from', 'mk_topics' => 'What customers ask about', 'mk_broadcasts' => 'Broadcast results', 'mk_automations' => 'Automatic messages', 'mk_winback' => 'Customers to win back',
     ];
 
     /** @return array{0: list<string>, 1: list<list<mixed>>} */

@@ -831,3 +831,11 @@ Needs your own free Google account. Allow about 10 minutes.
 2. Week view: the grid shows your opening hours (an hour before and after), hours when you are closed and closed days are hatched grey, a red line marks the time now, and it opens scrolled to now (or to the first booking), not at midnight. Click a booking for details; drag it to move it.
 3. List view: bookings are grouped by day (Today, Tomorrow, Wednesday ...). Each line has the time, customer, service, person, status and clear Done / No-show / Cancel buttons. Finished visits that need marking are highlighted.
 4. On a phone the list opens by default (the Month and Week buttons still work).
+
+## CZ. Reports: Sales and Marketing tabs
+
+1. Open Reports. Two new tabs sit after Overview: Sales and Marketing. The period filter at the top changes both (the channel, service and person filters only change the Bookings numbers).
+2. Sales: money taken, paid orders, average order (each with the change against the period before), waiting for payment, overdue unpaid (older than 7 days) and refunded. Below: the path from first message to payment, money by service, by practitioner, by week and by weekday, new against returning customers, booked for the next 30 days against money lost to no-shows and cancellations, best customers and a list of overdue orders.
+3. Marketing: people you can message, new opt-ins, opt-outs, survey answer rate, happy customers and review links. Below: which channel brings chats, details and bookings, what customers ask about (chat tags), when they write, customers by language and tag, whether each broadcast was followed by bookings and payments within 7 days, how many automatic messages were sent, and customers to win back (booked before, nothing for 60 days, nothing booked now, best spenders first, with a mark if they never agreed to marketing).
+4. Each block has an Export CSV button (sales numbers, by service, by practitioner, best customers, funnel, channels, topics, broadcasts, automatic messages, win-back). Open the file in Excel or Google Sheets.
+5. Press 中文: every label on both tabs is in Chinese. On a phone the tiles show two per row and the funnel stacks.

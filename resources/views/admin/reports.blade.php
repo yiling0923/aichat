@@ -86,6 +86,8 @@
 
     <div class="tabs" id="report-tabs">
         <a href="#overview" data-tab="overview" class="on">{{ __('Overview') }}</a>
+        <a href="#sales" data-tab="sales">{{ __('Sales') }}</a>
+        <a href="#marketing" data-tab="marketing">{{ __('Marketing') }}</a>
         <a href="#bookings" data-tab="bookings">{{ __('Bookings') }}</a>
         <a href="#people" data-tab="people">{{ __('People') }}</a>
         <a href="#money" data-tab="money">{{ __('Money') }}</a>
@@ -117,6 +119,14 @@
                 @foreach ($s['daily'] as $d)<tr><td>{{ \App\Support\Lang::fmt(\Carbon\Carbon::parse($d['date']), 'D j M Y', 'Y年n月j日 D') }}</td><td>{{ $d['chats'] }}</td><td>{{ $d['customers'] }}</td><td>{{ $d['bookings'] }}</td></tr>@endforeach
             </tbody></table></div>
         </details>
+    </section>
+
+    <section class="rtab" id="tab-sales" hidden>
+        @include('admin.reports._sales')
+    </section>
+
+    <section class="rtab" id="tab-marketing" hidden>
+        @include('admin.reports._marketing')
     </section>
 
     <section class="rtab" id="tab-bookings" hidden>
