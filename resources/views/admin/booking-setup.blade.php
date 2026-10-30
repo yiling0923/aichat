@@ -8,13 +8,14 @@
                     <span class="tag {{ $googleOn ? 'ok' : 'warn' }}">{{ $googleOn ? __('connected') : __('not connected (using the built-in calendar)') }}</span></p>
             </div>
         </div>
-        <nav class="bk-jump" aria-label="{{ __('Booking setup') }}">
-            <a href="#hours">{{ __('Opening hours and rules') }}</a>
-            <a href="#google">{{ __('Google Calendar') }}</a>
-            <a href="#people">{{ __('Practitioners') }} <span>{{ $practitioners->count() }}</span></a>
-            <a href="#services">{{ __('Services') }} <span>{{ $services->count() }}</span></a>
-        </nav>
-        <h2 class="bk-h" id="hours">{{ __('Opening hours and rules') }}</h2>
+        <div class="tabs bk-tabs" id="bk-tabs" role="tablist">
+            <a href="#hours" data-tab="hours" class="on">{{ __('1. Opening hours and rules') }}</a>
+            <a href="#people" data-tab="people">{{ __('2. Practitioners') }} <span class="bk-n">{{ $practitioners->count() }}</span></a>
+            <a href="#services" data-tab="services">{{ __('3. Services') }} <span class="bk-n">{{ $services->count() }}</span></a>
+            <a href="#google" data-tab="google">{{ __('4. Google Calendar') }} <span class="bk-opt">{{ __('optional') }}</span></a>
+        </div>
+        <section data-tab-panel="hours">
+        <h2 class="bk-h" id="hours" style="margin-top:6px">{{ __('Opening hours and rules') }}</h2>
         <form method="post" action="{{ url('/admin/booking-setup/rules') }}" class="card split bk-card">
             @csrf
             <div>
@@ -61,6 +62,77 @@
             </div>
         </form>
 
+        </section>
+
+        <section data-tab-panel="people" hidden>
+        <h2 class="bk-h" id="people">{{ __('Practitioners') }}</h2>
+        <p class="mute bk-sub">{{ __('One calendar per person or room. For Google Calendar, follow the steps in the Google Calendar tab, then paste each calendar ID here and press Test.') }}</p>
+        <div class="card bk-list bk-people">
+            <div class="bk-cols" aria-hidden="true"><span>{{ __('Name') }}</span><span>{{ __('Google Calendar ID') }}</span><span>{{ __('Active') }}</span><span></span></div>
+            @foreach ($practitioners as $p)
+                <form method="post" action="{{ url('/admin/booking-setup/practitioners/'.$p->id) }}" class="bk-row">
+                    @csrf
+                    <label class="f"><span>{{ __('Name') }}</span><input type="text" name="name" value="{{ $p->name }}"></label>
+                    <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" value="{{ $p->google_calendar_id }}" placeholder="{{ __('optional') }}"></label>
+                    <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($p->active)><span>{{ __('Active') }}</span></label>
+                    <span class="bk-btns"><button class="btn" type="submit">{{ __('Save') }}</button>@if ($googleOn)<button class="btn" type="submit" formaction="{{ url('/admin/booking-setup/practitioners/'.$p->id.'/google-test') }}" title="{{ __('Check that this calendar can be read and written') }}">{{ __('Test') }}</button>@endif</span>
+                </form>
+            @endforeach
+            <details class="bk-add">
+                <summary>+ {{ __('New practitioner') }}</summary>
+                <form method="post" action="{{ url('/admin/booking-setup/practitioners') }}" class="bk-row bk-new">
+                    @csrf
+                    <label class="f"><span>{{ __('New practitioner') }}</span><input type="text" name="name" placeholder="{{ __('Name') }}"></label>
+                    <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" placeholder="{{ __('optional') }}"></label>
+                    <span></span>
+                    <button class="btn primary" type="submit">{{ __('Add') }}</button>
+                </form>
+            </details>
+        </div>
+
+        </section>
+
+        <section data-tab-panel="services" hidden>
+        <h2 class="bk-h" id="services">{{ __('Services') }}</h2>
+        <div class="card bk-list bk-serv">
+            <div class="bk-cols" aria-hidden="true"><span>{{ __('Name (EN)') }}</span><span>{{ __('Name (中文)') }}</span><span>{{ __('Minutes') }}</span><span>{{ __('Price') }}</span><span>{{ __('Done by') }}</span><span>{{ __('Active') }}</span><span></span></div>
+            @foreach ($services as $s)
+                <form method="post" action="{{ url('/admin/booking-setup/services/'.$s->id) }}" class="bk-row">
+                    @csrf
+                    <label class="f"><span>{{ __('Name (EN)') }}</span><input type="text" name="name_en" value="{{ $s->name['en'] ?? '' }}"></label>
+                    <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh" value="{{ $s->name['zh'] ?? '' }}"></label>
+                    <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="{{ $s->duration_min }}"></label>
+                    <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price" value="{{ $s->price }}"></label>
+                    <div class="f"><span>{{ __('Done by') }}</span><div class="bk-who">
+                        @foreach ($practitioners as $p)
+                            <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" @checked($s->practitioners->contains('id', $p->id))> {{ $p->name }}</label>
+                        @endforeach
+                    </div></div>
+                    <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($s->active)><span>{{ __('Active') }}</span></label>
+                    <button class="btn" type="submit">{{ __('Save') }}</button>
+                </form>
+            @endforeach
+            <details class="bk-add">
+                <summary>+ {{ __('Add service') }}</summary>
+                <form method="post" action="{{ url('/admin/booking-setup/services') }}" class="bk-row bk-new">
+                    @csrf
+                    <label class="f"><span>{{ __('New service (EN)') }}</span><input type="text" name="name_en"></label>
+                    <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh"></label>
+                    <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="60"></label>
+                    <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price"></label>
+                    <div class="f"><span>{{ __('Done by') }}</span><div class="bk-who">
+                        @foreach ($practitioners as $p)
+                            <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" checked> {{ $p->name }}</label>
+                        @endforeach
+                    </div></div>
+                    <span></span>
+                    <button class="btn primary" type="submit">{{ __('Add service') }}</button>
+                </form>
+            </details>
+        </div>
+        </section>
+
+        <section data-tab-panel="google" hidden>
         <h2 class="bk-h" id="google">{{ __('Google Calendar') }} <span class="tag {{ $googleOn ? 'ok' : '' }}">{{ $googleOn ? __('Key loaded') : __('Not connected') }}</span></h2>
         <p class="mute bk-sub">{{ __('Optional and free. Bookings appear in each person\'s Google Calendar, and busy times in that calendar are blocked in the chat, so nobody is double booked.') }}</p>
         <div class="card gcal">
@@ -99,70 +171,26 @@
             @endif
         </div>
 
-        <h2 class="bk-h" id="people">{{ __('Practitioners') }}</h2>
-        <p class="mute bk-sub">{{ __('One calendar per person or room. For Google Calendar, follow the steps above, then paste each calendar ID here and press Test.') }}</p>
-        <div class="card bk-list bk-people">
-            <div class="bk-cols" aria-hidden="true"><span>{{ __('Name') }}</span><span>{{ __('Google Calendar ID') }}</span><span>{{ __('Active') }}</span><span></span></div>
-            @foreach ($practitioners as $p)
-                <form method="post" action="{{ url('/admin/booking-setup/practitioners/'.$p->id) }}" class="bk-row">
-                    @csrf
-                    <label class="f"><span>{{ __('Name') }}</span><input type="text" name="name" value="{{ $p->name }}"></label>
-                    <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" value="{{ $p->google_calendar_id }}" placeholder="{{ __('optional') }}"></label>
-                    <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($p->active)><span>{{ __('Active') }}</span></label>
-                    <span class="bk-btns"><button class="btn" type="submit">{{ __('Save') }}</button>@if ($googleOn)<button class="btn" type="submit" formaction="{{ url('/admin/booking-setup/practitioners/'.$p->id.'/google-test') }}" title="{{ __('Check that this calendar can be read and written') }}">{{ __('Test') }}</button>@endif</span>
-                </form>
-            @endforeach
-            <details class="bk-add">
-                <summary>+ {{ __('New practitioner') }}</summary>
-                <form method="post" action="{{ url('/admin/booking-setup/practitioners') }}" class="bk-row bk-new">
-                    @csrf
-                    <label class="f"><span>{{ __('New practitioner') }}</span><input type="text" name="name" placeholder="{{ __('Name') }}"></label>
-                    <label class="f"><span>{{ __('Google Calendar ID') }}</span><input type="text" name="google_calendar_id" placeholder="{{ __('optional') }}"></label>
-                    <span></span>
-                    <button class="btn primary" type="submit">{{ __('Add') }}</button>
-                </form>
-            </details>
-        </div>
+        </section>
 
-        <h2 class="bk-h" id="services">{{ __('Services') }}</h2>
-        <div class="card bk-list bk-serv">
-            <div class="bk-cols" aria-hidden="true"><span>{{ __('Name (EN)') }}</span><span>{{ __('Name (中文)') }}</span><span>{{ __('Minutes') }}</span><span>{{ __('Price') }}</span><span>{{ __('Done by') }}</span><span>{{ __('Active') }}</span><span></span></div>
-            @foreach ($services as $s)
-                <form method="post" action="{{ url('/admin/booking-setup/services/'.$s->id) }}" class="bk-row">
-                    @csrf
-                    <label class="f"><span>{{ __('Name (EN)') }}</span><input type="text" name="name_en" value="{{ $s->name['en'] ?? '' }}"></label>
-                    <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh" value="{{ $s->name['zh'] ?? '' }}"></label>
-                    <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="{{ $s->duration_min }}"></label>
-                    <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price" value="{{ $s->price }}"></label>
-                    <div class="f"><span>{{ __('Done by') }}</span><div class="bk-who">
-                        @foreach ($practitioners as $p)
-                            <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" @checked($s->practitioners->contains('id', $p->id))> {{ $p->name }}</label>
-                        @endforeach
-                    </div></div>
-                    <label class="f check"><input type="hidden" name="active" value="0"><input type="checkbox" name="active" value="1" @checked($s->active)><span>{{ __('Active') }}</span></label>
-                    <button class="btn" type="submit">{{ __('Save') }}</button>
-                </form>
-            @endforeach
-            <details class="bk-add">
-                <summary>+ {{ __('Add service') }}</summary>
-                <form method="post" action="{{ url('/admin/booking-setup/services') }}" class="bk-row bk-new">
-                    @csrf
-                    <label class="f"><span>{{ __('New service (EN)') }}</span><input type="text" name="name_en"></label>
-                    <label class="f"><span>{{ __('Name (中文)') }}</span><input type="text" name="name_zh"></label>
-                    <label class="f"><span>{{ __('Minutes') }}</span><input type="number" name="duration_min" value="60"></label>
-                    <label class="f"><span>{{ __('Price') }}</span><input type="number" step="0.01" name="price"></label>
-                    <div class="f"><span>{{ __('Done by') }}</span><div class="bk-who">
-                        @foreach ($practitioners as $p)
-                            <label class="check"><input type="checkbox" name="practitioners[]" value="{{ $p->id }}" checked> {{ $p->name }}</label>
-                        @endforeach
-                    </div></div>
-                    <span></span>
-                    <button class="btn primary" type="submit">{{ __('Add service') }}</button>
-                </form>
-            </details>
-        </div>
 @endsection
 @push('scripts')
+<script>
+(function () {
+  // Tabs: remembered for this visit, so after pressing Save you come back to the same tab.
+  var tabs = document.querySelectorAll('#bk-tabs a'), panels = document.querySelectorAll('[data-tab-panel]');
+  function showTab(name, remember) {
+    if (!document.querySelector('[data-tab-panel="' + name + '"]')) { name = 'hours'; }
+    tabs.forEach(function (a) { a.classList.toggle('on', a.dataset.tab === name); });
+    panels.forEach(function (p) { p.hidden = p.dataset.tabPanel !== name; });
+    if (remember) { try { sessionStorage.setItem('bk-tab', name); } catch (e) { /* storage blocked: fine */ } }
+  }
+  tabs.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.dataset.tab, true); history.replaceState(null, '', '#' + a.dataset.tab); }); });
+  window.addEventListener('hashchange', function () { showTab(location.hash.replace('#', ''), true); });
+  var saved = ''; try { saved = sessionStorage.getItem('bk-tab') || ''; } catch (e) { /* ignore */ }
+  showTab(location.hash.replace('#', '') || @json($errors->has('google') ? 'google' : '') || saved || 'hours', false);
+})();
+</script>
 <script>
 (function () {
   var wk = document.getElementById('wk'); if (!wk) { return; }
