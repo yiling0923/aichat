@@ -166,7 +166,8 @@ class NotificationTest extends TestCase
     public function test_notification_links_are_paths_so_they_open_on_the_address_you_use_now(): void
     {
         $this->assertSame('/admin?c=5', \App\Services\Notifier::path('https://old-tunnel.lhr.life/admin?c=5'));
-        $this->assertSame('/aichat/public/admin/tasks', \App\Services\Notifier::path('http://localhost/aichat/public/admin/tasks'));
+        $this->assertSame('/admin/tasks', \App\Services\Notifier::path('http://localhost/aichat/public/admin/tasks'));
+        $this->assertSame('/admin?c=7', \App\Services\Notifier::path('/aichat/public/admin?c=7'));
         $this->assertSame('/admin', \App\Services\Notifier::path('/admin'));
         $this->assertNull(\App\Services\Notifier::path(null));
 
@@ -176,5 +177,16 @@ class NotificationTest extends TestCase
 
         $row->forceFill(['url' => 'https://dead-tunnel.lhr.life/admin?c=9'])->save();
         $this->actingAs($this->owner)->getJson('/admin/api/notifications')->assertJsonPath('items.0.url', '/admin?c=9');
+    }
+
+    public function test_links_get_the_folder_of_the_address_in_use_back(): void
+    {
+        $this->say('hello')->assertOk();
+        StaffNotification::where('user_id', $this->owner->id)->update(['url' => 'https://dead.lhr.life/aichat/public/admin?c=4']);
+
+        $server = ['SCRIPT_NAME' => '/aichat/public/index.php', 'SCRIPT_FILENAME' => public_path('index.php'), 'PHP_SELF' => '/aichat/public/index.php'];
+        $json = $this->actingAs($this->owner)->call('GET', '/aichat/public/admin/api/notifications', [], [], [], $server + ['HTTP_ACCEPT' => 'application/json'])->json();
+
+        $this->assertSame('/aichat/public/admin?c=4', $json['items'][0]['url']);
     }
 }

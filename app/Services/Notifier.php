@@ -49,7 +49,7 @@ class Notifier
 
             // The same alert on their phones and computers, after the page has been sent so nobody waits for it.
             if ($pushTo !== [] && PushSender::configured()) {
-                $target = $url ?? self::path(route('inbox'));
+                $target = self::open($url ?? route('inbox'));
                 dispatch(fn () => app(PushSender::class)->toUsers($pushTo, $title, (string) $body, $target, $type.'-'.md5($target)))->afterResponse();
             }
         } catch (Throwable $e) {
@@ -73,16 +73,43 @@ class Notifier
         $this->notify($business, 'message', ($isNew ? 'New chat from ' : 'New message from ').self::chatName($conversation), $text !== '' ? $text : null, route('inbox', ['c' => $conversation->id]));
     }
 
-    /** A link inside the app as a path only (/admin/...), so it opens on whatever address you are using now, not on an old tunnel address. */
+    /** A link inside the staff area without any web address or folder in front (/admin/...), so it can be opened on whatever address you use now. */
     public static function path(?string $url): ?string
     {
-        if ($url === null || $url === '' || ! preg_match('#^https?://#i', $url)) {
+        if ($url === null || $url === '') {
             return $url;
         }
 
-        $parts = parse_url($url);
+        $parts = preg_match('#^https?://#i', $url) ? parse_url($url) : ['path' => $url];
+        $path = ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '').(isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
 
-        return ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '').(isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
+        // Drop the folder the app lives in (for example /aichat/public on XAMPP): it is added back for the address in use.
+        if (preg_match('#^.*?(/(?:admin|platform)(?:[/?\#].*)?)$#', $path, $m)) {
+            return $m[1];
+        }
+
+        return $path;
+    }
+
+    /** The folder in front of the app on the address in use right now ('' or '/aichat/public'). */
+    public static function base(): string
+    {
+        $base = request()->getBasePath();
+
+        // No real web request (a scheduled command, a queue job): fall back to the folder in APP_URL.
+        if ($base === '' && app()->runningInConsole()) {
+            $base = (string) parse_url((string) config('app.url'), PHP_URL_PATH);
+        }
+
+        return rtrim($base, '/');
+    }
+
+    /** What the browser or phone should open: the stored path with the folder of the address in use. */
+    public static function open(?string $url): ?string
+    {
+        $path = self::path($url);
+
+        return $path !== null && str_starts_with($path, '/') ? self::base().$path : $path;
     }
 
     public static function chatName(Conversation $c): string

@@ -734,3 +734,5 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 ## CJ. Notification links never point at an old tunnel
 
 1. Restart the tunnel so its address changes, then click a notification that was created before (bell, pop-up card or phone alert). It opens on the address you are using now, not on the old tunnel address.
+
+(CJ, continued) Links also keep working when the app lives in a folder such as /aichat/public: the folder is added back for the address you are using, so a notification opens /aichat/public/admin?c=... on XAMPP and /admin?c=... on `php artisan serve`.
