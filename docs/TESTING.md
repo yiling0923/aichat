@@ -724,3 +724,9 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 
 1. Send a message from any phone (or the website chat). The bell shows "New chat from ..." (first message) or "New message from ..." for every team member, one alert per chat, and phones with alerts turned on get the pop-up.
 2. Settings > Smart helpers has a new switch "Alert me when a new customer starts a chat". Turn it off, save, and customer messages no longer ring the bell. Alerts for "needs a person", bookings and complaints stay on.
+
+## CI. Pop-up card from the bell
+
+1. Stay on any staff page and send a WhatsApp message (or website chat message) from another phone. Within about 6 seconds a small card drops down under the bell with the customer's name and message, the bell rings, and the chime plays (after you have clicked on the page once).
+2. Click the card to open that chat. Press the x to close it, or wait: it hides after about 9 seconds (hover to keep it).
+3. If several arrive at once the card shows the latest and "+ N more".

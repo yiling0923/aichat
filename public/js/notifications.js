@@ -1,4 +1,4 @@
-// The bell: polls every 10 seconds, shows unread count, lists the latest, plays a sound for new ones, optional desktop alerts.
+// The bell: polls every 6 seconds, shows unread count, lists the latest, plays a sound for new ones, optional desktop alerts.
 (function () {
   var root = document.getElementById('bell');
   if (!root) { return; }
@@ -72,6 +72,7 @@
       if (fresh.length) {
         if (soundOn) { chime(fresh.some(function (n) { return n.type === 'handover'; })); }
         btn.classList.add('ring'); setTimeout(function () { btn.classList.remove('ring'); }, 1500);
+        pop(fresh);
       }
       if ('Notification' in window && Notification.permission === 'granted') {
         fresh.slice(0, 3).forEach(function (n) {
@@ -80,6 +81,33 @@
       }
     }
     known = ids;
+  }
+
+  // A small card that drops down from the bell when something new arrives, so it is seen without opening the bell.
+  var card = null, cardTimer = null;
+  function hidePop() { if (card) { card.remove(); card = null; } clearTimeout(cardTimer); }
+  function pop(fresh) {
+    if (!menu.hidden || !fresh.length) { return; }
+    hidePop();
+    var n = fresh[0], more = fresh.length - 1;
+    card = document.createElement('div'); card.className = 'bell-pop'; card.setAttribute('role', 'status');
+    card.innerHTML = '<span class="bi"></span><span class="bt"><b></b><small></small><em></em></span><button type="button" class="bp-x" aria-label="">&times;</button>';
+    card.querySelector('.bi').textContent = icons[n.type] || '\u2022';
+    card.querySelector('b').textContent = n.title;
+    card.querySelector('small').textContent = n.body || '';
+    card.querySelector('em').textContent = more > 0 ? __t('+ :n more', { n: more }) : '';
+    card.querySelector('.bp-x').setAttribute('aria-label', __t('Close'));
+    var r = btn.getBoundingClientRect(), w = Math.min(340, window.innerWidth - 16);
+    card.style.width = w + 'px'; card.style.left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8)) + 'px'; card.style.top = (r.bottom + 8) + 'px';
+    card.querySelector('.bp-x').addEventListener('click', function (e) { e.stopPropagation(); hidePop(); });
+    card.addEventListener('click', function () {
+      var go = n.url; hidePop();
+      post('/' + n.id + '/read').finally(function () { if (go) { location.href = go; } else { load(); } });
+    });
+    card.addEventListener('mouseenter', function () { clearTimeout(cardTimer); });
+    card.addEventListener('mouseleave', function () { cardTimer = setTimeout(hidePop, 3000); });
+    document.body.appendChild(card);
+    cardTimer = setTimeout(hidePop, 9000);
   }
 
   function load() { fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d) { render(d); } }).catch(function () {}); }
@@ -94,7 +122,7 @@
   }
   window.addEventListener('resize', function () { if (!menu.hidden) { place(); } });
 
-  btn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; if (!menu.hidden) { place(); load(); } });
+  btn.addEventListener('click', function (e) { e.stopPropagation(); hidePop(); menu.hidden = !menu.hidden; if (!menu.hidden) { place(); load(); } });
   document.addEventListener('click', function (e) { if (!e.target.closest('#bell')) { menu.hidden = true; } });
   document.getElementById('bell-all').addEventListener('click', function () { post('/read-all').then(load); });
 
@@ -121,5 +149,5 @@
   deskLabel();
 
   load();
-  setInterval(load, 10000);
+  setInterval(load, 6000);
 })();

@@ -1,4 +1,5 @@
 {
+ "+ :n more": "另有 :n 条",
  "+ Add button": "+ 添加按钮",
  "+ Tag": "+ 标签",
  "1 new message": "1 条新消息",
@@ -32,6 +33,7 @@
  "Choose a template.": "请选择一个模板。",
  "Choose...": "请选择…",
  "Click to remove": "点击移除",
+ "Close": "关闭",
  "Collects": "收集",
  "Complaint": "投诉",
  "Copied": "已复制",
