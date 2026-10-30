@@ -59,8 +59,8 @@ class Notifier
         }
     }
 
-    /** A customer who writes for the first time: tell the team, even though the bot is answering (switch off in Settings). */
-    public function newChat(Conversation $conversation, string $text): void
+    /** A customer wrote: tell the team, even though the bot is answering (switch off in Settings). More messages in the same chat update one unread alert. */
+    public function newChat(Conversation $conversation, string $text, bool $isNew = true): void
     {
         $business = $conversation->business;
 
@@ -68,7 +68,7 @@ class Notifier
             return;
         }
 
-        $this->notify($business, 'message', 'New chat from '.self::chatName($conversation), $text !== '' ? $text : null, route('inbox', ['c' => $conversation->id]));
+        $this->notify($business, 'message', ($isNew ? 'New chat from ' : 'New message from ').self::chatName($conversation), $text !== '' ? $text : null, route('inbox', ['c' => $conversation->id]));
     }
 
     public static function chatName(Conversation $c): string

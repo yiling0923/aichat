@@ -720,7 +720,7 @@ Still English: Menu builder, Booking setup, Channels, AI assistant, Setup guide,
 1. Open Channels, then "Meta app connection". The top box says in plain words what the last call from Meta did: never contacted, address checked, messages received, rejected (app secret), wrong verify token, unknown Phone number ID, or channel switched off.
 2. Send a WhatsApp message to your number and reload: the box should say Meta sent 1 message and the chat appears in the Inbox.
 
-## CH. Alert for every new chat
+## CH. Alert when a customer writes
 
-1. Send a first message from a new phone (or the website chat). The bell shows "New chat from ..." for every team member, and phones with alerts turned on get the pop-up.
-2. Settings > Smart helpers has a new switch "Alert me when a new customer starts a chat". Turn it off, save, and a new chat no longer rings the bell. Alerts for "needs a person", bookings and complaints stay on.
+1. Send a message from any phone (or the website chat). The bell shows "New chat from ..." (first message) or "New message from ..." for every team member, one alert per chat, and phones with alerts turned on get the pop-up.
+2. Settings > Smart helpers has a new switch "Alert me when a new customer starts a chat". Turn it off, save, and customer messages no longer ring the bell. Alerts for "needs a person", bookings and complaints stay on.

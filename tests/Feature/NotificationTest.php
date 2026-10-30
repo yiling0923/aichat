@@ -146,14 +146,20 @@ class NotificationTest extends TestCase
         $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('bell-sound', false)->assertSee('Sound is on');
     }
 
-    public function test_a_new_chat_alerts_the_team_even_while_the_bot_answers_and_it_can_be_switched_off(): void
+    public function test_a_customer_message_alerts_the_team_even_while_the_bot_answers_one_alert_per_chat_and_it_can_be_switched_off(): void
     {
-        $this->say('hello')->assertOk();
+        $first = $this->say('hello')->assertOk();
+        $token = $first->json('token');
         $this->assertSame(1, StaffNotification::where('user_id', $this->owner->id)->where('title', 'like', 'New chat from%')->count());
         $this->assertSame(1, StaffNotification::where('user_id', $this->staff->id)->where('title', 'like', 'New chat from%')->count());
 
+        // Another message in the same chat updates the one unread alert instead of adding more.
+        $this->say('hi again', $token)->assertOk();
+        $this->assertSame(2, StaffNotification::where('type', 'message')->count());
+        $this->assertSame(1, StaffNotification::where('user_id', $this->owner->id)->where('title', 'like', 'New message from%')->count());
+
         $this->business->update(['settings' => ['alert_new_chat' => false]]);
-        $this->say('hi again')->assertOk();
-        $this->assertSame(2, StaffNotification::where('title', 'like', 'New chat from%')->count());
+        $this->say('someone else')->assertOk();
+        $this->assertSame(2, StaffNotification::where('type', 'message')->count());
     }
 }
