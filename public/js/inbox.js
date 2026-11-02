@@ -58,7 +58,7 @@
       }
       data.conversations.forEach(function (c) {
         var d = document.createElement('div');
-        d.className = 'conv' + (current === c.id ? ' on' : '') + (c.needs_reply ? ' urgent' : '') + (c.unread && current !== c.id ? ' unread' : '');
+        d.className = 'conv ch-' + c.channel + (current === c.id ? ' on' : '') + (c.needs_reply ? ' urgent' : '') + (c.unread && current !== c.id ? ' unread' : '');
         d.innerHTML = '<span class="av"></span><div class="cb"><div class="ct"><span class="nm"><b></b></span><time></time></div><p></p><div class="cm"></div></div>';
         d.querySelector('.av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
         d.querySelector('b').textContent = c.name;
@@ -194,7 +194,11 @@
     document.getElementById('btn-summarize').style.display = c.ai_on ? '' : 'none';
     document.getElementById('thread-title').textContent = c.name;
     document.getElementById('thread-av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
-    document.getElementById('thread-meta').textContent = [c.channel_label || c.channel, c.status === 'open' ? __t('open') : __t('resolved')].filter(Boolean).join(' · ');
+    var tm = document.getElementById('thread-meta');
+    tm.textContent = '';
+    var tch = document.createElement('span'); tch.className = 'chan ch-' + c.channel; tch.textContent = c.channel_label || c.channel; tm.appendChild(tch);
+    tm.appendChild(document.createTextNode(' ' + (c.status === 'open' ? __t('open') : __t('resolved'))));
+    var tav = document.getElementById('thread-av'); tav.className = (tav.className || '').replace(/\bch-\w+/g, '').trim() + ' ch-' + c.channel;
     var badge = document.getElementById('mode-badge');
     badge.textContent = c.mode === 'human' ? __t('You are handling this') : __t('Bot is answering');
     badge.className = 'tag ' + (c.mode === 'human' ? 'warn' : 'ok');
