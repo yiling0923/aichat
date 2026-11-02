@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Billing\Plans;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -183,5 +184,105 @@ class SettingsController extends Controller
         $user->save();
 
         return back()->with('status', __('Team member saved.'));
+    }
+
+    /** Why this person cannot be switched on or off right now, or null when it is fine. */
+    private function activeProblem(User $me, User $user, bool $on): ?string
+    {
+        if ($user->active === $on) {
+            return null;
+        }
+
+        if (! $on) {
+            if ($user->id === $me->id) {
+                return __('You cannot switch yourself off.');
+            }
+            if ($user->role === 'owner' && User::query()->where('business_id', $user->business_id)->where('role', 'owner')->where('active', true)->count() < 2) {
+                return __('The business needs at least one active owner.');
+            }
+
+            return null;
+        }
+
+        return app(Plans::class)->canAdd($user->business, 'staff') ? null : __('Your plan has reached its limit of team members. Upgrade under Plan & billing to add more.');
+    }
+
+    /** The On/Off switch in the team list. */
+    public function toggleUser(Request $request, int $id): JsonResponse|RedirectResponse
+    {
+        $user = User::query()->where('business_id', $request->user()->business_id)->findOrFail($id);
+        $on = $request->boolean('active');
+
+        if (($problem = $this->activeProblem($request->user(), $user, $on)) !== null) {
+            return $request->expectsJson() ? response()->json(['ok' => false, 'message' => $problem], 422) : back()->withErrors(['role' => $problem]);
+        }
+
+        $user->active = $on;
+        $user->save();
+
+        return $request->expectsJson() ? response()->json(['ok' => true, 'active' => $user->active]) : back()->with('status', __('Team member saved.'));
+    }
+
+    /** The key button: set a new password for someone without opening the full editor. */
+    public function setPassword(Request $request, int $id): RedirectResponse
+    {
+        $user = User::query()->where('business_id', $request->user()->business_id)->findOrFail($id);
+        $data = $request->validate(['new_password' => ['required', 'string', 'min:8', 'max:100']]);
+
+        $user->password = $data['new_password'];
+        $user->save();
+
+        return back()->with('status', __('Password changed for :name.', ['name' => $user->name]));
+    }
+
+    /** Change several people at once: their role, switch them on or off, or return them to the role's usual access. */
+    public function bulkUsers(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:200'],
+            'ids.*' => ['integer'],
+            'action' => ['required', Rule::in(['role', 'activate', 'deactivate', 'reset_access'])],
+            'role' => ['nullable', Rule::in(self::ROLES)],
+        ]);
+
+        if ($data['action'] === 'role' && empty($data['role'])) {
+            return back()->withErrors(['bulk' => __('Choose a role first.')]);
+        }
+
+        $me = $request->user();
+        $people = User::query()->where('business_id', $me->business_id)->whereIn('id', $data['ids'])->get();
+        $done = 0;
+        $skipped = [];
+
+        foreach ($people as $user) {
+            if ($data['action'] === 'role') {
+                if ($user->id === $me->id) {
+                    $skipped[] = __('you cannot change your own role');
+                    continue;
+                }
+                if ($user->role === 'owner' && $data['role'] !== 'owner' && User::query()->where('business_id', $user->business_id)->where('role', 'owner')->where('active', true)->count() < 2) {
+                    $skipped[] = __('the business needs at least one active owner');
+                    continue;
+                }
+                $user->role = $data['role'];
+                $user->permissions = $data['role'] === 'owner' ? null : $user->permissions;
+            } elseif ($data['action'] === 'reset_access') {
+                $user->permissions = null;
+            } else {
+                $on = $data['action'] === 'activate';
+                if (($problem = $this->activeProblem($me, $user, $on)) !== null) {
+                    $skipped[] = mb_strtolower($problem);
+                    continue;
+                }
+                $user->active = $on;
+            }
+
+            $user->save();
+            $done++;
+        }
+
+        $note = $skipped === [] ? '' : ' '.__(':n skipped (:why).', ['n' => count($skipped), 'why' => implode('; ', array_unique($skipped))]);
+
+        return back()->with('status', __(':n updated.', ['n' => $done]).$note);
     }
 }

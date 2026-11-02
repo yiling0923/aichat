@@ -219,7 +219,10 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::post('/settings/smart', [$c, 'saveSmart']);
     Route::post('/settings/alerts/test', [$c, 'testAlerts'])->middleware('throttle:6,1');
     Route::post('/settings/team', [$c, 'storeUser']);
+    Route::post('/settings/team/bulk', [$c, 'bulkUsers']);
     Route::post('/settings/team/{id}', [$c, 'updateUser'])->whereNumber('id');
+    Route::post('/settings/team/{id}/active', [$c, 'toggleUser'])->whereNumber('id');
+    Route::post('/settings/team/{id}/password', [$c, 'setPassword'])->whereNumber('id');
 });
 
 // Meta (WhatsApp, Messenger, Instagram) calls this address. It must be reachable from the internet (see README, Step 4).

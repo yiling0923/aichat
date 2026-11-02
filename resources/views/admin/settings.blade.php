@@ -91,15 +91,49 @@
             </div>
             <button type="button" class="btn primary" id="add-member">{{ __('+ Add a team member') }}</button>
         </div>
-        <div class="card team-list">
-            @foreach ($sorted as $u)
-                <div class="member {{ $u->active ? '' : 'off' }}">
-                    <span class="m-av">{{ $initials($u->name) }}</span>
-                    <div class="m-id"><b>{{ $u->name }}@if ($u->id === auth()->id()) <span class="m-you">{{ __('(you)') }}</span>@endif</b><small class="mute">{{ $u->email }}</small></div>
-                    <div class="m-tags"><span class="tag {{ $roleTone[$u->role] ?? '' }}">{{ __(ucfirst($u->role)) }}</span>@unless ($u->active)<span class="tag hot">{{ __('Switched off') }}</span>@endunless</div>
-                    <button type="button" class="btn small" data-edit data-action="{{ url('/admin/settings/team/'.$u->id) }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}" data-role="{{ $u->role }}" data-active="{{ $u->active ? 1 : 0 }}" data-custom="{{ is_array($u->permissions) ? 1 : 0 }}" data-areas="{{ json_encode($u->areas()) }}">{{ __('Edit') }}</button>
+        <div class="card team-card">
+            <div class="tm-tools">
+                <input type="search" id="tm-q" placeholder="{{ __('Search name or email') }}" aria-label="{{ __('Search name or email') }}">
+                <select id="tm-role" aria-label="{{ __('Role') }}"><option value="">{{ __('All roles') }}</option>@foreach ($roleHelp as $r => $text)<option value="{{ $r }}">{{ __(ucfirst($r)) }}</option>@endforeach</select>
+                <select id="tm-status" aria-label="{{ __('Account') }}"><option value="">{{ __('All accounts') }}</option><option value="1">{{ __('Active') }}</option><option value="0">{{ __('Switched off') }}</option></select>
+                <span class="mute tm-count" id="tm-count"></span>
+            </div>
+            <div id="tm-flash" hidden role="status" style="margin:10px 0 0"></div>
+            @error('bulk')<div class="note err" style="margin:10px 0 0">{{ $message }}</div>@enderror
+            <form method="post" action="{{ url('/admin/settings/team/bulk') }}" id="bulk-form" class="tm-bulk" hidden>
+                @csrf
+                <b><span id="bulk-n">0</span> {{ __('selected') }}</b>
+                <select name="role" id="bulk-role" aria-label="{{ __('Change role to') }}"><option value="">{{ __('Change role to...') }}</option>@foreach ($roleHelp as $r => $text)<option value="{{ $r }}">{{ __(ucfirst($r)) }}</option>@endforeach</select>
+                <button class="btn small" type="submit" name="action" value="role" id="bulk-apply" disabled>{{ __('Apply role') }}</button>
+                <button class="btn small" type="submit" name="action" value="activate">{{ __('Switch on') }}</button>
+                <button class="btn small" type="submit" name="action" value="deactivate">{{ __('Switch off') }}</button>
+                <button class="btn small" type="submit" name="action" value="reset_access" title="{{ __('Return them to the usual access for their role') }}">{{ __('Usual access') }}</button>
+                <button class="btn small" type="button" id="bulk-clear">{{ __('Clear') }}</button>
+            </form>
+            <div class="tm-table" id="tm-table">
+                <div class="tm-row tm-headrow">
+                    <label class="tm-check"><input type="checkbox" id="tm-all" aria-label="{{ __('Select all') }}"></label>
+                    <span>{{ __('Person') }}</span><span>{{ __('Role') }}</span><span>{{ __('Access') }}</span><span>{{ __('Active') }}</span><span class="tm-actions-h">{{ __('Actions') }}</span>
                 </div>
-            @endforeach
+                @foreach ($sorted as $u)
+                    <div class="tm-row member {{ $u->active ? '' : 'off' }}" data-q="{{ mb_strtolower($u->name.' '.$u->email) }}" data-role="{{ $u->role }}" data-active="{{ $u->active ? 1 : 0 }}">
+                        <label class="tm-check"><input type="checkbox" class="tm-sel" name="ids[]" form="bulk-form" value="{{ $u->id }}" aria-label="{{ __('Select :name', ['name' => $u->name]) }}"></label>
+                        <div class="tm-person"><span class="m-av">{{ $initials($u->name) }}</span><div class="m-id"><b>{{ $u->name }}@if ($u->id === auth()->id()) <span class="m-you">{{ __('(you)') }}</span>@endif</b><small class="mute">{{ $u->email }}</small></div></div>
+                        <div class="tm-role" data-label="{{ __('Role') }}"><span class="tag {{ $roleTone[$u->role] ?? '' }}">{{ __(ucfirst($u->role)) }}</span></div>
+                        <div class="tm-access" data-label="{{ __('Access') }}"><small class="mute">{{ $u->role === 'owner' ? __('Everything') : (is_array($u->permissions) ? __('Custom: :n areas', ['n' => count($u->areas())]) : __('Usual for the role')) }}</small></div>
+                        <div class="tm-on" data-label="{{ __('Active') }}">
+                            <label class="switch" data-tip="{{ $u->id === auth()->id() ? __('You cannot switch yourself off') : ($u->active ? __('Switch off (cannot sign in)') : __('Switch on')) }}">
+                                <input type="checkbox" data-toggle data-url="{{ url('/admin/settings/team/'.$u->id.'/active') }}" data-name="{{ $u->name }}" @checked($u->active) @disabled($u->id === auth()->id()) aria-label="{{ __('Active') }}"><i></i>
+                            </label>
+                        </div>
+                        <div class="tm-actions">
+                            <button type="button" class="ibtn" data-edit data-tip="{{ __('Edit') }}" aria-label="{{ __('Edit') }}" data-action="{{ url('/admin/settings/team/'.$u->id) }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}" data-role="{{ $u->role }}" data-active="{{ $u->active ? 1 : 0 }}" data-custom="{{ is_array($u->permissions) ? 1 : 0 }}" data-areas="{{ json_encode($u->areas()) }}"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                            <button type="button" class="ibtn" data-pw data-tip="{{ __('Change password') }}" aria-label="{{ __('Change password') }}" data-action="{{ url('/admin/settings/team/'.$u->id.'/password') }}" data-name="{{ $u->name }}" data-id="{{ $u->id }}"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/></svg></button>
+                        </div>
+                    </div>
+                @endforeach
+                <p class="mute tm-none" id="tm-none" hidden>{{ __('No one matches these filters.') }}</p>
+            </div>
         </div>
         <h3 class="set-group" style="margin-top:22px">{{ __('What each role can do') }}</h3>
         <div class="role-cards">
@@ -109,11 +143,13 @@
         </div>
     </section>
 
-    <dialog id="member-dialog" class="dlg">
+    <dialog id="member-dialog" class="dlg xwide">
         <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
         <h3 id="md-title">{{ __('Add a team member') }}</h3>
         <form method="post" id="md-form" action="{{ url('/admin/settings/team') }}">
             @csrf
+            <div class="md-cols" id="md-cols">
+                <div class="md-left">
             <div id="md-new">
                 <label class="f" style="margin-top:12px"><span>{{ __('Name') }}</span><input type="text" name="name" id="md-name" maxlength="100"></label>
                 <label class="f"><span>{{ __('Email') }}</span><input type="email" name="email" id="md-email" maxlength="150"></label>
@@ -121,6 +157,10 @@
             <p id="md-who" class="mute" hidden style="margin:6px 0 10px"></p>
             <label class="f"><span>{{ __('Role') }}</span><select name="role" id="md-role">@foreach ($roleHelp as $r => $text)<option value="{{ $r }}" data-help="{{ $text }}">{{ __(ucfirst($r)) }}</option>@endforeach</select></label>
             <p class="mute small-note" id="md-help" style="padding:0;margin:-6px 0 12px"></p>
+            <label class="f" id="md-active-wrap" hidden><span>{{ __('Account') }}</span><select name="active" id="md-active"><option value="1">{{ __('Active') }}</option><option value="0">{{ __('Switched off (cannot sign in)') }}</option></select></label>
+            <label class="f"><span id="md-pw-label">{{ __('Password (8 or more characters)') }}</span><input type="password" name="password" id="md-pw" autocomplete="new-password" minlength="8" maxlength="100"></label>
+                </div>
+                <div class="md-right">
             <div id="md-access">
                 <label class="chk"><input type="checkbox" name="custom" value="1" id="md-custom"> {{ __('Choose exactly what this person can use') }}</label>
                 <p class="mute small-note" id="md-access-help" style="padding:0;margin:4px 0 8px"></p>
@@ -131,9 +171,23 @@
                 </div>
                 <p class="mute small-note" style="padding:0">{{ __('Channels (connections and tokens), billing, backups, settings and the team are always for owners only.') }}</p>
             </div>
-            <label class="f" id="md-active-wrap" hidden><span>{{ __('Account') }}</span><select name="active" id="md-active"><option value="1">{{ __('Active') }}</option><option value="0">{{ __('Switched off (cannot sign in)') }}</option></select></label>
-            <label class="f"><span id="md-pw-label">{{ __('Password (8 or more characters)') }}</span><input type="password" name="password" id="md-pw" autocomplete="new-password" minlength="8" maxlength="100"></label>
+                </div>
+            </div>
             <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="pw-dialog" class="dlg">
+        <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+        <h3>{{ __('Change password') }}</h3>
+        <p class="mute" id="pw-who" style="margin:4px 0 10px"></p>
+        <form method="post" id="pw-form" action="">
+            @csrf
+            <input type="hidden" name="pw_user" id="pw-user" value="{{ old('pw_user') }}">
+            <label class="f"><span>{{ __('New password (8 or more characters)') }}</span><input type="password" name="new_password" id="pw-new" autocomplete="new-password" minlength="8" maxlength="100" required></label>
+            @error('new_password')<div class="note err" style="margin:8px 0 0">{{ $message }}</div>@enderror
+            <label class="chk" style="margin-top:8px"><input type="checkbox" id="pw-show"> {{ __('Show the password') }}</label>
+            <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save password') }}</button></div>
         </form>
     </dialog>
 @endsection
@@ -178,6 +232,7 @@
   function syncAreas() {
     var isOwner = f.role.value === 'owner';
     document.getElementById('md-access').hidden = isOwner;
+    document.getElementById('md-cols').classList.toggle('noaccess', isOwner);
     if (!f.custom.checked) { areasNow = ROLE_AREAS[f.role.value] || []; }
     boxes.forEach(function (b) { b.checked = areasNow.indexOf(b.value) !== -1; b.disabled = isOwner || !f.custom.checked; });
     f.custom.disabled = isOwner;
@@ -205,6 +260,68 @@
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });
   @if ($errors->has('email') || $errors->has('role')) dlg.showModal(); @endif
+
+  // ---- Team list: filters, bulk actions, the On/Off switch and the password button ----
+  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  var rows = Array.prototype.slice.call(document.querySelectorAll('#tm-table .tm-row.member'));
+  var q = document.getElementById('tm-q'), fr = document.getElementById('tm-role'), fs = document.getElementById('tm-status');
+  var bulk = document.getElementById('bulk-form'), all = document.getElementById('tm-all'), bn = document.getElementById('bulk-n'), brole = document.getElementById('bulk-role'), bapply = document.getElementById('bulk-apply');
+  var T = { showing: {!! json_encode(__('Showing :a of :b', ['a' => '@@A@@', 'b' => '@@B@@']), JSON_UNESCAPED_UNICODE) !!}, tipOff: {!! json_encode(__('Switch off (cannot sign in)'), JSON_UNESCAPED_UNICODE) !!}, tipOn: {!! json_encode(__('Switch on'), JSON_UNESCAPED_UNICODE) !!}, saved: {!! json_encode(__('Team member saved.'), JSON_UNESCAPED_UNICODE) !!}, failed: {!! json_encode(__('Could not save. Try again.'), JSON_UNESCAPED_UNICODE) !!}, sure: {!! json_encode(__('Switch these people off? They will not be able to sign in.'), JSON_UNESCAPED_UNICODE) !!} };
+  function sel() { return rows.filter(function (r) { return !r.hidden && r.querySelector('.tm-sel').checked; }); }
+  function syncBulk() {
+    var s = sel(), vis = rows.filter(function (r) { return !r.hidden; });
+    bulk.hidden = s.length === 0; bn.textContent = s.length;
+    all.checked = vis.length > 0 && s.length === vis.length; all.indeterminate = s.length > 0 && s.length < vis.length;
+    bapply.disabled = !brole.value;
+  }
+  function applyFilter() {
+    var text = q.value.trim().toLowerCase(), shown = 0;
+    rows.forEach(function (r) {
+      var ok = (!text || r.dataset.q.indexOf(text) !== -1) && (!fr.value || r.dataset.role === fr.value) && (fs.value === '' || r.dataset.active === fs.value);
+      r.hidden = !ok;
+      if (ok) { shown++; } else { r.querySelector('.tm-sel').checked = false; }
+    });
+    document.getElementById('tm-count').textContent = shown === rows.length ? '' : T.showing.replace('@@A@@', shown).replace('@@B@@', rows.length);
+    document.getElementById('tm-none').hidden = shown !== 0;
+    syncBulk();
+  }
+  [q, fr, fs].forEach(function (el) { el.addEventListener('input', applyFilter); });
+  rows.forEach(function (r) { r.querySelector('.tm-sel').addEventListener('change', syncBulk); });
+  all.addEventListener('change', function () { rows.forEach(function (r) { if (!r.hidden) { r.querySelector('.tm-sel').checked = all.checked; } }); syncBulk(); });
+  brole.addEventListener('change', syncBulk);
+  document.getElementById('bulk-clear').addEventListener('click', function () { rows.forEach(function (r) { r.querySelector('.tm-sel').checked = false; }); syncBulk(); });
+  bulk.addEventListener('submit', function (e) { if (e.submitter && e.submitter.value === 'deactivate' && !confirm(T.sure)) { e.preventDefault(); } });
+
+  function flash(text, bad) {
+    var n = document.getElementById('tm-flash'); n.textContent = text; n.className = 'note ' + (bad ? 'err' : 'ok'); n.hidden = false;
+    clearTimeout(flash.t); flash.t = setTimeout(function () { n.hidden = true; }, 4000);
+  }
+  document.querySelectorAll('[data-toggle]').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      var on = cb.checked, row = cb.closest('.tm-row'), wrap = cb.closest('.switch');
+      cb.disabled = true;
+      fetch(cb.dataset.url, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ active: on ? 1 : 0 }) })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
+        .then(function (x) {
+          if (!x.ok) { cb.checked = !on; flash(x.j.message || T.failed, true); return; }
+          row.dataset.active = on ? '1' : '0'; row.classList.toggle('off', !on); wrap.dataset.tip = on ? T.tipOff : T.tipOn;
+          flash(cb.dataset.name + ': ' + T.saved); applyFilter();
+        })
+        .catch(function () { cb.checked = !on; flash(T.failed, true); })
+        .then(function () { cb.disabled = false; });
+    });
+  });
+
+  var pdlg = document.getElementById('pw-dialog'), pform = document.getElementById('pw-form'), pnew = document.getElementById('pw-new');
+  function openPw(b) {
+    pform.action = b.dataset.action; document.getElementById('pw-user').value = b.dataset.id; document.getElementById('pw-who').textContent = b.dataset.name;
+    pnew.value = ''; pnew.type = 'password'; document.getElementById('pw-show').checked = false; pdlg.showModal(); pnew.focus();
+  }
+  document.querySelectorAll('[data-pw]').forEach(function (b) { b.addEventListener('click', function () { openPw(b); }); });
+  document.getElementById('pw-show').addEventListener('change', function (e) { pnew.type = e.target.checked ? 'text' : 'password'; });
+  pdlg.addEventListener('click', function (e) { if (e.target === pdlg || e.target.closest('.dlg-x')) { pdlg.close(); } });
+  @if ($errors->has('new_password') && old('pw_user')) (function () { var b = document.querySelector('[data-pw][data-id="{{ (int) old('pw_user') }}"]'); if (b) { openPw(b); } })(); @endif
+  applyFilter();
 })();
 </script>
 @endpush

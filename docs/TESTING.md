@@ -905,3 +905,12 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 1. Inbox: a chat where the customer wrote and nobody on the team has opened it since is light blue with a blue edge, a bold name and a blue dot beside the time. "Needs a person" chats keep their amber colour (and also get the dot if unread).
 2. Open the chat: it goes back to normal. Your own reply never makes it unread. A new customer message turns it blue again.
 3. It is shared by the team: when one person opens a chat, it counts as read for everyone. Chats that existed before this update start as read. This needs `php artisan migrate`.
+
+## DI. Team page: table, filters, bulk changes, switch and icon buttons
+
+1. Settings > Team is now a table: Person, Role, Access (Everything / Usual for the role / Custom: n areas), Active (a switch) and two icon buttons. Hover an icon or the switch to see a small word: Edit, Change password, Switch off / Switch on.
+2. Filters: type in the search box (name or email), pick a role, pick Active or Switched off. It says "Showing 1 of 5" when filtered.
+3. Active switch: flip it to switch someone on or off at once, without leaving the page. You cannot switch yourself off, and the last active owner cannot be switched off. Switching someone on is refused when your plan's team limit is reached.
+4. Key button: type a new password for that person (8 or more characters) and Save password. Show the password lets you check what you typed.
+5. Pencil button: the editor is now wider, with the details on the left and the access boxes on the right.
+6. Bulk: tick people (or the top box for everyone shown). A bar appears: Change role to... + Apply role, Switch on, Switch off (asks first), Usual access (returns them to the role's access), Clear. Your own account and the last owner are skipped, and the message says how many were updated and skipped.
