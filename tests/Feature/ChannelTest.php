@@ -844,4 +844,18 @@ class ChannelTest extends TestCase
         $this->meta(['graph.facebook.com/v21.0/me?*' => Http::response(['id' => 'PAGE9', 'name' => 'My Test Shop'])]);
         $this->actingAs($owner)->post("/admin/channels/{$fb->id}/check")->assertSessionHasErrors('channel');
     }
+
+    public function test_messenger_check_treats_the_read_engagement_complaint_as_an_accepted_token(): void
+    {
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $fb = $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'PAGE1', 'access_token' => 'tok-fb', 'last_error' => '(#100) old']));
+
+        $this->meta(['graph.facebook.com/*' => Http::response(['error' => ['message' => "(#100) Object does not exist. This endpoint requires the 'pages_read_engagement' permission", 'code' => 100]], 400)]);
+        $this->actingAs($owner)->post("/admin/channels/{$fb->id}/check")->assertSessionHas('status')->assertSessionHasNoErrors();
+        $this->assertNull($fb->fresh()->last_error);
+
+        // A different failure is still reported.
+        $this->meta(['graph.facebook.com/*' => Http::response(['error' => ['message' => 'Invalid OAuth access token']], 400)]);
+        $this->actingAs($owner)->post("/admin/channels/{$fb->id}/check")->assertSessionHasErrors('channel');
+    }
 }

@@ -124,6 +124,13 @@ class ChannelController extends Controller
 
             return back()->with('status', __('Connected to :who.', ['who' => $who]));
         } catch (Throwable $e) {
+            // "Needs pages_read_engagement" means Meta accepted the token but will not show the Page's details. Sending and receiving messages does not need that.
+            if ($channel->type !== 'whatsapp' && str_contains($e->getMessage(), 'pages_read_engagement')) {
+                $channel->forceFill(['last_error' => null])->save();
+
+                return back()->with('status', __('Meta accepted the token. It will not show the Page name without an extra permission, but messaging does not need it. Send a message to your Page to test.'));
+            }
+
             $channel->forceFill(['last_error' => $e->getMessage()])->save();
 
             return back()->withErrors(['channel' => __('Meta says: :why', ['why' => $e->getMessage()])]);

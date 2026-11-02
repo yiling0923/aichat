@@ -873,3 +873,5 @@ The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers
 1. Channels > Messenger card > Check connection now asks Meta "who is this token" (no extra permission needed) and shows "Connected to <Page name>". Before, it asked for the Page name by ID and could fail with "(#100) ... pages_read_engagement" even though chatting works.
 2. If the token belongs to a different Page than the ID in the card, it says so and names both IDs.
 3. If "Subscribe to messages" is refused for a missing permission, the message tells you to press "Add subscriptions" in Meta instead.
+
+(DE, updated) If Meta answers "(#100) ... pages_read_engagement" to Check connection on a Messenger or Instagram channel, the check now says "Meta accepted the token ..." and clears the old red "Last problem". The real test is a message sent to the Page.
