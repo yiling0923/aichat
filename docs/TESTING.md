@@ -1029,3 +1029,8 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 1. In the Sales card, "Best sellers" ranks the top 5 items by money over the last 30 days (bar length = share of the top seller, with number of sales).
 2. "Sales by channel" shows a ring and legend (Website, WhatsApp, Messenger, Instagram, In person / other) with percent and amount. A sale counts for the channel the customer first wrote on; sales with no linked customer count as "In person / other".
 3. Both only appear for the owner and people with the Reports permission.
+
+## DW. Customers: sortable headings
+
+1. On Customers, the headings Name, Interested in, Lead level and Added have small up/down arrows. Click once for A→Z / low→high (up arrow lit), again to flip. The current sort stays when you search, filter or change page.
+2. Lead level sorts Ready to book first (descending) or Just browsing first (ascending).

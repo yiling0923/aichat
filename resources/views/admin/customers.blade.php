@@ -33,7 +33,14 @@
             </div>
         @endif
         <table class="table">
-            <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pick').forEach(c => c.checked = this.checked)"></th><th>{{ __('Name') }}</th><th>{{ __('Phone') }}</th><th>{{ __('Interested in') }}</th><th>{{ __('Tags') }}</th><th>{{ __('Lang') }}</th><th>{{ __('Lead level') }}</th><th title="{{ __('Can we send promotional messages?') }}">{{ __('Promotions') }}</th><th>{{ __('Added') }}</th></tr></thead>
+            @php
+                $th = function (string $key, string $label) use ($sort, $dir) {
+                    $on = $sort === $key; $next = $on && $dir === 'asc' ? 'desc' : 'asc';
+                    $url = request()->fullUrlWithQuery(['sort' => $key, 'dir' => $next, 'page' => null]);
+                    return '<th class="sortable '.($on ? 'sorted' : '').'" aria-sort="'.($on ? ($dir === 'asc' ? 'ascending' : 'descending') : 'none').'"><a href="'.e($url).'">'.e($label).'<span class="arrows" aria-hidden="true"><i class="'.($on && $dir === 'asc' ? 'on' : '').'">▲</i><i class="'.($on && $dir === 'desc' ? 'on' : '').'">▼</i></span></a></th>';
+                };
+            @endphp
+            <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pick').forEach(c => c.checked = this.checked)"></th>{!! $th('name', __('Name')) !!}<th>{{ __('Phone') }}</th>{!! $th('interest', __('Interested in')) !!}<th>{{ __('Tags') }}</th><th>{{ __('Lang') }}</th>{!! $th('lead', __('Lead level')) !!}<th title="{{ __('Can we send promotional messages?') }}">{{ __('Promotions') }}</th>{!! $th('added', __('Added')) !!}</tr></thead>
             <tbody>
             @forelse ($customers as $c)
                 <tr>

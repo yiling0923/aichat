@@ -55,4 +55,19 @@ class TodayAttentionTest extends TestCase
         $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('Sales')->assertSee('RM 120')->assertSee('1 order not paid yet')->assertSee('RM 80');
         $this->actingAs($staff)->get('/admin/today')->assertOk()->assertDontSee('Open reports')->assertDontSee('RM 120');
     }
+
+    public function test_the_customer_list_sorts_by_important_columns(): void
+    {
+        $b = Business::factory()->create(['slug' => 'sort-co', 'plan' => 'starter', 'subscription_status' => 'active']);
+        $owner = User::factory()->create(['business_id' => $b->id, 'role' => 'owner']);
+        app(CurrentBusiness::class)->runAs($b, function () {
+            \App\Models\Customer::create(['name' => 'Bob', 'score' => 'cold']);
+            \App\Models\Customer::create(['name' => 'Amy', 'score' => 'hot']);
+            \App\Models\Customer::create(['name' => 'Cat', 'score' => 'warm']);
+        });
+        $this->actingAs($owner)->get('/admin/customers?sort=name&dir=asc')->assertOk()->assertSeeInOrder(['Amy', 'Bob', 'Cat']);
+        $this->actingAs($owner)->get('/admin/customers?sort=name&dir=desc')->assertOk()->assertSeeInOrder(['Cat', 'Bob', 'Amy']);
+        $this->actingAs($owner)->get('/admin/customers?sort=lead&dir=desc')->assertOk()->assertSeeInOrder(['Amy', 'Cat', 'Bob']);
+        $this->actingAs($owner)->get('/admin/customers?sort=evil;drop')->assertOk();
+    }
 }

@@ -24,6 +24,8 @@ class CustomerController extends Controller
         $score = (string) $request->query('score', '');
         $tag = (int) $request->query('tag', 0);
         $language = (string) $request->query('language', '');
+        $sort = in_array($request->query('sort'), ['name', 'interest', 'lead', 'added'], true) ? (string) $request->query('sort') : 'added';
+        $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
         $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%';
 
         $customers = Customer::query()
@@ -33,7 +35,15 @@ class CustomerController extends Controller
             ->when(in_array($score, ['hot', 'warm', 'cold'], true), fn ($q) => $q->where('score', $score))
             ->when(in_array($language, config('aichat.languages'), true), fn ($q) => $q->where('language', $language))
             ->when($tag > 0, fn ($q) => $q->whereHas('tags', fn ($t) => $t->where('tags.id', $tag)))
-            ->orderByDesc('id')
+            ->tap(function ($q) use ($sort, $dir) {
+                match ($sort) {
+                    'name' => $q->orderBy('name', $dir),
+                    'interest' => $q->orderByRaw('interest is null')->orderBy('interest', $dir),
+                    'lead' => $q->orderByRaw("case score when 'hot' then 3 when 'warm' then 2 when 'cold' then 1 else 0 end ".$dir),
+                    default => null,
+                };
+                $q->orderBy('id', $sort === 'added' && $dir === 'asc' ? 'asc' : 'desc');
+            })
             ->paginate(25)
             ->withQueryString();
 
@@ -42,7 +52,7 @@ class CustomerController extends Controller
             'active' => 'customers',
             'customers' => $customers,
             'tags' => Tag::query()->where('type', 'customer')->orderBy('name')->get(),
-            'search' => $search, 'score' => $score, 'tag' => $tag, 'language' => $language,
+            'sort' => $sort, 'dir' => $dir, 'search' => $search, 'score' => $score, 'tag' => $tag, 'language' => $language,
         ]);
     }
 

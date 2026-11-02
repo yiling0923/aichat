@@ -2344,3 +2344,11 @@ th.sorted.desc .sortbtn::after { content: "\25BC"; opacity: 1; font-size: 11px; 
 .tp-cols { margin-bottom: 18px; }
 .tp-cols:last-of-type { margin-bottom: 0; }
 .ds { margin-bottom: 18px; }
+
+/* Sortable table headings (server side) */
+th.sortable a { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; }
+th.sortable a:hover { color: var(--accent); }
+th.sortable .arrows { display: inline-flex; flex-direction: column; line-height: .7; font-size: 8px; }
+th.sortable .arrows i { font-style: normal; color: #b8c4c4; }
+th.sortable .arrows i.on { color: var(--accent); }
+th.sortable.sorted a { color: var(--accent-d); }
