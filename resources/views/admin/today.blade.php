@@ -92,6 +92,41 @@
                     @endforeach
                 </div>
             </div>
+            @if ($sales['top'] || $sales['byChannel'])
+                @php
+                    $chTotal = max(0.01, collect($sales['byChannel'])->sum('amount'));
+                    $chColor = ['web' => '#0f766e', 'whatsapp' => '#25a55f', 'messenger' => '#2f7de1', 'instagram' => '#d6336c', 'other' => '#9aa9aa'];
+                    $acc = 0; $stops = [];
+                    foreach ($sales['byChannel'] as $c) { $from = $acc / $chTotal * 100; $acc += $c['amount']; $stops[] = ($chColor[$c['key']] ?? '#7c8da0').' '.round($from, 2).'% '.round($acc / $chTotal * 100, 2).'%'; }
+                    $topMax = max(0.01, collect($sales['top'])->max('amount'));
+                @endphp
+                <div class="sl-more">
+                    <div class="sl-box">
+                        <h4>{{ __('Best sellers') }} <small>{{ __('last 30 days') }}</small></h4>
+                        @forelse ($sales['top'] as $i => $t)
+                            <div class="sl-rank"><span class="sl-no">{{ $i + 1 }}</span><div class="sl-rk"><div class="sl-rk-top"><b>{{ $t['name'] }}</b><em>{{ $money($t['amount']) }}</em></div><div class="sl-bar"><i style="width: {{ max(4, round($t['amount'] / $topMax * 100)) }}%"></i></div><small>{{ $t['n'] === 1 ? __('1 sale') : __(':n sales', ['n' => $t['n']]) }}</small></div></div>
+                        @empty
+                            <p class="mute">{{ __('No paid sales in the last 30 days yet.') }}</p>
+                        @endforelse
+                    </div>
+                    <div class="sl-box">
+                        <h4>{{ __('Sales by channel') }} <small>{{ __('last 30 days') }}</small></h4>
+                        @if ($sales['byChannel'])
+                            <div class="sl-donutwrap">
+                                <div class="sl-donut" style="background: conic-gradient({{ implode(', ', $stops) }})"><span>{{ $money($chTotal) }}</span></div>
+                                <ul class="sl-legend">
+                                    @foreach ($sales['byChannel'] as $c)
+                                        <li><i style="background: {{ $chColor[$c['key']] ?? '#7c8da0' }}"></i><span>{{ $c['name'] }}</span><b>{{ round($c['amount'] / $chTotal * 100) }}%</b><em>{{ $money($c['amount']) }}</em></li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <p class="sl-note">{{ __('A sale counts for the channel the customer first wrote to you on.') }}</p>
+                        @else
+                            <p class="mute">{{ __('No paid sales in the last 30 days yet.') }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
             @if ($sales['pendingCount'])
                 <a class="tp-row sl-pending" href="{{ route('orders') }}"><span class="at-ic" style="background:var(--ambers);color:var(--amber)">$</span><div class="tp-id"><b>{{ $sales['pendingCount'] === 1 ? __('1 order not paid yet') : __(':n orders not paid yet', ['n' => $sales['pendingCount']]) }}</b><small>{{ $money($sales['pendingAmount']) }} {{ __('waiting to be collected') }}</small></div><span class="btn small">{{ __('Open orders') }}</span></a>
             @endif

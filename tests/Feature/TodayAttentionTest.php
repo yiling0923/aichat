@@ -46,6 +46,12 @@ class TodayAttentionTest extends TestCase
             \App\Models\Order::create(['reference' => 'S2', 'items' => 'Mask', 'amount' => 80, 'status' => 'pending', 'ordered_at' => now()]);
         });
 
+        app(CurrentBusiness::class)->runAs($b, function () {
+            $amy = \App\Models\Customer::create(['name' => 'Amy']);
+            \App\Models\Conversation::create(['channel' => 'whatsapp', 'token' => 'w1', 'customer_id' => $amy->id]);
+            \App\Models\Order::create(['customer_id' => $amy->id, 'reference' => 'S3', 'items' => 'Facial', 'amount' => 60, 'status' => 'paid', 'ordered_at' => now()->subDays(3)]);
+        });
+        $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('Best sellers')->assertSee('Facial')->assertSee('Sales by channel')->assertSee('WhatsApp')->assertSee('In person / other');
         $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('Sales')->assertSee('RM 120')->assertSee('1 order not paid yet')->assertSee('RM 80');
         $this->actingAs($staff)->get('/admin/today')->assertOk()->assertDontSee('Open reports')->assertDontSee('RM 120');
     }

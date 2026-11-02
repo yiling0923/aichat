@@ -71,6 +71,14 @@ class TodayController extends Controller
             }
             $monthNow = $sum($now->copy()->startOfMonth(), $now->copy()->endOfDay());
             $monthPrev = $sum($now->copy()->subMonthNoOverflow()->startOfMonth(), $now->copy()->subMonthNoOverflow()->endOfMonth());
+            // Last 30 days: what sells best, and which channel the paying customers came through.
+            $recentOrders = Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$now->copy()->subDays(29)->startOfDay()->utc(), $now->copy()->endOfDay()->utc()])->get(['customer_id', 'items', 'amount']);
+            $top = $recentOrders->groupBy(fn ($o) => mb_substr(trim((string) $o->items) ?: __('Other sales'), 0, 40))
+                ->map(fn ($g, $name) => ['name' => $name, 'amount' => (float) $g->sum('amount'), 'n' => $g->count()])->sortByDesc('amount')->take(5)->values()->all();
+            $channelOf = Conversation::query()->where('channel', '!=', 'preview')->whereIn('customer_id', $recentOrders->pluck('customer_id')->filter()->unique())->orderByDesc('id')->pluck('channel', 'customer_id');
+            $names = \App\Reports\ReportData::CHANNELS;
+            $byChannel = $recentOrders->groupBy(fn ($o) => $o->customer_id && isset($channelOf[$o->customer_id]) ? $channelOf[$o->customer_id] : 'other')
+                ->map(fn ($g, $c) => ['key' => $c, 'name' => $c === 'other' ? __('In person / other') : __($names[$c] ?? ucfirst($c)), 'amount' => (float) $g->sum('amount'), 'n' => $g->count()])->sortByDesc('amount')->values()->all();
             $pending = Order::query()->where('status', 'pending')->selectRaw('count(*) as n, coalesce(sum(amount), 0) as a')->first();
             $sales = [
                 'today' => $sum($now->copy()->startOfDay(), $now->copy()->endOfDay()),
@@ -79,6 +87,8 @@ class TodayController extends Controller
                 'month' => $monthNow,
                 'monthDelta' => $monthPrev['amount'] > 0 ? (int) round(($monthNow['amount'] - $monthPrev['amount']) / $monthPrev['amount'] * 100) : null,
                 'days' => $days,
+                'top' => $top,
+                'byChannel' => $byChannel,
                 'pendingCount' => (int) $pending->n,
                 'pendingAmount' => (float) $pending->a,
             ];

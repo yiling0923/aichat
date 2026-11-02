@@ -1023,3 +1023,9 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 
 1. The owner (and anyone allowed "Reports") sees a Sales card on Today: today, yesterday, last 7 days and this month (with the change against last month), a 7-day bar chart, and a line for orders not paid yet with their total.
 2. Staff without the Reports permission do not see the Sales card, the paid figure in the Daily summary, or any money on this page.
+
+## DV. Today page: best sellers and sales by channel
+
+1. In the Sales card, "Best sellers" ranks the top 5 items by money over the last 30 days (bar length = share of the top seller, with number of sales).
+2. "Sales by channel" shows a ring and legend (Website, WhatsApp, Messenger, Instagram, In person / other) with percent and amount. A sale counts for the channel the customer first wrote on; sales with no linked customer count as "In person / other".
+3. Both only appear for the owner and people with the Reports permission.

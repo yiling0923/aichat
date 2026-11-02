@@ -2111,5 +2111,14 @@
     "1 order not paid yet": "有 1 笔订单未付款",
     ":n orders not paid yet": "有 :n 笔订单未付款",
     "waiting to be collected": "待收款",
-    "Open orders": "打开订单"
+    "Open orders": "打开订单",
+    "Best sellers": "热销项目",
+    "last 30 days": "最近 30 天",
+    "1 sale": "1 笔",
+    ":n sales": ":n 笔",
+    "No paid sales in the last 30 days yet.": "最近 30 天还没有已付款的销售。",
+    "Sales by channel": "各渠道销售额",
+    "A sale counts for the channel the customer first wrote to you on.": "销售额记在客户最先联系您的渠道上。",
+    "Other sales": "其他销售",
+    "In person / other": "到店 / 其他"
 }
