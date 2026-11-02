@@ -42,7 +42,7 @@
                     <td><a href="{{ route('customers.show', $c->id) }}">{{ $c->name ?: __('(no name)') }}</a></td>
                     <td>{{ $c->phone ?: '-' }}</td>
                     <td>{{ $c->interest ?: '-' }}</td>
-                    <td>@foreach ($c->tags as $t)<span class="chip" style="background:{{ $t->color }}">{{ __($t->name) }}</span>@endforeach</td>
+                    <td>@forelse ($c->tags as $t)<span class="chip" style="background:{{ $t->color }}">{{ __($t->name) }}</span>@empty<span class="mute">-</span>@endforelse</td>
                     <td class="nw">{{ $c->language === 'zh' ? '中文' : ($c->language === 'en' ? 'EN' : strtoupper($c->language ?: '-')) }}</td>
                     <td><span title="{{ __(['hot' => 'Booked or ready to buy', 'warm' => 'Interested, left their details', 'cold' => 'Low interest'][$c->score] ?? 'Not set') }}" class="tag {{ $c->score === 'hot' ? 'hot' : ($c->score === 'warm' ? 'warn' : '') }}">{{ \App\Support\Lang::lead($c->score) }}</span></td>
                     <td>@if ($c->opted_out_at)<span class="tag warn">{{ __('Opted out') }}</span>@elseif ($c->consented_at)<span class="tag ok">{{ __('Allowed') }}</span>@else<span class="mute">{{ __('Not asked') }}</span>@endif</td>
