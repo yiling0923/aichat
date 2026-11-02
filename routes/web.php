@@ -102,6 +102,11 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::post('/guide/{key}', [\App\Http\Controllers\GuideController::class, 'mark'])->where('key', '[a-z]+');
 });
 
+// The Translate buttons next to the English and Chinese boxes.
+Route::middleware(['staff', 'perm:menu,ai,library'])->prefix('admin')->group(function () {
+    Route::post('/api/translate', \App\Http\Controllers\TranslateController::class)->middleware('throttle:40,1')->name('translate');
+});
+
 // Menu builder (the owner, or anyone the owner allows).
 Route::middleware(['staff', 'perm:menu'])->prefix('admin')->group(function () {
     Route::get('/menu', [\App\Http\Controllers\MenuController::class, 'index'])->name('menu');

@@ -67,14 +67,24 @@
 
   function textInputs(map, onChange, multiline) {
     var wrap = el('div', { class: 'langs' });
+    var inputs = {}, rowsEl = {};
     meta.languages.forEach(function (code) {
       var input = multiline ? el('textarea', { rows: '3' }) : el('input', { type: 'text' });
+      inputs[code] = input;
       input.value = (map && map[code]) || '';
       input.placeholder = LANG[code] || code;
       input.addEventListener('input', function () { onChange(code, input.value); });
       input.addEventListener('focus', function () { lastText = input; });
-      wrap.appendChild(el('div', { class: 'lang' }, [el('i', { text: code.toUpperCase() }), input]));
+      rowsEl[code] = el('div', { class: 'lang' }, [el('i', { text: code.toUpperCase() }), input]);
+      wrap.appendChild(rowsEl[code]);
     });
+    // Translate button (and the reminder for the second language) when both English and Chinese are offered.
+    if (window.Translate && inputs.en && inputs.zh) {
+      ['en', 'zh'].forEach(function (code) {
+        var other = code === 'en' ? 'zh' : 'en';
+        Translate.attach({ box: inputs[code], anchor: rowsEl[code], from: other, to: code, source: function () { return inputs[other].value; }, hint: code === 'zh' });
+      });
+    }
     return wrap;
   }
 

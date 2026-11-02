@@ -2006,3 +2006,10 @@ details.au-card[open] > summary::after { content: none; }
 }
 .tm-bulk select { flex: 0 1 210px; }
 .tm-bulk b { margin-right: 4px; }
+
+/* Translate button and the empty-box reminder under the language boxes */
+.tr-row { display: flex; gap: 6px 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px; font-size: 12px; }
+.tr-row[hidden] { display: none; }
+.tr-hint[hidden] { display: none; }
+.tr-msg.bad { color: var(--red); } .tr-msg.ok { color: var(--green); }
+.langs .tr-row { margin-left: 40px; }

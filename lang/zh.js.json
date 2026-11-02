@@ -180,5 +180,13 @@
     "Remove file": "移除文件",
     "Uploading...": "上传中...",
     "Could not upload this file.": "无法上传此文件。",
-    "Unread": "未读"
+    "Unread": "未读",
+    "Translate from :lang": "从 :lang 翻译",
+    "Uses the AI. Check the result before you save.": "使用 AI。保存前请检查结果。",
+    "Could not translate.": "无法翻译。",
+    "Write the :lang text first.": "请先写好 :lang 文字。",
+    "Replace what is in this box with the translation?": "要用翻译内容替换此框中的文字吗?",
+    "Translating...": "翻译中...",
+    "Translated. Please read it before you save.": "已翻译。保存前请先看一遍。",
+    "Empty: Chinese customers will see the English text.": "留空:中文客户会看到英文内容。"
 }

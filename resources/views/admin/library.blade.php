@@ -106,6 +106,10 @@
     del.hidden = !data; if (data) { del.setAttribute('formaction', data.delete); }
     dlg.showModal(); f.name.focus();
   }
+  if (window.Translate) {
+    Translate.attach({ box: f.zh, from: 'en', to: 'zh', source: function () { return f.en.value; }, hint: true });
+    Translate.attach({ box: f.en, from: 'zh', to: 'en', source: function () { return f.zh.value; } });
+  }
   document.getElementById('new-reply').addEventListener('click', function () { open(null); });
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });

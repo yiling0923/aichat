@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title'): {{ $business->name }}</title>
     <link rel="stylesheet" href="{{ asset('css/aichat.css') }}">
+    <meta name="translate-url" content="{{ route('translate') }}">
     @include('admin._pwa')
     @include('admin._push')
     @include('admin._i18n')
@@ -44,6 +45,7 @@
 <script src="{{ asset('js/push.js') }}"></script>
 <script src="{{ asset('js/notifications.js') }}"></script>
 <script src="{{ asset('js/autofilter.js') }}"></script>
+<script src="{{ asset('js/translate.js') }}"></script>
 @stack('scripts')
 </body>
 </html>

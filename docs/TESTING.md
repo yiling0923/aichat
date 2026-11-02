@@ -920,3 +920,11 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 1. When a chat has waited a long time, the alert and the Inbox note say it in words: "45 minutes", "2 hours 5 minutes", "1 day 3 hours", "3 days 22 hours" (before it said "5655 minutes"). This applies to the bell alert ("Visitor 12 has waited 3 days 22 hours"), the note "Nobody answered for 3 days 22 hours, so the chat went back to the bot", the waiting email and the WhatsApp alert.
 2. In Chinese: "已等待 3 天 22 小时". Older alerts written in minutes still show correctly.
 3. The reminders at 5, 10, 20 and 30 minutes are unchanged.
+
+## DK. Translate button and the empty-box reminder
+
+1. Menu builder (step text and button labels), AI assistant > Teach it (Add an answer) and Saved replies (New reply): under the English box there is "Translate from 中文" and under the Chinese box "Translate from English".
+2. While the Chinese box is empty it says "Empty: Chinese customers will see the English text." The line disappears as soon as you type something. This works without the AI.
+3. Translate needs the AI. With the AI switched off for the whole system, pressing it says so and tells you to type both languages. With the AI on it fills the box, keeps placeholders such as {name} and {business}, and says "Translated. Please read it before you save." It asks before replacing text that is already in the box.
+4. Each translation counts as one AI call in the monthly limit (AI assistant > Usage and history, purpose "translate"). If the AI changes a {placeholder}, the box is left alone and you are told.
+5. Who can use it: the owner, and team members allowed Menu builder, AI assistant or Saved replies (edit).

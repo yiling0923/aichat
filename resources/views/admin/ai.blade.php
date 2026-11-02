@@ -261,6 +261,10 @@
     del.hidden = !(d && d.action); if (d && d.delete) { del.setAttribute('formaction', d.delete); }
     dlg.showModal(); (d && d.action ? f.en : (d && d.title ? f.en : f.name)).focus();
   }
+  if (window.Translate) {
+    Translate.attach({ box: f.zh, from: 'en', to: 'zh', source: function () { return f.en.value; }, hint: true });
+    Translate.attach({ box: f.en, from: 'zh', to: 'en', source: function () { return f.zh.value; } });
+  }
   document.getElementById('new-answer').addEventListener('click', function () { open(null); });
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   document.querySelectorAll('[data-idea]').forEach(function (b) { b.addEventListener('click', function () { open({ title: b.dataset.idea }); }); });
