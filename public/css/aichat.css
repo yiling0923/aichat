@@ -2371,3 +2371,11 @@ th.sorted a, th.sorted .sortbtn { color: var(--accent-d); }
 .mo-t b { font-size: 14.5px; font-weight: 600; } .mo-t small { color: var(--mute); font-size: 13px; }
 .merge-none { padding: 14px; text-align: center; }
 .merge-keep { margin-top: 10px; padding: 9px 12px; border-radius: 10px; background: var(--ambers); color: var(--amber); font-size: 13.5px; font-weight: 600; }
+
+/* Customers: the bar that appears once someone is ticked */
+.cust-bulk { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 12px 8px 16px; border-radius: 14px; background: var(--accent-l); border: 1px solid var(--accent-m); }
+.cust-bulk[hidden] { display: none; }
+.cust-bulk > b { margin-right: 6px; color: var(--accent-d); }
+.cust-bulk .cb-sep { width: 1px; height: 22px; background: var(--accent-m); margin: 0 4px; }
+.cust-bulk select { width: auto; height: 30px; font-size: 13px; }
+.cust-bulk .cb-clear { margin-left: auto; width: 30px; height: 30px; font-size: 18px; }

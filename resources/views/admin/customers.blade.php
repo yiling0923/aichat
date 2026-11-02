@@ -25,19 +25,21 @@
     <form method="post" action="{{ url('/admin/customers/bulk') }}">
         @csrf
         @if ($tags->isNotEmpty() || auth()->user()->allows('customers_admin'))
-            <div class="bar">
-                <span class="mute">{{ __('With the ticked customers:') }}</span>
-                @if (auth()->user()->allows('customers_admin'))<button class="btn small" type="submit" formaction="{{ url('/admin/customers/download') }}" name="download" value="1">{{ __('Download ticked') }}</button>@endif
+            <div class="cust-bulk" id="cust-bulk" hidden>
+                <b><span id="cb-n">0</span> {{ __('selected') }}</b>
+                @if (auth()->user()->allows('customers_admin'))<button class="btn small" type="submit" formaction="{{ url('/admin/customers/download') }}" name="download" value="1">{{ __('Download') }}</button>@endif
                 @if ($tags->isNotEmpty())
-                <select name="tag_id" class="small">@foreach ($tags as $t)<option value="{{ $t->id }}">{{ __($t->name) }}</option>@endforeach</select>
-                <button class="btn small" name="action" value="add">{{ __('Add tag') }}</button>
-                <button class="btn small" name="action" value="remove">{{ __('Remove tag') }}</button>
+                    <span class="cb-sep"></span>
+                    <select name="tag_id" class="small" aria-label="{{ __('Tag') }}">@foreach ($tags as $t)<option value="{{ $t->id }}">{{ __($t->name) }}</option>@endforeach</select>
+                    <button class="btn small primary" name="action" value="add">{{ __('Add tag') }}</button>
+                    <button class="btn small" name="action" value="remove">{{ __('Remove tag') }}</button>
                 @endif
+                <button type="button" class="ibtn cb-clear" id="cb-clear" aria-label="{{ __('Clear selection') }}" title="{{ __('Clear selection') }}">&times;</button>
             </div>
         @endif
         <table class="table">
             @php($th = fn ($k, $l) => \App\Support\SortLink::th($k, $l, $sort, $dir))
-            <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pick').forEach(c => c.checked = this.checked)"></th>{!! $th('name', __('Name')) !!}<th>{{ __('Phone') }}</th>{!! $th('interest', __('Interested in')) !!}<th>{{ __('Tags') }}</th><th>{{ __('Lang') }}</th>{!! $th('lead', __('Lead level')) !!}<th title="{{ __('Can we send promotional messages?') }}">{{ __('Promotions') }}</th>{!! $th('added', __('Added')) !!}</tr></thead>
+            <thead><tr><th><input type="checkbox" id="pick-all" aria-label="{{ __('Select all') }}"></th>{!! $th('name', __('Name')) !!}<th>{{ __('Phone') }}</th>{!! $th('interest', __('Interested in')) !!}<th>{{ __('Tags') }}</th><th>{{ __('Lang') }}</th>{!! $th('lead', __('Lead level')) !!}<th title="{{ __('Can we send promotional messages?') }}">{{ __('Promotions') }}</th>{!! $th('added', __('Added')) !!}</tr></thead>
             <tbody>
             @forelse ($customers as $c)
                 <tr>
@@ -80,4 +82,22 @@
     </script>
     @endpush
     @endif
+@push('scripts')
+<script>
+(function () {
+  var bar = document.getElementById('cust-bulk'), n = document.getElementById('cb-n'), all = document.getElementById('pick-all');
+  if (!bar) { return; }
+  var picks = function () { return document.querySelectorAll('.pick'); };
+  function refresh() {
+    var c = document.querySelectorAll('.pick:checked').length;
+    n.textContent = c; bar.hidden = c === 0;
+    if (all) { all.checked = c > 0 && c === picks().length; all.indeterminate = c > 0 && c < picks().length; }
+  }
+  picks().forEach(function (p) { p.addEventListener('change', refresh); });
+  if (all) { all.addEventListener('change', function () { picks().forEach(function (p) { p.checked = all.checked; }); refresh(); }); }
+  document.getElementById('cb-clear').addEventListener('click', function () { picks().forEach(function (p) { p.checked = false; }); refresh(); });
+  refresh();
+})();
+</script>
+@endpush
 @endsection

@@ -1045,3 +1045,8 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 1. Customers list (owner / people with customer admin): "Download data" at the top downloads a spreadsheet of everyone matching the current search and filters. Tick some customers and press "Download ticked" to get only them.
 2. The file has name, phone, email, language, interested in, tags, lead level, promotions and date added. Cells that start with = + - @ are defused so a spreadsheet cannot run them.
 3. A single customer's page no longer has "Download their data" in its "..." menu (Join and Delete remain).
+
+## DZ. Customers: selection bar; cancelled bookings
+
+1. Customers list: the bar only appears once you tick someone ("2 selected", Download, tag picker, Add tag, Remove tag, and a cross to clear). The top checkbox selects all and shows a dash when only some are ticked.
+2. A customer's Activity list no longer calls a cancelled or no-show booking "Upcoming", even when its date is in the future.

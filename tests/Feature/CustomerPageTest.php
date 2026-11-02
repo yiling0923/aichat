@@ -184,4 +184,14 @@ class CustomerPageTest extends TestCase
 
         $this->actingAs($this->staff)->get('/admin/customers/download')->assertForbidden();
     }
+
+    public function test_a_cancelled_future_booking_is_not_called_upcoming(): void
+    {
+        $c = $this->in(fn () => Customer::create(['name' => 'Cara']));
+        $svc = $this->in(fn () => \App\Models\Service::create(['name' => ['en' => 'Facial'], 'duration_min' => 30, 'price' => 10]));
+        $pr = $this->in(fn () => \App\Models\Practitioner::create(['name' => 'Dr X']));
+        $this->in(fn () => \App\Models\Booking::create(['customer_id' => $c->id, 'service_id' => $svc->id, 'practitioner_id' => $pr->id, 'starts_at' => now()->addDays(2), 'ends_at' => now()->addDays(2)->addMinutes(30), 'status' => 'cancelled']));
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $this->actingAs($owner)->get('/admin/customers/'.$c->id)->assertOk()->assertDontSee('Upcoming');
+    }
 }

@@ -56,7 +56,7 @@
             <h3>{{ __('Activity') }}</h3>
             <ul class="timeline">
                 @foreach ($events as $e)
-                    @php $at = $local($e['at']); $future = $e['at']->isFuture(); @endphp
+                    @php $at = $local($e['at']); $future = $e['at']->isFuture() && empty($e['cancelled']); @endphp
                     <li class="{{ $future ? 'future' : '' }}">
                         <span class="ti">{{ $icons[$e['type']] }}</span>
                         <div class="tb">

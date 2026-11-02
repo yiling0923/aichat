@@ -112,7 +112,7 @@ class CustomerController extends Controller
         // One list of everything that happened, newest first.
         $events = collect();
         foreach ($bookings as $b) {
-            $events->push(['type' => 'booking', 'at' => $b->starts_at, 'title' => $b->service->label(app()->getLocale()).' ('.__(str_replace('_', ' ', $b->status)).')',
+            $events->push(['type' => 'booking', 'cancelled' => in_array($b->status, ['cancelled', 'no_show'], true), 'at' => $b->starts_at, 'title' => $b->service->label(app()->getLocale()).' ('.__(str_replace('_', ' ', $b->status)).')',
                 'sub' => __('with :name', ['name' => $b->practitioner->name]), 'url' => route('schedule', ['view' => 'week', 'date' => $b->starts_at->copy()->setTimezone($tz)->format('Y-m-d')])]);
         }
         foreach ($orders as $o) {

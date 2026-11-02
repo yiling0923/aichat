@@ -1831,7 +1831,7 @@
     "Search name or email": "搜索姓名或邮箱",
     "All roles": "所有角色",
     "All accounts": "所有账号",
-    "selected": "已选择",
+    "selected": "已选",
     "Change role to": "更改角色为",
     "Change role to...": "更改角色为...",
     "Apply role": "应用角色",
@@ -2126,5 +2126,6 @@
     "You keep :name. The one you pick here is removed.": "保留 :name，你在这里选的那位会被删除。",
     "this customer": "这位客户",
     "Download data": "下载资料",
-    "Download ticked": "下载已勾选"
+    "Download ticked": "下载已勾选",
+    "Download": "下载"
 }
