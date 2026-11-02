@@ -2253,3 +2253,6 @@ th.sorted.desc .sortbtn::after { content: "\25BC"; opacity: 1; font-size: 10px; 
 .bz-table td { padding: 13px 8px; border-top: 1px solid var(--line-s); }
 .bz-table th.num, .bz-table td.num { text-align: right; }
 @media (max-width: 720px) { .bz-hero { padding: 18px; gap: 14px; } .bz-av { width: 54px; height: 54px; font-size: 24px; border-radius: 16px; } .bz-id h1 { font-size: 22px; } .bz-tabs a { padding: 9px 12px; } .bz-card { padding: 18px; } }
+
+/* "Paid to you" column: pick the currency to show it in */
+.paid-cur { display: block; margin: 4px 0 0 auto; font-size: .72rem; padding: 1px 4px; border: 1px solid var(--line, #d8dde6); border-radius: 6px; background: transparent; color: inherit; max-width: 7em; }

@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Models\Invite;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PlatformSetting;
 use App\Models\PlatformAudit;
 use App\Models\Practitioner;
 use App\Models\User;
@@ -67,6 +68,7 @@ class PlatformController extends Controller
             'currency' => (string) (((array) $b->settings)['currency'] ?? 'RM'),
             'revenue' => (int) array_sum($paid[$b->id] ?? []),
             'paidText' => $this->moneyText($paid[$b->id] ?? [], $billingCurrency),
+            'paidBy' => $paid[$b->id] ?? [],
         ]);
 
         // One number per day for the little trend lines in the top cards, and the period before for the "up/down" arrows.
@@ -126,6 +128,8 @@ class PlatformController extends Controller
                 'sales' => $sales !== '' ? $sales : '-',
             ],
             'currency' => $plans->currency(),
+            'rates' => (array) PlatformSetting::get('billing.rates', []),
+            'paidCurrencies' => Payment::query()->where('status', 'paid')->distinct()->pluck('currency')->map(fn ($c) => strtoupper((string) $c))->unique()->values()->all(),
             'plans' => $plans->catalog(),
             'isoGroups' => \App\Support\Currencies::ISO,
             'inviteOnly' => config('plans.signup_mode') === 'invite',
@@ -381,6 +385,8 @@ class PlatformController extends Controller
             'currency_custom' => ['nullable', 'string', 'max:8'],
             'price' => ['nullable', 'array'],
             'price.*' => ['nullable', 'numeric', 'min:0', 'max:100000'],
+            'rate' => ['nullable', 'array'],
+            'rate.*' => ['nullable', 'numeric', 'gt:0', 'max:1000000'],
         ]);
 
         $code = $request->input('currency') === '__other' ? strtoupper(trim((string) $request->input('currency_custom'))) : strtoupper((string) $request->input('currency'));
@@ -397,6 +403,8 @@ class PlatformController extends Controller
             }
         }
 
+        $rates = collect((array) $request->input('rate'))->filter(fn ($v, $k) => preg_match('/^[A-Z]{3}$/', (string) $k) && is_numeric($v) && $v > 0)->map(fn ($v) => (float) $v)->all();
+        \App\Models\PlatformSetting::put('billing.rates', $rates);
         \App\Models\PlatformSetting::put('billing.currency', $code);
         \App\Models\PlatformSetting::put('billing.prices', $prices);
         PlatformAudit::record('billing_changed', null, 'From '.$before.' to '.$code.' '.collect($prices)->map(fn ($c, $k) => $k.' '.number_format($c / 100, 2))->implode(', '));

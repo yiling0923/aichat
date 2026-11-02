@@ -2044,5 +2044,9 @@
     "Norwegian krone": "挪威克朗",
     "Danish krone": "丹麦克朗",
     "Sri Lankan rupee": "斯里兰卡卢比",
-    "Pakistani rupee": "巴基斯坦卢比"
+    "Pakistani rupee": "巴基斯坦卢比",
+    "Show amounts in": "以此货币显示金额",
+    "As paid": "按支付时的货币",
+    "Exchange rates, only used to show the \"Paid to you\" column in one currency. How many :cur is 1 of each?": "汇率，仅用于以单一货币显示“付给你的金额”一栏。每 1 个下列货币等于多少 :cur？",
+    "No exchange rate saved for this currency yet. Add one in Billing settings.": "还没有保存这种货币的汇率。请在账单设置中添加。"
 }

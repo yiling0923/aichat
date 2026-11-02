@@ -1003,3 +1003,10 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 4. The "Paid to you" column shows each payment in the currency it was paid in, for example `USD 29.00 · MYR 39.50`; with no payments it shows `<your currency> 0.00`.
 5. Wrong codes (`RM`, `US`, `U1D`) and negative prices are refused; a business owner gets "forbidden".
 6. The change appears in the platform audit log as "Billing settings changed".
+
+## DS. "Paid to you" in the currency you choose
+
+1. In `/platform`, the "Paid to you" heading has a small currency box. "As paid" shows each payment in its own currency.
+2. Pick MYR (or any other): amounts are converted. Currencies you have no rate for stay as paid (hover shows why).
+3. Set rates in the coins dialog ("1 EUR = ? USD"); they are used only for this display, not for charging.
+4. Your choice is remembered while the tab is open.

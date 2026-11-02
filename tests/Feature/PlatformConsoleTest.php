@@ -330,4 +330,13 @@ class PlatformConsoleTest extends TestCase
         $this->actingAs($this->platform)->get('/platform')->assertOk();
         $this->get('/')->assertOk();
     }
+
+    public function test_exchange_rates_are_saved_and_offered_for_the_paid_column(): void
+    {
+        \App\Models\Payment::create(['business_id' => $this->shop->id, 'plan' => 'starter', 'amount_cents' => 1000, 'currency' => 'EUR', 'provider' => 'local', 'reference' => 'eur-1', 'status' => 'paid']);
+        $this->actingAs($this->platform)->post('/platform/settings/billing', ['currency' => 'USD', 'rate' => ['EUR' => '1.1', 'xx' => '5', 'GBP' => '-2']])->assertSessionHasErrors('rate.GBP');
+        $this->actingAs($this->platform)->post('/platform/settings/billing', ['currency' => 'USD', 'rate' => ['EUR' => '1.1', 'xx' => '5']])->assertSessionHasNoErrors();
+        $this->assertSame(['EUR' => 1.1], \App\Models\PlatformSetting::get('billing.rates'));
+        $this->actingAs($this->platform)->get('/platform')->assertOk()->assertSee('id="paid-cur"', false)->assertSee('rate[EUR]', false);
+    }
 }
