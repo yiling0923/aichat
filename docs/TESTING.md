@@ -914,3 +914,9 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 4. Key button: type a new password for that person (8 or more characters) and Save password. Show the password lets you check what you typed.
 5. Pencil button: the editor is now wider, with the details on the left and the access boxes on the right.
 6. Bulk: tick people (or the top box for everyone shown). A bar appears: Change role to... + Apply role, Switch on, Switch off (asks first), Usual access (returns them to the role's access), Clear. Your own account and the last owner are skipped, and the message says how many were updated and skipped.
+
+## DJ. Waiting times in days and hours
+
+1. When a chat has waited a long time, the alert and the Inbox note say it in words: "45 minutes", "2 hours 5 minutes", "1 day 3 hours", "3 days 22 hours" (before it said "5655 minutes"). This applies to the bell alert ("Visitor 12 has waited 3 days 22 hours"), the note "Nobody answered for 3 days 22 hours, so the chat went back to the bot", the waiting email and the WhatsApp alert.
+2. In Chinese: "已等待 3 天 22 小时". Older alerts written in minutes still show correctly.
+3. The reminders at 5, 10, 20 and 30 minutes are unchanged.

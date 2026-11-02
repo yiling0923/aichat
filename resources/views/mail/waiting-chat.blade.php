@@ -1,7 +1,7 @@
 @php $back = (int) (((array) $business->settings)['handover_return_minutes'] ?? 0); @endphp
 {{ __('Hi,') }}
 
-{{ __(':who is waiting for a reply from your team at :name. Nobody has answered for :n minutes.', ['who' => $name, 'name' => $business->name, 'n' => $minutes]) }}
+{{ __(':who is waiting for a reply from your team at :name. Nobody has answered for :time.', ['who' => $name, 'name' => $business->name, 'time' => \App\Support\Duration::text($minutes)]) }}
 @if ($reason)
 
 {{ __('What they need') }}: {{ $reason }}

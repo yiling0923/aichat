@@ -141,4 +141,28 @@ class HandoverTimeoutTest extends TestCase
         $this->artisan('aichat:check-handovers');
         $this->assertSame(0, \App\Models\StaffNotification::query()->where('user_id', $staff->id)->count());
     }
+
+    public function test_a_long_wait_is_written_in_days_and_hours_not_thousands_of_minutes(): void
+    {
+        Http::fake();
+        $this->business->forceFill(['settings' => ['handover_return_minutes' => 60]])->save();
+        $staff = \App\Models\User::factory()->create(['business_id' => $this->business->id, 'role' => 'staff']);
+
+        // The scheduler was off for almost four days, then woke up.
+        Carbon::setTestNow(Carbon::parse('2026-11-03 03:00:00')->addMinutes(5655));
+        $this->artisan('aichat:check-handovers');
+
+        app(CurrentBusiness::class)->runAs($this->business, function () {
+            $notes = $this->conversation->messages()->where('sender_type', 'system')->pluck('body')->implode('|');
+            $this->assertStringContainsString('Nobody answered for 3 days 22 hours, so the chat went back to the bot.', $notes);
+            $this->assertStringNotContainsString('5655', $notes);
+        });
+        $bodies = \App\Models\StaffNotification::query()->where('user_id', $staff->id)->pluck('body')->implode('|');
+        $this->assertStringContainsString('Nobody answered for 3 days 22 hours.', $bodies);
+
+        // In Chinese the same alert reads in days and hours too.
+        $this->actingAs($staff)->post('/admin/language', ['locale' => 'zh']);
+        $items = $this->actingAs($staff->fresh())->getJson('/admin/api/notifications')->json('items');
+        $this->assertStringContainsString('3 天 22 小时', implode('|', array_column($items, 'body')));
+    }
 }

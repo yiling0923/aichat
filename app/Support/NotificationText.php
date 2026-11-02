@@ -36,8 +36,8 @@ class NotificationText
             $text = substr($text, 8);
         }
 
-        if (preg_match('/^(.+) has waited (\d+) minutes$/s', $text, $m)) {
-            $out = __(':who has waited :n minutes', ['who' => self::who($m[1]), 'n' => $m[2]]);
+        if (preg_match('/^(.+) has waited (\d+ (?:days?|hours?|minutes?)(?: \d+ (?:hours?|minutes?))?)$/s', $text, $m)) {
+            $out = __(':who has waited :time', ['who' => self::who($m[1]), 'time' => \App\Support\Duration::localize($m[2])]);
         } elseif (preg_match('/^Low rating \((\d)\/5\) from (.+)$/s', $text, $m)) {
             $out = __('Low rating (:r/5) from :x', ['r' => $m[1], 'x' => self::who($m[2])]);
         } else {
@@ -60,8 +60,8 @@ class NotificationText
             return $text;
         }
 
-        if (preg_match('/^Nobody answered for (\d+) minutes\. Reply any time to take over again\.$/', $text, $m)) {
-            return __('Nobody answered for :n minutes. Reply any time to take over again.', ['n' => $m[1]]);
+        if (preg_match('/^Nobody answered for (\d+ (?:days?|hours?|minutes?)(?: \d+ (?:hours?|minutes?))?)\. Reply any time to take over again\.$/', $text, $m)) {
+            return __('Nobody answered for :time. Reply any time to take over again.', ['time' => \App\Support\Duration::localize($m[1])]);
         }
         if (preg_match('/^Customer sent a (photo|video|voice message|file|location|attachment)$/', $text, $m)) {
             return __('Customer sent a :what', ['what' => __($m[1])]);

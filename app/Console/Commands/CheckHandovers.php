@@ -41,7 +41,7 @@ class CheckHandovers extends Command
 
         app(Notifier::class)->notify(
             $business, 'handover',
-            ($urgent ? 'URGENT: ' : '').$name.' has waited '.$minutes.' minutes',
+            ($urgent ? 'URGENT: ' : '').$name.' has waited '.\App\Support\Duration::words($minutes),
             $c->handover_reason ?: 'Nobody has replied yet.',
             $url,
             $urgent ? ['owner', 'manager'] : null,
@@ -53,7 +53,7 @@ class CheckHandovers extends Command
     {
         $c->giveBackToBot();
         $c->forceFill(['state' => null])->save();
-        $c->addMessage('out', 'system', 'Nobody answered for '.$minutes.' minutes, so the chat went back to the bot.', null, true);
+        $c->addMessage('out', 'system', 'Nobody answered for '.\App\Support\Duration::words($minutes).', so the chat went back to the bot.', null, true);
         $c->addMessage('out', 'bot', Strings::get('handover_return', $c->language));
 
         // Show the main menu again so the customer has buttons to tap.
@@ -63,7 +63,7 @@ class CheckHandovers extends Command
             report($e);
         }
 
-        app(Notifier::class)->notify($business, 'handover', Notifier::chatName($c).' went back to the bot', 'Nobody answered for '.$minutes.' minutes. Reply any time to take over again.', route('inbox', ['c' => $c->id]));
+        app(Notifier::class)->notify($business, 'handover', Notifier::chatName($c).' went back to the bot', 'Nobody answered for '.\App\Support\Duration::words($minutes).'. Reply any time to take over again.', route('inbox', ['c' => $c->id]));
         $n8n->send('handover.returned_to_bot', ['business' => $business->slug, 'conversation_id' => $c->id, 'waiting_minutes' => $minutes]);
     }
 

@@ -1862,5 +1862,15 @@
     "you cannot change your own role": "不能更改自己的角色",
     "the business needs at least one active owner": "业务至少需要一位启用的老板",
     "Could not save. Try again.": "无法保存,请重试。",
-    "Switch these people off? They will not be able to sign in.": "确定停用这些成员吗?他们将无法登录。"
+    "Switch these people off? They will not be able to sign in.": "确定停用这些成员吗?他们将无法登录。",
+    ":who has waited :time": ":who 已等待 :time",
+    ":who has waited :time (:name)": ":who 已等待 :time（:name）",
+    "Nobody answered for :time. Reply any time to take over again.": "已经 :time没有人回复。您可以随时回复来重新接手。",
+    ":who is waiting for a reply from your team at :name. Nobody has answered for :time.": ":who 正在等待 :name 团队的回复，已经 :time没有人回答。",
+    ":n day": ":n 天",
+    ":n days": ":n 天",
+    ":n hour": ":n 小时",
+    ":n hours": ":n 小时",
+    ":n minute": ":n 分钟",
+    ":n minutes": ":n 分钟"
 }

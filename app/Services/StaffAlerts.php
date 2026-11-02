@@ -31,7 +31,7 @@ class StaffAlerts
         }
 
         if (! empty($settings['alert_whatsapp'])) {
-            $this->whatsapp($business, $name, $minutes, ($urgent ? 'URGENT: ' : '').$name.' has waited '.$minutes.' minutes for a reply at '.$business->name.'. Open the Inbox to answer.');
+            $this->whatsapp($business, $name, $minutes, ($urgent ? 'URGENT: ' : '').$name.' has waited '.\App\Support\Duration::words($minutes).' for a reply at '.$business->name.'. Open the Inbox to answer.');
         }
     }
 
