@@ -189,12 +189,17 @@ class PlatformConsoleTest extends TestCase
 
         $row = fn (string $name) => substr($html, $at = strpos($html, '<b>'.$name.'</b>'), strpos($html, '</tr>', $at) - $at);
         $this->assertSame(1, substr_count(strip_tags($row('Inside Co')), 'Internal'));          // the plan is said once, not twice
+        $this->assertStringContainsString('<span class="st st-ok">Active</span>', $row('Inside Co'));
         $this->assertSame(1, substr_count($row('Rose Clinic'), 'Free trial'));
-        $this->assertStringContainsString('<span class="tag ok">Internal</span>', $row('Inside Co'));
         $this->assertStringContainsString('Starter', $row('Paid Co'));
-        $this->assertStringContainsString('<span class="tag ok">Active</span>', $row('Paid Co'));
-        $this->assertStringContainsString('Free trial', $row('Rose Clinic'));
-        $this->assertStringContainsString('ends ', $row('Rose Clinic'));
+        $this->assertStringContainsString('<span class="st st-ok">Active</span>', $row('Paid Co'));
+
+        // The trial end has its own column and is not squeezed into the plan cell.
+        $trialEnd = \App\Support\Lang::fmt($this->shop->trial_ends_at, 'j M Y', 'Y年n月j日');
+        $this->assertStringContainsString($trialEnd, $row('Rose Clinic'));
+        $this->assertStringNotContainsString('ends ', strip_tags($row('Rose Clinic')));
+        $this->assertStringContainsString('data-sort="ends"', $html);
+        $this->assertStringContainsString('data-sort="status"', $html);
     }
 
     public function test_several_businesses_can_be_paused_resumed_or_moved_to_a_plan_together(): void
@@ -236,5 +241,25 @@ class PlatformConsoleTest extends TestCase
         $this->in(fn () => \App\Models\Conversation::startFor('web')->forceFill(['created_at' => now()->subDays(40)])->save());
 
         $this->actingAs($this->platform)->get('/platform')->assertOk()->assertSee('pk-spark', false)->assertSee('vs the 30 days before')->assertSee('pk-stack', false);
+    }
+
+    public function test_every_status_uses_the_same_outlined_pill(): void
+    {
+        Business::factory()->create(['name' => 'Paused Co', 'status' => 'paused', 'plan' => 'starter', 'subscription_status' => 'active']);
+        Business::factory()->create(['name' => 'Expired Co', 'plan' => 'trial', 'trial_ends_at' => now()->subDay(), 'subscription_status' => 'trialing']);
+        Business::factory()->create(['name' => 'Late Co', 'plan' => 'growth', 'subscription_status' => 'past_due']);
+        Business::factory()->create(['name' => 'Gone Co', 'plan' => 'growth', 'subscription_status' => 'canceled', 'current_period_ends_at' => now()->subDay()]);
+
+        $html = $this->actingAs($this->platform)->get('/platform')->assertOk()->getContent();
+        $row = fn (string $name) => substr($html, $at = strpos($html, '<b>'.$name.'</b>'), strpos($html, '</tr>', $at) - $at);
+
+        $this->assertStringContainsString('<span class="st st-hot">Paused</span>', $row('Paused Co'));
+        $this->assertStringContainsString('<span class="st st-hot">Expired</span>', $row('Expired Co'));
+        $this->assertStringContainsString('<span class="st st-hot">Past due</span>', $row('Late Co'));
+        $this->assertStringContainsString('<span class="st st-mute">Canceled</span>', $row('Gone Co'));
+        $this->assertStringNotContainsString('class="tag', $row('Paused Co'));                    // nothing in the status columns uses the old filled tags
+        $this->assertStringContainsString('Growth', $row('Late Co'));
+
+        $this->actingAs($this->platform)->get('/platform/businesses/'.Business::query()->where('name', 'Late Co')->value('id'))->assertOk()->assertSee('st st-hot', false);
     }
 }

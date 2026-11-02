@@ -10,6 +10,9 @@
 <body class="plat">
 @php
     $tone = fn ($s) => in_array($s, ['active', 'internal'], true) ? 'ok' : (str_contains($s, 'trial') && $s !== 'trial_expired' ? 'warn' : 'hot');
+    $st = fn (string $label, string $tone = 'mute') => '<span class="st st-'.$tone.'">'.e($label).'</span>';
+    $stateTone = ['internal' => 'ok', 'trial' => 'ok', 'trial_expired' => 'hot', 'active' => 'ok', 'past_due' => 'hot', 'canceled' => 'mute'];
+    $stateLabel = ['internal' => 'Active', 'trial' => 'Active', 'trial_expired' => 'Expired', 'active' => 'Active', 'past_due' => 'Past due', 'canceled' => 'Canceled'];
     $money = fn ($v) => $currency.' '.number_format($v, 2);
     $date = fn ($d) => $d ? \App\Support\Lang::fmt($d, 'j M Y', 'Y年n月j日') : '-';
 @endphp
@@ -26,7 +29,7 @@
 
     <div class="page-head">
         <div>
-            <h1>{{ $b->name }} @if ($b->status === 'paused')<span class="tag hot">{{ __('Paused') }}</span>@endif</h1>
+            <h1>{{ $b->name }} @if ($b->status === 'paused') {!! $st(__('Paused'), 'hot') !!}@endif</h1>
             <p class="mute">{{ $b->slug }} · {{ __('joined :date', ['date' => $date($b->created_at)]) }} · {{ $b->timezone }}@if ($b->paused_reason) · {{ __('Paused: :why', ['why' => $b->paused_reason]) }}@endif</p>
         </div>
         <div class="bar" style="gap:8px;flex-wrap:wrap">
@@ -49,7 +52,7 @@
     <div class="plat-grid">
     <div class="rp-two">
         <div class="card">
-            <h3>{{ __('Plan') }} <span class="tag {{ $tone($state) }}">{{ __(ucfirst(str_replace('_', ' ', $state))) }}</span></h3>
+            <h3>{{ __('Plan') }} {!! $st(__($stateLabel[$state] ?? ucfirst(str_replace('_', ' ', $state))), $stateTone[$state] ?? 'mute') !!}</h3>
             <p class="mute">{{ $state === 'trial' ? __('Trial ends :d', ['d' => $date($b->trial_ends_at)]) : ($b->current_period_ends_at ? __('Paid until :d', ['d' => $date($b->current_period_ends_at)]) : '') }}</p>
             <form method="post" action="{{ url('/platform/businesses/'.$b->id.'/plan') }}">@csrf
                 <label class="f"><span>{{ __('Plan') }}</span>
@@ -107,12 +110,12 @@
             <h3>{{ __('Team') }} ({{ $team->count() }})</h3>
             <div class="table-wrap" style="max-height:none"><table class="table"><tbody>
                 @foreach ($team as $u)
-                    <tr><td><b>{{ $u->name }}</b><br><span class="mute">{{ $u->email }}</span></td><td><span class="tag {{ $u->role === 'owner' ? 'ok' : ($u->role === 'manager' ? 'warn' : '') }}">{{ __(ucfirst($u->role)) }}</span></td><td>@unless ($u->active)<span class="tag hot">{{ __('Switched off') }}</span>@endunless</td></tr>
+                    <tr><td><b>{{ $u->name }}</b><br><span class="mute">{{ $u->email }}</span></td><td><span class="tag {{ $u->role === 'owner' ? 'ok' : ($u->role === 'manager' ? 'warn' : '') }}">{{ __(ucfirst($u->role)) }}</span></td><td>@unless ($u->active){!! $st(__('Switched off'), 'hot') !!}@endunless</td></tr>
                 @endforeach
             </tbody></table></div>
             <h4 style="margin-top:16px">{{ __('Channels') }} ({{ $channels->count() }})</h4>
             @forelse ($channels as $c)
-                <div class="lim-row" style="grid-template-columns: 1fr auto"><span><b>{{ ucfirst($c->type) }}</b> {{ $c->name }}<br><small class="mute">{{ $c->last_inbound_at ? __('last message :when', ['when' => $c->last_inbound_at->diffForHumans()]) : __('no message received yet') }}@if ($c->last_error) · {{ __('has a problem') }}@endif</small></span><span class="tag {{ ! $c->active ? 'hot' : ($c->last_error ? 'warn' : 'ok') }}">{{ ! $c->active ? __('Switched off') : ($c->last_error ? __('Needs attention') : __('Connected')) }}</span></div>
+                <div class="lim-row" style="grid-template-columns: 1fr auto"><span><b>{{ ucfirst($c->type) }}</b> {{ $c->name }}<br><small class="mute">{{ $c->last_inbound_at ? __('last message :when', ['when' => $c->last_inbound_at->diffForHumans()]) : __('no message received yet') }}@if ($c->last_error) · {{ __('has a problem') }}@endif</small></span>{!! $st(! $c->active ? __('Switched off') : ($c->last_error ? __('Needs attention') : __('Connected')), ! $c->active ? 'hot' : ($c->last_error ? 'warn' : 'ok')) !!}</div>
             @empty
                 <p class="mute">{{ __('No channels connected. The website chat works without one.') }}</p>
             @endforelse
@@ -124,7 +127,7 @@
             <h3>{{ __('Payments to you') }}</h3>
             <div class="table-wrap" style="max-height:none"><table class="table"><tbody>
                 @forelse ($payments as $p)
-                    <tr><td>{{ $date($p->created_at) }}</td><td>{{ ucfirst((string) $p->plan) }}</td><td style="text-align:right">{{ strtoupper($p->currency ?? '') }} {{ number_format($p->amount_cents / 100, 2) }}</td><td><span class="tag {{ $p->status === 'paid' ? 'ok' : 'warn' }}">{{ __(ucfirst((string) $p->status)) }}</span></td></tr>
+                    <tr><td>{{ $date($p->created_at) }}</td><td>{{ ucfirst((string) $p->plan) }}</td><td style="text-align:right">{{ strtoupper($p->currency ?? '') }} {{ number_format($p->amount_cents / 100, 2) }}</td><td>{!! $st(__(ucfirst((string) $p->status)), $p->status === 'paid' ? 'ok' : 'warn') !!}</td></tr>
                 @empty
                     <tr><td class="empty">{{ __('No payments yet.') }}</td></tr>
                 @endforelse

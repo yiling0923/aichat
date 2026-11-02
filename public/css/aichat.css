@@ -2168,3 +2168,15 @@ th.sorted.desc .sortbtn::after { content: "\25BC"; opacity: 1; font-size: 10px; 
 .plat-wide #biz-table th, .plat-wide #biz-table td { padding-left: 8px; padding-right: 8px; }
 .plat-wide #biz-table td:last-child { min-width: 128px; }
 @media (max-width: 1250px) { .plat-wide #biz-table { min-width: 1020px; } .plat-wide #biz-table th:nth-child(7), .plat-wide #biz-table td:nth-child(7) { display: table-cell; } }
+
+/* One look for every status in the platform console: an outlined pill with a dot */
+.st { --c: #64748b; display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px 3px 9px; border-radius: 999px; border: 1.5px solid var(--c); color: var(--c); background: #fff; font-size: 12px; font-weight: 700; line-height: 1.25; white-space: nowrap; vertical-align: middle; }
+.st::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+.st-ok { --c: #15803d; } .st-warn { --c: #b45309; } .st-hot { --c: #b91c1c; } .st-info { --c: #0f766e; } .st-mute { --c: #64748b; }
+.plat-wide #biz-table th, .plat-wide #biz-table td { padding-left: 6px; padding-right: 6px; }
+.plat-wide #biz-table td:nth-child(2) { min-width: 170px; }
+.plat-wide #biz-table td:nth-child(2) a { font-size: 14.5px; }
+.plat-wide #biz-table td:nth-child(5), .plat-wide #biz-table td:nth-child(6) { font-size: 13px; }
+.plat-wide #biz-table td:nth-child(3) { min-width: 80px; }
+.plat-wide #biz-table td:last-child { min-width: 120px; }
+.plat-wide #biz-table .tm-actions .ibtn { width: 32px; height: 32px; }

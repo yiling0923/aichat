@@ -1966,5 +1966,7 @@
     "Resume the selected businesses?": "恢复所选业务吗?",
     "Choose a plan first.": "请先选择方案。",
     ":n skipped (nothing to change).": "跳过 :n 个(没有需要更改的)。",
-    "Expired": "已过期"
+    "Expired": "已过期",
+    "Ends": "到期",
+    "Paid until": "付费至"
 }

@@ -42,6 +42,19 @@
         $line = implode(' ', $pts);
         return '<svg class="pk-spark" viewBox="0 0 '.$w.' '.$h.'" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,'.$h.' '.$line.' '.$w.','.$h.'" class="pk-fill"/><polyline points="'.$line.'" class="pk-line"/></svg>';
     };
+    // One look for every status: an outlined pill with a dot, coloured by meaning.
+    $st = fn (string $label, string $tone = 'mute') => '<span class="st st-'.$tone.'">'.e($label).'</span>';
+    $statusOf = function ($r) {
+        if ($r['business']->status === 'paused') { return ['Paused', 'hot']; }
+        return match ($r['state']) {
+            // The Plan column says what they have; this says how they are doing, so no word is said twice.
+            'internal' => ['Active', 'ok'], 'trial' => ['Active', 'ok'], 'trial_expired' => ['Expired', 'hot'],
+            'active' => ['Active', 'ok'], 'past_due' => ['Past due', 'hot'], 'canceled' => ['Canceled', 'mute'],
+            default => [ucfirst(str_replace('_', ' ', $r['state'])), 'mute'],
+        };
+    };
+    // When the trial ends, or the paid period ends.
+    $endsOf = fn ($r) => in_array($r['state'], ['trial', 'trial_expired'], true) ? $r['business']->trial_ends_at : $r['business']->current_period_ends_at;
     $delta = fn ($now, $before) => $before > 0 ? (int) round(($now - $before) / $before * 100) : null;
     $pill = fn (?int $d) => $d === null ? '' : '<span class="pill '.($d >= 0 ? 'up' : 'down').'">'.($d >= 0 ? '▲' : '▼').' '.abs($d).'%</span>';
     $planName = fn ($b) => $b->plan === null ? __('Internal') : __((string) (config('plans.plans.'.$b->plan.'.name') ?? ucfirst($b->plan)));
@@ -139,7 +152,9 @@
                 <th class="col-check"><input type="checkbox" id="biz-all" aria-label="{{ __('Select all') }}"></th>
                 <th aria-sort="none"><button type="button" class="sortbtn" data-sort="name" data-type="text">{{ __('Business') }}</button></th>
                 <th aria-sort="none"><button type="button" class="sortbtn" data-sort="plan" data-type="text">{{ __('Plan') }}</button></th>
+                <th aria-sort="none"><button type="button" class="sortbtn" data-sort="status" data-type="text">{{ __('Status') }}</button></th>
                 <th aria-sort="descending" class="sorted desc"><button type="button" class="sortbtn" data-sort="joined" data-type="num">{{ __('Joined') }}</button></th>
+                <th aria-sort="none"><button type="button" class="sortbtn" data-sort="ends" data-type="num">{{ __('Ends') }}</button></th>
                 <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="people" data-type="num">{{ __('People') }}</button></th>
                 <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="chats" data-type="num">{{ __('Chats') }}</button></th>
                 <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="customers" data-type="num">{{ __('New customers') }}</button></th>
@@ -151,25 +166,16 @@
             </tr></thead>
             <tbody>
             @foreach ($rows as $r)
-                @php $b = $r['business']; @endphp
+                @php $b = $r['business']; [$stLabel, $stTone] = $statusOf($r); $ends = $endsOf($r); @endphp
                 <tr data-g="{{ $group($r) }}" data-s="{{ mb_strtolower($b->name.' '.$b->slug) }}" data-id="{{ $b->id }}"
-                    data-name="{{ mb_strtolower($b->name) }}" data-plan="{{ mb_strtolower($planName($b)) }}" data-joined="{{ $b->created_at?->timestamp }}" data-people="{{ $r['users'] }}" data-chats="{{ $r['chats'] }}"
+                    data-name="{{ mb_strtolower($b->name) }}" data-plan="{{ mb_strtolower($planName($b)) }}" data-status="{{ mb_strtolower($stLabel) }}" data-ends="{{ $ends?->timestamp ?? 0 }}" data-joined="{{ $b->created_at?->timestamp }}" data-people="{{ $r['users'] }}" data-chats="{{ $r['chats'] }}"
                     data-customers="{{ $r['customers'] }}" data-bookings="{{ $r['bookings'] }}" data-money="{{ $r['sales'] }}" data-ai="{{ $r['ai'] }}" data-paid="{{ $r['revenue'] }}" @class(['is-paused' => $b->status === 'paused'])>
                     <td class="col-check"><input type="checkbox" class="biz-sel" value="{{ $b->id }}" aria-label="{{ __('Select :name', ['name' => $b->name]) }}"></td>
-                    <td><a href="{{ route('platform.show', $b->id) }}"><b>{{ $b->name }}</b></a> @if ($b->status === 'paused')<span class="tag hot">{{ __('Paused') }}</span>@endif<br><span class="mute">{{ $b->slug }}</span>@if ($b->status === 'paused' && $b->paused_reason)<br><small class="mute">{{ __('Reason: :why', ['why' => $b->paused_reason]) }}</small>@endif</td>
-                    <td>
-                        @if ($r['state'] === 'internal')
-                            <span class="tag ok">{{ __('Internal') }}</span>
-                        @else
-                            {{ $planName($b) }}<br>
-                            @if ($r['state'] === 'trial')
-                                <span class="tag warn">{{ $b->trial_ends_at ? __('ends :date', ['date' => \App\Support\Lang::fmt($b->trial_ends_at, 'j M', 'n月j日')]) : __('Trial') }}</span>
-                            @else
-                                <span class="tag {{ $tone($r['state']) }}">{{ __(['active' => 'Active', 'trial_expired' => 'Expired', 'past_due' => 'Past due', 'canceled' => 'Canceled'][$r['state']] ?? ucfirst(str_replace('_', ' ', $r['state']))) }}</span>
-                            @endif
-                        @endif
-                    </td>
+                    <td><a href="{{ route('platform.show', $b->id) }}"><b>{{ $b->name }}</b></a><br><span class="mute">{{ $b->slug }}</span>@if ($b->status === 'paused' && $b->paused_reason)<br><small class="mute">{{ __('Reason: :why', ['why' => $b->paused_reason]) }}</small>@endif</td>
+                    <td>{{ $planName($b) }}</td>
+                    <td>{!! $st(__($stLabel), $stTone) !!}</td>
                     <td style="white-space:nowrap">{{ \App\Support\Lang::fmt($b->created_at, 'j M Y', 'Y年n月j日') }}</td>
+                    <td style="white-space:nowrap" @if ($ends) title="{{ in_array($r['state'], ['trial', 'trial_expired'], true) ? __('Trial ends') : __('Paid until') }}" @endif>{{ $ends ? \App\Support\Lang::fmt($ends, 'j M Y', 'Y年n月j日') : '-' }}</td>
                     <td class="num">{{ $r['users'] }}</td>
                     <td class="num">{{ $r['chats'] }}</td>
                     <td class="num">{{ $r['customers'] }}</td>
@@ -188,7 +194,7 @@
                     </td>
                 </tr>
             @endforeach
-            <tr id="biz-empty" hidden><td colspan="12" class="empty">{{ __('No businesses match.') }}</td></tr>
+            <tr id="biz-empty" hidden><td colspan="14" class="empty">{{ __('No businesses match.') }}</td></tr>
             </tbody>
         </table>
         </div>
@@ -196,7 +202,7 @@
 
     <section data-panel="invites" hidden>
         <div class="bar spread" style="margin-bottom:10px">
-            <span class="mute">@if ($inviteOnly)<span class="tag warn">{{ __('Invite-only beta is ON') }}</span> {{ __('People need a code to sign up.') }}@else<span class="tag">{{ __('Sign-up is open') }}</span> {!! __('Codes are ignored. Set :setting to require them.', ['setting' => '<code>SIGNUP_MODE=invite</code>']) !!}@endif</span>
+            <span class="mute">@if ($inviteOnly){!! $st(__('Invite-only beta is ON'), 'warn') !!} {{ __('People need a code to sign up.') }}@else{!! $st(__('Sign-up is open'), 'info') !!} {!! __('Codes are ignored. Set :setting to require them.', ['setting' => '<code>SIGNUP_MODE=invite</code>']) !!}@endif</span>
             <button type="button" class="btn primary" id="new-invite">{{ __('Make a code') }}</button>
         </div>
         <div class="table-wrap" style="max-height:none">
@@ -209,7 +215,7 @@
                     <td><code>{{ $i->code }}</code></td>
                     <td>{{ $i->email ?? __('Anyone') }}</td>
                     <td>{{ $i->note ?: '-' }}</td>
-                    <td>@if ($i->used_at)<span class="tag ok">{{ __('Used :date', ['date' => \App\Support\Lang::fmt($i->used_at, 'j M', 'n月j日')]) }}</span>@else<span class="tag warn">{{ __('Unused') }}</span>@endif</td>
+                    <td>@if ($i->used_at){!! $st(__('Used :date', ['date' => \App\Support\Lang::fmt($i->used_at, 'j M', 'n月j日')]), 'ok') !!}@else{!! $st(__('Unused'), 'warn') !!}@endif</td>
                     <td style="text-align:right">@unless ($i->used_at)<button type="button" class="btn small" data-link="{{ $link }}">{{ __('Copy link') }}</button>@endunless</td>
                 </tr>
             @empty
