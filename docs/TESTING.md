@@ -1004,3 +1004,10 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 5. Wrong codes (`RM`, `US`, `U1D`) and negative prices are refused; a business owner gets "forbidden".
 6. The change appears in the platform audit log as "Billing settings changed".
 
+
+## DS. Platform: announcement, plan reminder, data download
+
+1. `/platform` → bell button: write a message (Information or Warning) and save. Open any business's staff area: the banner shows at the top; closing it hides it for that person only. Save with an empty box to switch it off.
+2. A business whose trial ended / payment failed / plan cancelled has an envelope button in its row (and a "Send reminder" card on its Support tab). It emails the owner(s) and is written in the activity log. (Emails go to the log file unless you set up mail.)
+3. Business page → Support tab → "Download ZIP": spreadsheets of that business's customers, bookings, orders, chats, messages, tasks and saved replies. Logged as "Data downloaded".
+4. Business owners get "forbidden" on all three actions.

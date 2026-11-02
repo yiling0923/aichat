@@ -339,4 +339,27 @@ class PlatformConsoleTest extends TestCase
         $this->assertSame(['EUR' => 1.1], \App\Models\PlatformSetting::get('billing.rates'));
         $this->actingAs($this->platform)->get('/platform')->assertOk()->assertDontSee('paid-cur', false);
     }
+
+    public function test_announcement_reminder_and_data_download(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        // Announcement: shown in a business's staff area, switched off with an empty message, owners cannot set it.
+        $this->actingAs($this->owner)->post('/platform/settings/announcement', ['text' => 'x'])->assertForbidden();
+        $this->actingAs($this->platform)->post('/platform/settings/announcement', ['text' => 'Maintenance tonight at 11', 'tone' => 'warn'])->assertSessionHasNoErrors();
+        $this->actingAs($this->owner)->get('/admin')->assertOk()->assertSee('Maintenance tonight at 11')->assertSee('announce-warn', false);
+        $this->actingAs($this->platform)->post('/platform/settings/announcement', ['text' => ''])->assertSessionHasNoErrors();
+        $this->actingAs($this->owner)->get('/admin')->assertOk()->assertDontSee('Maintenance tonight at 11');
+
+        // Reminder goes to the owner and is logged.
+        $this->actingAs($this->platform)->post('/platform/businesses/'.$this->shop->id.'/remind')->assertRedirect()->assertSessionHas('status');
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\PlanReminderMail::class, fn ($m) => $m->hasTo($this->owner->email));
+        $this->assertTrue(PlatformAudit::query()->where('action', 'reminder_sent')->exists());
+        $this->actingAs($this->owner)->post('/platform/businesses/'.$this->shop->id.'/remind')->assertForbidden();
+
+        // Data download is a ZIP, logged, and platform owner only.
+        $this->actingAs($this->platform)->get('/platform/businesses/'.$this->shop->id.'/export')->assertOk()->assertHeader('content-type', 'application/zip');
+        $this->assertTrue(PlatformAudit::query()->where('action', 'data_exported')->exists());
+        $this->actingAs($this->owner)->get('/platform/businesses/'.$this->shop->id.'/export')->assertForbidden();
+    }
 }

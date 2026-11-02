@@ -14,6 +14,9 @@ class PlatformActions
         'support_stop' => 'Support view ended',
         'invite_made' => 'Invitation made',
         'billing_changed' => 'Billing settings changed',
+        'reminder_sent' => 'Reminder emailed',
+        'data_exported' => 'Data downloaded',
+        'announcement' => 'Announcement',
         'paused' => 'Paused',
         'resumed' => 'Resumed',
     ];

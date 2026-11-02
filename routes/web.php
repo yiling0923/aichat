@@ -300,6 +300,9 @@ Route::middleware(['auth', 'platform'])->prefix('platform')->group(function () {
     Route::get('/', [$p, 'index'])->name('platform.index');
     Route::get('/export', [$p, 'export'])->name('platform.export');
     Route::post('/settings/billing', [$p, 'billing']);
+    Route::post('/settings/announcement', [$p, 'announce']);
+    Route::post('/businesses/{id}/remind', [$p, 'remind'])->whereNumber('id')->middleware('throttle:10,1');
+    Route::get('/businesses/{id}/export', [$p, 'exportBusiness'])->whereNumber('id')->middleware('throttle:6,1');
     Route::post('/businesses', [$p, 'store']);
     Route::post('/businesses/bulk', [$p, 'bulk']);
     Route::get('/businesses/{id}', [$p, 'show'])->whereNumber('id')->name('platform.show');

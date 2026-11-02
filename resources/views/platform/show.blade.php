@@ -219,6 +219,19 @@
                     <form method="post" action="{{ url('/platform/businesses/'.$b->id.'/support') }}" onsubmit="return confirm({{ json_encode(__('You will be signed in as this business\'s owner and can change things. Continue?'), JSON_UNESCAPED_UNICODE) }})">@csrf<input type="hidden" name="mode" value="edit"><button class="btn" type="submit">{{ __('Act as the owner') }}</button></form>
                 @endif
             </div>
+            <div class="card bz-card bz-opt">
+                <span class="bz-opt-ic">{!! $svg('mail') !!}</span>
+                <h3>{{ __('Email a plan reminder') }}</h3>
+                <p class="mute">{{ __('Tells the owner that the plan needs attention and where to fix it. It is written in the activity log.') }}</p>
+                @error('remind')<p class="note err">{{ $message }}</p>@enderror
+                <form method="post" action="{{ url('/platform/businesses/'.$b->id.'/remind') }}">@csrf<button class="btn" type="submit">{{ __('Send reminder') }}</button></form>
+            </div>
+            <div class="card bz-card bz-opt">
+                <span class="bz-opt-ic">{!! $svg('download') !!}</span>
+                <h3>{{ __('Download all their data') }}</h3>
+                <p class="mute">{{ __('A ZIP of spreadsheets: customers, bookings, orders, chats, messages, tasks and saved replies. Use it when they ask for their data, or before you remove them.') }}</p>
+                <a class="btn" href="{{ url('/platform/businesses/'.$b->id.'/export') }}">{{ __('Download ZIP') }}</a>
+            </div>
             <div class="card bz-card bz-opt" style="grid-column: 1 / -1">
                 <span class="bz-opt-ic">{!! $svg('key') !!}</span>
                 <h3>{{ __('Locked out? Set a new password') }}</h3>

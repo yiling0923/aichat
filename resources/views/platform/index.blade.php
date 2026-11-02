@@ -29,6 +29,8 @@
         'open' => '<path d="M7 17L17 7M8 7h9v9"/>',
         'pause' => '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
         'play' => '<path d="M7 4l13 8-13 8z"/>',
+        'bell' => '<path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+        'mail' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
         'download' => '<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>',
         'plus' => '<path d="M12 5v14M5 12h14"/>',
         'plan' => '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
@@ -123,6 +125,7 @@
             <div class="seg" id="plat-days">@foreach ([7, 30, 90] as $d)<a href="{{ url('/platform?days='.$d) }}" @class(['on' => $days === $d])>{{ __(':n days', ['n' => $d]) }}</a>@endforeach</div>
             <a class="ibtn" href="{{ route('platform.export', ['days' => $days]) }}" data-tip="{{ __('Export CSV') }}" aria-label="{{ __('Export CSV') }}">{!! $svg('download') !!}</a>
             <button type="button" class="ibtn" id="billing-btn" data-tip="{{ __('Billing: currency and prices') }}" aria-label="{{ __('Billing: currency and prices') }}">{!! $svg('coins') !!}</button>
+            <button type="button" class="ibtn" id="announce-btn" data-tip="{{ __('Announcement for all businesses') }}" aria-label="{{ __('Announcement for all businesses') }}">{!! $svg('bell') !!}</button>
             <button type="button" class="ibtn ibtn-primary" id="new-business" data-tip="{{ __('Add a business') }}" aria-label="{{ __('Add a business') }}">{!! $svg('plus') !!}</button>
         </div>
     </div>
@@ -187,6 +190,9 @@
                     <td class="num tm-actions">
                         <a class="ibtn ibtn-primary" href="{{ route('platform.show', $b->id) }}" data-tip="{{ __('Open') }}" aria-label="{{ __('Open') }}">{!! $svg('open') !!}</a>
                         <a class="ibtn" href="{{ route('chat.show', $b->slug) }}" target="_blank" rel="noopener" data-tip="{{ __('Customer chat') }}" aria-label="{{ __('Customer chat') }}">{!! $svg('chat') !!}</a>
+                        @if (in_array($r['state'], ['trial_expired', 'past_due', 'canceled'], true))
+                            <form method="post" action="{{ url('/platform/businesses/'.$b->id.'/remind') }}" style="display:inline">@csrf<button class="ibtn" type="submit" data-tip="{{ __('Email a reminder') }}" aria-label="{{ __('Email a reminder') }}">{!! $svg('mail') !!}</button></form>
+                        @endif
                         @if ($b->status === 'paused')
                             <form method="post" action="{{ url('/platform/businesses/'.$b->id.'/resume') }}" style="display:inline">@csrf<button class="ibtn ibtn-ok" type="submit" data-tip="{{ __('Resume') }}" aria-label="{{ __('Resume') }}">{!! $svg('play') !!}</button></form>
                         @else
@@ -260,6 +266,17 @@
         <label class="f"><span>{{ __('Owner email') }}</span><input type="email" name="email" required maxlength="150"></label>
         <label class="f"><span>{{ __('Password (8 or more characters)') }}</span><input type="text" name="password" required minlength="8" maxlength="100" autocomplete="off"></label>
         <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Create business') }}</button></div>
+    </form>
+</dialog>
+
+<dialog id="announce-dialog" class="dlg">
+    <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+    <h3>{{ __('Announcement for all businesses') }}</h3>
+    <p class="mute" style="margin-top:4px">{{ __('A banner at the top of every business\'s staff area. Each person can close it. Leave the box empty and save to switch it off.') }}</p>
+    <form method="post" action="{{ url('/platform/settings/announcement') }}">@csrf
+        <label class="f" style="margin-top:12px"><span>{{ __('Message') }}</span><textarea name="text" rows="3" maxlength="300" placeholder="{{ __('For example: We will update the system tonight at 11 pm. It takes about 5 minutes.') }}">{{ $announcement['text'] ?? '' }}</textarea></label>
+        <label class="f"><span>{{ __('Style') }}</span><select name="tone"><option value="info" @selected(($announcement['tone'] ?? 'info') === 'info')>{{ __('Information') }}</option><option value="warn" @selected(($announcement['tone'] ?? '') === 'warn')>{{ __('Warning') }}</option></select></label>
+        <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save announcement') }}</button></div>
     </form>
 </dialog>
 
@@ -359,6 +376,8 @@
   document.getElementById('billing-btn').addEventListener('click', function () { bbd.showModal(); });
   bcur.addEventListener('change', function () { bcus.hidden = bcur.value !== '__other'; if (!bcus.hidden) { bcus.focus(); } });
   @if ($errors->has('currency')) bbd.showModal(); @endif
+  var abd = dlg('announce-dialog');
+  document.getElementById('announce-btn').addEventListener('click', function () { abd.showModal(); });
   document.getElementById('new-business').addEventListener('click', function () { bd.showModal(); });
   @if ($errors->any()) bd.showModal(); @endif
   document.querySelectorAll('[data-pause]').forEach(function (b) {

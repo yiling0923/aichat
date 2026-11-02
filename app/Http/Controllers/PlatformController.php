@@ -128,6 +128,7 @@ class PlatformController extends Controller
                 'sales' => $sales !== '' ? $sales : '-',
             ],
             'currency' => $plans->currency(),
+            'announcement' => (array) PlatformSetting::get('announcement', []),
             'rates' => (array) PlatformSetting::get('billing.rates', []),
             'paidCurrencies' => Payment::query()->where('status', 'paid')->distinct()->pluck('currency')->map(fn ($c) => strtoupper((string) $c))->unique()->values()->all(),
             'plans' => $plans->catalog(),
@@ -436,5 +437,49 @@ class PlatformController extends Controller
         PlatformAudit::record('resumed', $id);
 
         return back()->with('status', __('Business is active again.'));
+    }
+
+    /** Email the business owner(s) that their plan needs attention (expired trial, failed payment, cancelled). */
+    public function remind(int $id): RedirectResponse
+    {
+        $business = Business::query()->findOrFail($id);
+        $emails = User::query()->where('business_id', $id)->where('role', 'owner')->where('active', true)->pluck('email')->filter()->all();
+        if ($emails === []) {
+            return back()->withErrors(['remind' => __('This business has no active owner to email.')]);
+        }
+        $state = app(Plans::class)->state($business);
+        foreach ($emails as $email) {
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\PlanReminderMail($business, $state));
+        }
+        PlatformAudit::record('reminder_sent', $id, implode(', ', $emails));
+
+        return back()->with('status', __('Reminder emailed to :who.', ['who' => implode(', ', $emails)]));
+    }
+
+    /** One business's data as a ZIP of spreadsheets (for a customer asking for their data, or before deleting). */
+    public function exportBusiness(int $id): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $business = Business::query()->findOrFail($id);
+        $path = (new \App\Support\BusinessExport($business))->zip();
+        PlatformAudit::record('data_exported', $id);
+
+        return response()->download($path, str($business->slug)->slug().'-export-'.now()->format('Ymd').'.zip', ['Content-Type' => 'application/zip'])->deleteFileAfterSend(true);
+    }
+
+    /** One message shown to everyone in every business's staff area. An empty message switches it off. */
+    public function announce(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['text' => ['nullable', 'string', 'max:300'], 'tone' => ['nullable', 'in:info,warn']]);
+        $text = trim((string) ($data['text'] ?? ''));
+        if ($text === '') {
+            PlatformSetting::put('announcement', null);
+            PlatformAudit::record('announcement', null, 'Switched off');
+
+            return back()->with('status', __('Announcement switched off.'));
+        }
+        PlatformSetting::put('announcement', ['text' => $text, 'tone' => $data['tone'] ?? 'info', 'at' => now()->toIso8601String()]);
+        PlatformAudit::record('announcement', null, $text);
+
+        return back()->with('status', __('Announcement is live for every business.'));
     }
 }

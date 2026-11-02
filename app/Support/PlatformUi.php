@@ -29,6 +29,7 @@ class PlatformUi
         'eye' => '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
         'key' => '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/>',
         'link' => '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+        'bell' => '<path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/>',
         'mail' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
         'check' => '<path d="M5 12l5 5L20 7"/>',
     ];
@@ -66,7 +67,7 @@ class PlatformUi
         return match ($action) {
             'business_created' => ['building', 'ok'], 'plan_changed' => ['plan', 'info'], 'limits_changed' => ['sliders', 'info'],
             'password_set' => ['key', 'warn'], 'support_start' => ['eye', 'warn'], 'support_stop' => ['eye', 'mute'],
-            'invite_made' => ['mail', 'info'], 'billing_changed' => ['coins', 'info'], 'paused' => ['pause', 'hot'], 'resumed' => ['play', 'ok'], default => ['history', 'mute'],
+            'invite_made' => ['mail', 'info'], 'billing_changed' => ['coins', 'info'], 'reminder_sent' => ['mail', 'info'], 'data_exported' => ['download', 'info'], 'announcement' => ['mail', 'info'], 'paused' => ['pause', 'hot'], 'resumed' => ['play', 'ok'], default => ['history', 'mute'],
         };
     }
 }

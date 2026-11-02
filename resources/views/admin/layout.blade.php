@@ -13,6 +13,7 @@
 </head>
 <body @if (session('support')) class="has-support" @endif>
 @include('admin._support')
+@include('admin._announce')
 <div class="shell">
     @include('admin._side', ['active' => $active])
     <main class="page">
