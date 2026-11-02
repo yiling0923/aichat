@@ -66,7 +66,7 @@ class PlatformUi
         return match ($action) {
             'business_created' => ['building', 'ok'], 'plan_changed' => ['plan', 'info'], 'limits_changed' => ['sliders', 'info'],
             'password_set' => ['key', 'warn'], 'support_start' => ['eye', 'warn'], 'support_stop' => ['eye', 'mute'],
-            'invite_made' => ['mail', 'info'], 'paused' => ['pause', 'hot'], 'resumed' => ['play', 'ok'], default => ['history', 'mute'],
+            'invite_made' => ['mail', 'info'], 'billing_changed' => ['coins', 'info'], 'paused' => ['pause', 'hot'], 'resumed' => ['play', 'ok'], default => ['history', 'mute'],
         };
     }
 }

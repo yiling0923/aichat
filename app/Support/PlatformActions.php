@@ -13,6 +13,7 @@ class PlatformActions
         'support_start' => 'Support view started',
         'support_stop' => 'Support view ended',
         'invite_made' => 'Invitation made',
+        'billing_changed' => 'Billing settings changed',
         'paused' => 'Paused',
         'resumed' => 'Resumed',
     ];

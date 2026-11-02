@@ -20,6 +20,33 @@ class Currencies
         'Middle East and Africa' => ['AED' => 'UAE dirham', 'SAR' => 'Saudi riyal', '₪' => 'Israeli shekel', 'R' => 'South African rand', '₦' => 'Nigerian naira', 'KSh' => 'Kenyan shilling'],
     ];
 
+    /** @var array<string, array<string, array{0: string, 1: string}>> region => [ISO code => [name, text printed before a price]] (for what the platform charges) */
+    public const ISO = [
+        'Asia-Pacific' => [
+            'MYR' => ['Malaysian ringgit', 'RM'], 'SGD' => ['Singapore dollar', 'S$'], 'HKD' => ['Hong Kong dollar', 'HK$'], 'TWD' => ['Taiwan dollar', 'NT$'], 'MOP' => ['Macau pataca', 'MOP$'],
+            'CNY' => ['Chinese yuan', 'CN¥'], 'JPY' => ['Japanese yen', 'JP¥'], 'KRW' => ['Korean won', '₩'], 'THB' => ['Thai baht', '฿'], 'IDR' => ['Indonesian rupiah', 'Rp'],
+            'PHP' => ['Philippine peso', '₱'], 'VND' => ['Vietnamese dong', '₫'], 'INR' => ['Indian rupee', '₹'], 'LKR' => ['Sri Lankan rupee', 'Rs'], 'PKR' => ['Pakistani rupee', 'Rs'],
+            'AUD' => ['Australian dollar', 'A$'], 'NZD' => ['New Zealand dollar', 'NZ$'],
+        ],
+        'Americas' => ['USD' => ['US dollar', '$'], 'CAD' => ['Canadian dollar', 'C$'], 'MXN' => ['Mexican peso', 'MX$'], 'BRL' => ['Brazilian real', 'R$']],
+        'Europe' => ['EUR' => ['Euro', '€'], 'GBP' => ['Pound', '£'], 'CHF' => ['Swiss franc', 'CHF'], 'SEK' => ['Swedish krona', 'kr'], 'NOK' => ['Norwegian krone', 'kr'], 'DKK' => ['Danish krone', 'kr'], 'PLN' => ['Polish zloty', 'zł'], 'TRY' => ['Turkish lira', '₺']],
+        'Middle East and Africa' => ['AED' => ['UAE dirham', 'AED'], 'SAR' => ['Saudi riyal', 'SAR'], 'ILS' => ['Israeli shekel', '₪'], 'ZAR' => ['South African rand', 'R'], 'NGN' => ['Nigerian naira', '₦'], 'KES' => ['Kenyan shilling', 'KSh']],
+    ];
+
+    /** @return array<string, array{0: string, 1: string}> */
+    public static function isoAll(): array
+    {
+        return array_merge(...array_values(self::ISO));
+    }
+
+    /** The text customers see before a plan price for an ISO code: "RM" for MYR, or the code itself when there is no short sign. */
+    public static function symbolFor(string $code): string
+    {
+        $code = strtoupper($code);
+
+        return self::isoAll()[$code][1] ?? $code;
+    }
+
     /** @return array<string, string> every listed currency: printed text => name */
     public static function all(): array
     {

@@ -124,7 +124,7 @@ class Stripe
 
         Payment::create([
             'business_id' => $business->id, 'plan' => (string) $business->plan, 'amount_cents' => (int) ($invoice['amount_paid'] ?? 0),
-            'currency' => strtoupper((string) ($invoice['currency'] ?? config('plans.currency'))), 'provider' => 'stripe', 'reference' => $reference, 'status' => 'paid',
+            'currency' => strtoupper((string) ($invoice['currency'] ?? app(\App\Billing\Plans::class)->currency())), 'provider' => 'stripe', 'reference' => $reference, 'status' => 'paid',
         ]);
 
         $end = $invoice['lines']['data'][0]['period']['end'] ?? null;

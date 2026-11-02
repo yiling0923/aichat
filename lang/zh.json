@@ -2029,5 +2029,20 @@
     "You are signed in as the owner and can make changes for them. It is written in the activity log.": "您会以店主身份登录,可以替他们修改。这会记录在活动日志中。",
     "Pick the person and type a new password for them. The password is never written to the log.": "选择成员并为他输入新密码。密码绝不会写入日志。",
     ":amount in :n payments": ":n 笔付款,共 :amount",
-    "Nothing yet. Plan changes, pauses and support views will show here.": "暂无内容。方案更改、暂停和支持查看会显示在这里。"
+    "Nothing yet. Plan changes, pauses and support views will show here.": "暂无内容。方案更改、暂停和支持查看会显示在这里。",
+    "Choose a currency from the list, or type its 3-letter code, for example BND.": "请从列表中选择货币,或输入 3 个字母的货币代码,例如 BND。",
+    "Billing settings saved.": "收费设置已保存。",
+    "Billing: currency and prices": "收费:货币与价格",
+    "What your plans are charged in and what the paid plans cost. It is used for new payments, the Billing page and the sign-up page. Payments already taken keep the currency they were paid in.": "您的方案以什么货币收费,以及付费方案的价格。它用于新的付款、账单页面和注册页面。已收的款项保留当时付款的货币。",
+    "Currency": "货币",
+    "Other: type its 3-letter code...": "其他:输入 3 个字母的代码…",
+    ":plan, per month": ":plan(每月)",
+    "Changing the currency does not convert the prices: type the prices you want to charge in the new currency. People who already pay by card keep their current price until they change plan.": "更改货币不会换算价格:请填写您想用新货币收取的价格。已经用银行卡付款的用户在更换方案之前保持当前价格。",
+    "Save billing settings": "保存收费设置",
+    "Billing settings changed": "收费设置已更改",
+    "Swedish krona": "瑞典克朗",
+    "Norwegian krone": "挪威克朗",
+    "Danish krone": "丹麦克朗",
+    "Sri Lankan rupee": "斯里兰卡卢比",
+    "Pakistani rupee": "巴基斯坦卢比"
 }

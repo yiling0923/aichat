@@ -114,7 +114,7 @@
                     <div><dt>{{ __('Owner') }}</dt><dd>{{ $owners->pluck('email')->implode(', ') ?: '-' }}</dd></div>
                     <div><dt>{{ __('People') }}</dt><dd>{{ $team->count() }}</dd></div>
                     <div><dt>{{ __('Channels') }}</dt><dd>{{ __(':a connected of :b', ['a' => $channels->where('active', true)->whereNull('last_error')->count(), 'b' => $channels->count()]) }}</dd></div>
-                    <div><dt>{{ __('Paid to you') }}</dt><dd>{{ strtoupper($paymentCurrency) }} {{ number_format($paidTotal / 100, 2) }}</dd></div>
+                    <div><dt>{{ __('Paid to you') }}</dt><dd>{{ $paidText }}</dd></div>
                 </dl>
             </div>
             <div class="card bz-card">
@@ -235,7 +235,7 @@
     {{-- ===== Payments ===== --}}
     <section data-bz="payments" hidden>
         <div class="card bz-card">
-            <div class="bar spread"><h3 style="margin:0">{{ __('Payments to you') }}</h3><span class="mute">{{ __(':amount in :n payments', ['amount' => strtoupper($paymentCurrency).' '.number_format($paidTotal / 100, 2), 'n' => $paymentCount]) }}</span></div>
+            <div class="bar spread"><h3 style="margin:0">{{ __('Payments to you') }}</h3><span class="mute">{{ __(':amount in :n payments', ['amount' => $paidText, 'n' => $paymentCount]) }}</span></div>
             <table class="table bz-table">
                 <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Plan') }}</th><th class="num">{{ __('Amount') }}</th><th>{{ __('Status') }}</th></tr></thead>
                 <tbody>

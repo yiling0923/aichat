@@ -6,7 +6,7 @@
         $current = $business->plan;
         $canceling = $state === 'active' && $business->subscription_status === 'canceled';
         $order = array_keys(array_filter($catalog, fn ($p, $k) => $k !== 'trial', ARRAY_FILTER_USE_BOTH));
-        $price = fn ($c) => '$'.number_format($c / 100);
+        $price = fn ($c) => $currencyLabel.' '.number_format($c / 100);
         $zhNum = app()->getLocale() === 'zh';
         $payTone = ['paid' => 'ok', 'failed' => 'hot', 'pending' => 'warn', 'refunded' => ''];
         $banner = match ($state) {

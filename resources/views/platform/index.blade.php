@@ -91,7 +91,7 @@
         </div>
         <div class="pk pk-gold">
             <div class="pk-top"><span class="pk-ic">{!! $svg('coins') !!}</span><span class="pk-l">{{ __('Taken, last 30 days') }}</span></div>
-            <b>{{ $money($totals['revenue30']) }}</b>
+            <b class="pk-money">{{ $totals['revenue30'] }}</b>
             <div class="pk-sub">{{ __(':n AI calls this month', ['n' => number_format($totals['ai'])]) }}</div>
         </div>
         <div class="pk pk-blue">
@@ -122,6 +122,7 @@
         <div class="bar" style="gap:8px;flex-wrap:wrap">
             <div class="seg" id="plat-days">@foreach ([7, 30, 90] as $d)<a href="{{ url('/platform?days='.$d) }}" @class(['on' => $days === $d])>{{ __(':n days', ['n' => $d]) }}</a>@endforeach</div>
             <a class="ibtn" href="{{ route('platform.export', ['days' => $days]) }}" data-tip="{{ __('Export CSV') }}" aria-label="{{ __('Export CSV') }}">{!! $svg('download') !!}</a>
+            <button type="button" class="ibtn" id="billing-btn" data-tip="{{ __('Billing: currency and prices') }}" aria-label="{{ __('Billing: currency and prices') }}">{!! $svg('coins') !!}</button>
             <button type="button" class="ibtn ibtn-primary" id="new-business" data-tip="{{ __('Add a business') }}" aria-label="{{ __('Add a business') }}">{!! $svg('plus') !!}</button>
         </div>
     </div>
@@ -182,7 +183,7 @@
                     <td class="num">{{ $r['bookings'] }}</td>
                     <td class="num" style="white-space:nowrap">{{ $r['sales'] > 0 ? $r['currency'].' '.number_format($r['sales'], 0) : '-' }}</td>
                     <td class="num">{{ $r['ai'] }}</td>
-                    <td class="num" style="white-space:nowrap">{{ $money($r['revenue'], 2) }}</td>
+                    <td class="num" style="white-space:nowrap">{{ $r['paidText'] }}</td>
                     <td class="num tm-actions">
                         <a class="ibtn ibtn-primary" href="{{ route('platform.show', $b->id) }}" data-tip="{{ __('Open') }}" aria-label="{{ __('Open') }}">{!! $svg('open') !!}</a>
                         <a class="ibtn" href="{{ route('chat.show', $b->slug) }}" target="_blank" rel="noopener" data-tip="{{ __('Customer chat') }}" aria-label="{{ __('Customer chat') }}">{!! $svg('chat') !!}</a>
@@ -262,6 +263,31 @@
     </form>
 </dialog>
 
+<dialog id="billing-dialog" class="dlg">
+    <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+    <h3>{{ __('Billing: currency and prices') }}</h3>
+    <p class="mute" style="margin-top:4px">{{ __('What your plans are charged in and what the paid plans cost. It is used for new payments, the Billing page and the sign-up page. Payments already taken keep the currency they were paid in.') }}</p>
+    <form method="post" action="{{ url('/platform/settings/billing') }}">@csrf
+        <label class="f" style="margin-top:12px"><span>{{ __('Currency') }}</span>
+            <select name="currency" id="bill-cur">
+                @foreach ($isoGroups as $group => $list)
+                    <optgroup label="{{ __($group) }}">@foreach ($list as $code => [$name, $sym])<option value="{{ $code }}" @selected($currency === $code)>{{ $code }} · {{ __($name) }}</option>@endforeach</optgroup>
+                @endforeach
+                @unless (array_key_exists($currency, \App\Support\Currencies::isoAll()))<option value="{{ $currency }}" selected>{{ $currency }}</option>@endunless
+                <option value="__other">{{ __('Other: type its 3-letter code...') }}</option>
+            </select>
+            <input type="text" name="currency_custom" id="bill-custom" maxlength="3" placeholder="BND" style="margin-top:8px;text-transform:uppercase" hidden>
+        </label>
+        @foreach ($plans as $key => $pl)
+            @if (($pl['price_cents'] ?? 0) > 0)
+                <label class="f"><span>{{ __(':plan, per month', ['plan' => $pl['name']]) }}</span><input type="number" name="price[{{ $key }}]" value="{{ number_format($pl['price_cents'] / 100, 2, '.', '') }}" min="0" max="100000" step="0.01"></label>
+            @endif
+        @endforeach
+        <p class="mute small-note" style="padding:0">{{ __('Changing the currency does not convert the prices: type the prices you want to charge in the new currency. People who already pay by card keep their current price until they change plan.') }}</p>
+        <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save billing settings') }}</button></div>
+    </form>
+</dialog>
+
 <dialog id="bulk-pause-dialog" class="dlg">
     <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
     <h3>{{ __('Pause the selected businesses?') }}</h3>
@@ -329,6 +355,10 @@
 
   function dlg(id) { var d = document.getElementById(id); d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('.dlg-x')) { d.close(); } }); return d; }
   var pd = dlg('pause-dialog'), iv = dlg('invite-dialog'), bd = dlg('business-dialog');
+  var bbd = dlg('billing-dialog'), bcur = document.getElementById('bill-cur'), bcus = document.getElementById('bill-custom');
+  document.getElementById('billing-btn').addEventListener('click', function () { bbd.showModal(); });
+  bcur.addEventListener('change', function () { bcus.hidden = bcur.value !== '__other'; if (!bcus.hidden) { bcus.focus(); } });
+  @if ($errors->has('currency')) bbd.showModal(); @endif
   document.getElementById('new-business').addEventListener('click', function () { bd.showModal(); });
   @if ($errors->any()) bd.showModal(); @endif
   document.querySelectorAll('[data-pause]').forEach(function (b) {

@@ -76,10 +76,10 @@
     <h2>{{ __('Simple plans') }}</h2>
     <p class="mute lp-sub">{{ __('Start free. Upgrade when you are ready.') }}</p>
     <div class="lp-grid three">
-        @foreach (config('plans.plans') as $key => $plan)
+        @foreach ($plansCatalog as $key => $plan)
             <div class="lp-card price {{ $key === 'starter' ? 'pop' : '' }}">@if ($key === 'starter')<span class="lp-badge">{{ __('Most popular') }}</span>@endif
                 <h3>{{ __($plan['name']) }}</h3>
-                <p class="amount">{{ $plan['price_cents'] === 0 ? __('Free') : '$'.number_format($plan['price_cents'] / 100) }}<small>{{ $plan['price_cents'] === 0 ? ' '.__('for :n days', ['n' => config('plans.trial_days')]) : ' '.__('/ month') }}</small></p>
+                <p class="amount">{{ $plan['price_cents'] === 0 ? __('Free') : $plansCurrency.' '.number_format($plan['price_cents'] / 100) }}<small>{{ $plan['price_cents'] === 0 ? ' '.__('for :n days', ['n' => config('plans.trial_days')]) : ' '.__('/ month') }}</small></p>
                 <ul>
                     @foreach ($plan['limits'] as $kind => $limit)
                         <li>{{ number_format($limit) }} {{ __(['ai' => 'AI replies a month', 'staff' => 'team members', 'practitioners' => 'practitioners or rooms', 'channels' => $limit === 1 ? 'connected channel' : 'connected channels'][$kind]) }}</li>

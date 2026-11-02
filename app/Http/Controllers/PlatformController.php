@@ -49,7 +49,10 @@ class PlatformController extends Controller
         $customers = $count(Customer::class);
         $bookings = $count(Booking::class, 'created_at', fn ($q) => $q->where('status', '!=', 'cancelled'));
         $orders = Order::query()->withoutGlobalScopes()->where('status', 'paid')->where('ordered_at', '>=', $since)->selectRaw('business_id, count(*) as n, sum(amount) as total')->groupBy('business_id')->get()->keyBy('business_id');
-        $revenue = Payment::query()->where('status', 'paid')->selectRaw('business_id, sum(amount_cents) as c')->groupBy('business_id')->pluck('c', 'business_id');
+        // What each business paid you, in the currency each payment was actually made in.
+        $paid = Payment::query()->where('status', 'paid')->selectRaw('business_id, currency, sum(amount_cents) as c')->groupBy('business_id', 'currency')->get()
+            ->groupBy('business_id')->map(fn ($g) => $g->mapWithKeys(fn ($r) => [strtoupper((string) $r->currency) => (int) $r->c])->all());
+        $billingCurrency = $plans->currency();
 
         $rows = $businesses->map(fn (Business $b) => [
             'business' => $b,
@@ -62,7 +65,8 @@ class PlatformController extends Controller
             'orders' => (int) ($orders[$b->id]->n ?? 0),
             'sales' => (float) ($orders[$b->id]->total ?? 0),
             'currency' => (string) (((array) $b->settings)['currency'] ?? 'RM'),
-            'revenue' => (int) ($revenue[$b->id] ?? 0),
+            'revenue' => (int) array_sum($paid[$b->id] ?? []),
+            'paidText' => $this->moneyText($paid[$b->id] ?? [], $billingCurrency),
         ]);
 
         // One number per day for the little trend lines in the top cards, and the period before for the "up/down" arrows.
@@ -88,6 +92,14 @@ class PlatformController extends Controller
         ];
     }
 
+    /** "USD 29.00 · MYR 40.00": amounts per currency; a quiet zero in the plans' own currency when nothing was paid. @param array<string, int> $byCurrency */
+    private function moneyText(array $byCurrency, string $zeroCurrency): string
+    {
+        $byCurrency = array_filter($byCurrency, fn ($c) => $c > 0);
+
+        return $byCurrency === [] ? $zeroCurrency.' 0.00' : collect($byCurrency)->map(fn ($c, $cur) => $cur.' '.number_format($c / 100, 2))->implode(' · ');
+    }
+
     public function index(Request $request, Plans $plans): View
     {
         ['days' => $days, 'rows' => $rows, 'series' => $series, 'before' => $before] = $this->overview($request, $plans);
@@ -107,14 +119,15 @@ class PlatformController extends Controller
                 'trials' => $businesses->filter(fn (Business $b) => $plans->state($b) === 'trial')->count(),
                 'paying' => $paying->count(),
                 'mrr' => $paying->sum(fn (Business $b) => $plans->priceCents($b->plan)),
-                'revenue30' => (int) Payment::query()->where('status', 'paid')->where('created_at', '>=', now()->subDays(30))->sum('amount_cents'),
+                'revenue30' => $this->moneyText(Payment::query()->where('status', 'paid')->where('created_at', '>=', now()->subDays(30))->selectRaw('currency, sum(amount_cents) as c')->groupBy('currency')->get()->mapWithKeys(fn ($r) => [strtoupper((string) $r->currency) => (int) $r->c])->all(), $plans->currency()),
                 'ai' => (int) $rows->sum('ai'),
                 'chats' => (int) $rows->sum('chats'),
                 'bookings' => (int) $rows->sum('bookings'),
                 'sales' => $sales !== '' ? $sales : '-',
             ],
-            'currency' => config('plans.currency'),
-            'plans' => (array) config('plans.plans'),
+            'currency' => $plans->currency(),
+            'plans' => $plans->catalog(),
+            'isoGroups' => \App\Support\Currencies::ISO,
             'inviteOnly' => config('plans.signup_mode') === 'invite',
             'invites' => Invite::query()->orderByDesc('id')->limit(30)->get(),
             'audits' => PlatformAudit::query()->with(['business', 'user'])->orderByDesc('id')->limit(100)->get(),
@@ -129,10 +142,10 @@ class PlatformController extends Controller
         return response()->streamDownload(function () use ($rows, $days): void {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Business', 'Address name', 'Status', 'Plan', 'State', 'Trial ends', 'People', 'Chats ('.$days.' d)', 'New customers ('.$days.' d)', 'Bookings ('.$days.' d)', 'Paid orders ('.$days.' d)', 'Customer money ('.$days.' d)', 'Currency', 'AI calls (month)', 'Paid to you (all time)']);
+            fputcsv($out, ['Business', 'Address name', 'Status', 'Plan', 'State', 'Trial ends', 'People', 'Chats ('.$days.' d)', 'New customers ('.$days.' d)', 'Bookings ('.$days.' d)', 'Paid orders ('.$days.' d)', 'Customer money ('.$days.' d)', 'Currency', 'AI calls (month)', 'Paid to you (all time, in the currency paid)']);
             foreach ($rows as $r) {
                 $b = $r['business'];
-                fputcsv($out, array_map([ReportsController::class, 'safe'], [$b->name, $b->slug, $b->status, $b->plan ?? 'internal', $r['state'], $b->trial_ends_at?->format('Y-m-d') ?? '', $r['users'], $r['chats'], $r['customers'], $r['bookings'], $r['orders'], number_format($r['sales'], 2, '.', ''), $r['currency'], $r['ai'], number_format($r['revenue'] / 100, 2, '.', '')]));
+                fputcsv($out, array_map([ReportsController::class, 'safe'], [$b->name, $b->slug, $b->status, $b->plan ?? 'internal', $r['state'], $b->trial_ends_at?->format('Y-m-d') ?? '', $r['users'], $r['chats'], $r['customers'], $r['bookings'], $r['orders'], number_format($r['sales'], 2, '.', ''), $r['currency'], $r['ai'], $r['paidText']]));
             }
             fclose($out);
         }, 'businesses-'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -159,7 +172,7 @@ class PlatformController extends Controller
         return view('platform.show', [
             'b' => $business,
             'state' => $plans->state($business),
-            'plans' => (array) config('plans.plans'),
+            'plans' => $plans->catalog(),
             'kinds' => $kinds,
             'labels' => (array) config('plans.labels'),
             'currency' => (string) (((array) $business->settings)['currency'] ?? 'RM'),
@@ -180,9 +193,8 @@ class PlatformController extends Controller
             'audits' => PlatformAudit::query()->with('user')->where('business_id', $id)->orderByDesc('id')->limit(30)->get(),
             'hasOwner' => User::query()->where('business_id', $id)->where('role', 'owner')->where('active', true)->exists(),
             'series' => ['chats' => $daily(Conversation::class, fn ($q) => $q->where('channel', '!=', 'preview')), 'bookings' => $daily(Booking::class, fn ($q) => $q->where('status', '!=', 'cancelled'))],
-            'paidTotal' => (int) Payment::query()->where('business_id', $id)->where('status', 'paid')->sum('amount_cents'),
+            'paidText' => $this->moneyText(Payment::query()->where('business_id', $id)->where('status', 'paid')->selectRaw('currency, sum(amount_cents) as c')->groupBy('currency')->get()->mapWithKeys(fn ($r) => [strtoupper((string) $r->currency) => (int) $r->c])->all(), $plans->currency()),
             'paymentCount' => Payment::query()->where('business_id', $id)->where('status', 'paid')->count(),
-            'paymentCurrency' => (string) config('plans.currency'),
         ]);
     }
 
@@ -358,6 +370,38 @@ class PlatformController extends Controller
         PlatformAudit::record('support_stop', (int) $support['business_id'], $support['mode'] === 'edit' ? 'Acting as the owner' : 'Read-only view');
 
         return redirect()->route('platform.show', (int) $support['business_id']);
+    }
+
+    /** What the plans are charged in, and what the paid plans cost. Existing payments keep the currency they were paid in. */
+    public function billing(Request $request, Plans $plans): RedirectResponse
+    {
+        $paid = collect((array) config('plans.plans'))->filter(fn ($p) => ($p['price_cents'] ?? 0) > 0)->keys()->all();
+        $request->validate([
+            'currency' => ['required', 'string', 'max:8'],
+            'currency_custom' => ['nullable', 'string', 'max:8'],
+            'price' => ['nullable', 'array'],
+            'price.*' => ['nullable', 'numeric', 'min:0', 'max:100000'],
+        ]);
+
+        $code = $request->input('currency') === '__other' ? strtoupper(trim((string) $request->input('currency_custom'))) : strtoupper((string) $request->input('currency'));
+        if (! preg_match('/^[A-Z]{3}$/', $code)) {
+            return back()->withErrors(['currency' => __('Choose a currency from the list, or type its 3-letter code, for example BND.')]);
+        }
+
+        $before = $plans->currency().' '.collect($paid)->map(fn ($k) => $k.' '.number_format($plans->priceCents($k) / 100, 2))->implode(', ');
+        $prices = [];
+        foreach ($paid as $key) {
+            $value = $request->input('price.'.$key);
+            if ($value !== null && $value !== '' && is_numeric($value)) {
+                $prices[$key] = (int) round(((float) $value) * 100);
+            }
+        }
+
+        \App\Models\PlatformSetting::put('billing.currency', $code);
+        \App\Models\PlatformSetting::put('billing.prices', $prices);
+        PlatformAudit::record('billing_changed', null, 'From '.$before.' to '.$code.' '.collect($prices)->map(fn ($c, $k) => $k.' '.number_format($c / 100, 2))->implode(', '));
+
+        return back()->with('status', __('Billing settings saved.'));
     }
 
     public function invite(Request $request): RedirectResponse

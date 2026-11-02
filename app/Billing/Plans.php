@@ -130,8 +130,35 @@ class Plans
             : null;
     }
 
+    /** The plans as the platform owner has set them: the config, with any prices chosen in the console. @return array<string, array<string, mixed>> */
+    public function catalog(): array
+    {
+        $plans = (array) config('plans.plans');
+        $chosen = (array) \App\Models\PlatformSetting::get('billing.prices', []);
+
+        foreach ($plans as $key => $plan) {
+            if (isset($chosen[$key]) && is_numeric($chosen[$key]) && ($plan['price_cents'] ?? 0) > 0) {
+                $plans[$key]['price_cents'] = max(0, (int) $chosen[$key]);
+            }
+        }
+
+        return $plans;
+    }
+
+    /** The ISO currency code the plans are charged in (chosen in the console, otherwise BILLING_CURRENCY). */
+    public function currency(): string
+    {
+        return strtoupper((string) \App\Models\PlatformSetting::get('billing.currency', config('plans.currency')));
+    }
+
+    /** What customers see before a plan price, such as "RM" or "$". */
+    public function currencyLabel(): string
+    {
+        return \App\Support\Currencies::symbolFor($this->currency());
+    }
+
     public function priceCents(string $plan): int
     {
-        return (int) config('plans.plans.'.$plan.'.price_cents', 0);
+        return (int) ($this->catalog()[$plan]['price_cents'] ?? 0);
     }
 }

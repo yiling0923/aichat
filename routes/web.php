@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome', [
         'businesses' => Business::query()->where('status', 'active')->orderBy('name')->get(),
+        'plansCatalog' => app(\App\Billing\Plans::class)->catalog(),
+        'plansCurrency' => app(\App\Billing\Plans::class)->currencyLabel(),
     ]);
 })->name('home');
 
@@ -297,6 +299,7 @@ Route::middleware(['auth', 'platform'])->prefix('platform')->group(function () {
     $p = \App\Http\Controllers\PlatformController::class;
     Route::get('/', [$p, 'index'])->name('platform.index');
     Route::get('/export', [$p, 'export'])->name('platform.export');
+    Route::post('/settings/billing', [$p, 'billing']);
     Route::post('/businesses', [$p, 'store']);
     Route::post('/businesses/bulk', [$p, 'bulk']);
     Route::get('/businesses/{id}', [$p, 'show'])->whereNumber('id')->name('platform.show');

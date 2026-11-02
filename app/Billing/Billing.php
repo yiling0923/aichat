@@ -80,10 +80,10 @@ class Billing
     {
         $amount = $this->plans->priceCents($plan);
         $provider = $this->provider();
-        $result = $provider->charge($business, $plan, $amount, (string) config('plans.currency'));
+        $result = $provider->charge($business, $plan, $amount, $this->plans->currency());
 
         Payment::create([
-            'business_id' => $business->id, 'plan' => $plan, 'amount_cents' => $amount, 'currency' => config('plans.currency'),
+            'business_id' => $business->id, 'plan' => $plan, 'amount_cents' => $amount, 'currency' => $this->plans->currency(),
             'provider' => $provider->name(), 'reference' => $result['reference'], 'status' => $result['ok'] ? 'paid' : 'failed',
         ]);
 

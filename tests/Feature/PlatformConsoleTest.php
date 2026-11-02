@@ -276,4 +276,58 @@ class PlatformConsoleTest extends TestCase
 
         $this->actingAs($this->platform)->get('/platform/businesses/'.Business::query()->where('name', 'Late Co')->value('id'))->assertOk()->assertSee('st st-hot', false);
     }
+
+    public function test_the_billing_currency_and_prices_are_set_in_the_console_and_used_everywhere(): void
+    {
+        $plans = app(Plans::class);
+        $this->assertSame('USD', $plans->currency());
+        $this->assertSame(2900, $plans->priceCents('starter'));
+
+        // A payment made before the change keeps its own currency.
+        \App\Models\Payment::create(['business_id' => $this->shop->id, 'plan' => 'starter', 'amount_cents' => 2900, 'currency' => 'USD', 'provider' => 'local', 'reference' => 'old-1', 'status' => 'paid']);
+
+        $this->actingAs($this->platform)->post('/platform/settings/billing', ['currency' => 'MYR', 'price' => ['starter' => '39.50', 'growth' => '99']])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('MYR', app(Plans::class)->currency());
+        $this->assertSame(3950, app(Plans::class)->priceCents('starter'));
+        $this->assertSame(9900, app(Plans::class)->priceCents('growth'));
+        $this->assertSame(0, app(Plans::class)->priceCents('trial'));              // the free trial stays free
+        $this->assertSame('RM', app(Plans::class)->currencyLabel());
+        $this->assertTrue(PlatformAudit::query()->where('action', 'billing_changed')->exists());
+
+        // New payments use it; old ones are still shown in the currency they were paid in.
+        $this->actingAs($this->owner)->post('/admin/billing/subscribe', ['plan' => 'starter'])->assertRedirect();
+        $new = \App\Models\Payment::query()->where('business_id', $this->shop->id)->where('reference', '!=', 'old-1')->first();
+        $this->assertSame('MYR', $new->currency); $this->assertSame('paid', $new->status);
+        $this->assertSame(3950, $new->amount_cents);
+        $this->actingAs($this->platform)->get('/platform')->assertOk()->assertSee('USD 29.00', false)->assertSee('MYR 39.50', false);
+
+        // Customers see it too.
+        $this->actingAs($this->owner)->get('/admin/billing')->assertOk()->assertSee('RM 40', false);
+        $this->get('/')->assertOk()->assertSee('RM 99', false);
+    }
+
+    public function test_only_a_real_currency_code_and_sensible_prices_are_accepted(): void
+    {
+        $url = '/platform/settings/billing';
+        $this->actingAs($this->platform)->post($url, ['currency' => '__other', 'currency_custom' => 'bnd'])->assertSessionHasNoErrors();
+        $this->assertSame('BND', app(Plans::class)->currency());
+
+        foreach ([['currency' => 'RM'], ['currency' => '__other', 'currency_custom' => 'US'], ['currency' => '__other', 'currency_custom' => 'U1D'], ['currency' => '__other', 'currency_custom' => '']] as $bad) {
+            $this->actingAs($this->platform)->post($url, $bad)->assertSessionHasErrors('currency');
+        }
+        $this->actingAs($this->platform)->post($url, ['currency' => 'USD', 'price' => ['starter' => '-5']])->assertSessionHasErrors('price.starter');
+        $this->actingAs($this->platform)->post($url, ['currency' => 'USD', 'price' => ['starter' => 'cheap']])->assertSessionHasErrors('price.starter');
+        $this->assertSame('BND', app(Plans::class)->currency());                   // nothing bad was saved
+
+        $this->actingAs($this->owner)->post($url, ['currency' => 'USD'])->assertForbidden();
+        $this->assertSame('BND', app(Plans::class)->currency());
+    }
+
+    public function test_the_console_works_before_the_settings_table_exists(): void
+    {
+        \Illuminate\Support\Facades\Schema::drop('platform_settings');
+        $this->assertSame('USD', app(Plans::class)->currency());
+        $this->actingAs($this->platform)->get('/platform')->assertOk();
+        $this->get('/')->assertOk();
+    }
 }

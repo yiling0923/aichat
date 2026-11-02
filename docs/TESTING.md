@@ -992,3 +992,14 @@ Open any business from the platform console (the Open icon or its name).
 6. **Support:** two clear choices, View (read-only) and Act as the owner, and the password box for someone locked out.
 7. **Payments:** the total paid to you and each payment. **Activity:** a timeline with an icon for each kind of action and who did it.
 8. On a phone the tabs scroll sideways and nothing is wider than the screen.
+
+## DR. Platform billing: currency and prices
+
+Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` in `.env` stays the default until you save a choice.
+
+1. Log in as the platform owner, open `/platform`, press the coins button (hover: "Billing: currency and prices").
+2. Pick a currency (for example MYR) or choose "Other" and type a 3-letter code (for example BND). Set the Starter/Growth prices. Save.
+3. Open a business's Billing page and the public home page: prices show the new currency and amounts.
+4. The "Paid to you" column shows each payment in the currency it was paid in, for example `USD 29.00 · MYR 39.50`; with no payments it shows `<your currency> 0.00`.
+5. Wrong codes (`RM`, `US`, `U1D`) and negative prices are refused; a business owner gets "forbidden".
+6. The change appears in the platform audit log as "Billing settings changed".
