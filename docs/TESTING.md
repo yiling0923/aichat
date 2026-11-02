@@ -973,3 +973,10 @@ Still private by design: you see counts and money totals, never a business's cus
 (DO, updated) Only the useful column headings can be sorted (they show an arrow): Business, Joined, Ends, Chats and Paid to you. The other headings are plain text. It still opens newest first.
 
 (DO, updated) The reason a business was paused ("Reason: Unpaid") is now in its own outlined red box, under the name in the table and under the heading on the business page, so it is easy to see. The paused row's tint now fills the whole row.
+
+## DP. More currencies
+
+1. Settings > Business > "Currency shown with prices" now has about 35 currencies in four groups (Asia-Pacific, Americas, Europe, Middle East and Africa), for example RM, S$, HK$, NT$, CN¥, JP¥, ₩, ฿, Rp, ₱, ₫, ₹, A$, NZ$, US$, C$, €, £, CHF, AED, SAR, R. The names are in Chinese too when the page is in Chinese.
+2. **Other: type your own...** shows a box. Type up to 6 letters or signs (for example BND or Fr) and Save. A typed currency stays in the list afterwards. Anything with symbols such as < > or quotes, with a line break, over 6 characters, or empty is refused with a message.
+3. The currency you choose is used on Orders, Today, Reports, the customer pages, the AI's answers about prices, and in the platform console next to that business's customer money.
+4. The platform's own billing currency (what your plans are priced in, shown as "USD 29 a month" in the platform console) now comes from `BILLING_CURRENCY` in `.env` (for example `MYR`). Prices are in config/plans.php, in cents of that currency. Run `php artisan config:clear` after changing it.

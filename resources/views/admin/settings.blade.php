@@ -24,9 +24,17 @@
                 <label class="f"><span>{{ __('Address (used when customers ask where you are)') }}</span><input type="text" name="address" value="{{ old('address', $business->settings['address'] ?? '') }}" maxlength="200" placeholder="{{ __('12 Jalan Example, Kuala Lumpur') }}"></label>
                 <label class="f"><span>{{ __('Time zone') }}</span>
                     <select name="timezone">@foreach ($timezones as $group => $zones)<optgroup label="{{ $group }}">@foreach ($zones as $z)<option value="{{ $z }}" @selected($business->timezone === $z)>{{ str_replace('_', ' ', $z) }}</option>@endforeach</optgroup>@endforeach</select></label>
-                <label class="f"><span>{{ __('Currency shown with prices') }}</span>
-                    <select name="currency">@foreach ($currencies as $sym => $label)<option value="{{ $sym }}" @selected($currency === $sym)>{{ $label }}</option>@endforeach
-                        @unless (isset($currencies[$currency]))<option value="{{ $currency }}" selected>{{ $currency }}</option>@endunless</select></label>
+                <div class="f"><span>{{ __('Currency shown with prices') }}</span>
+                    <select name="currency" id="cur-sel" aria-label="{{ __('Currency shown with prices') }}">
+                        @foreach ($currencyGroups as $group => $list)
+                            <optgroup label="{{ __($group) }}">@foreach ($list as $sym => $name)<option value="{{ $sym }}" @selected(old('currency', $currency) === $sym)>{{ $sym }} ({{ __($name) }})</option>@endforeach</optgroup>
+                        @endforeach
+                        @unless (isset($currencies[$currency]))<option value="{{ $currency }}" @selected(old('currency', $currency) === $currency)>{{ $currency }} ({{ __('your own') }})</option>@endunless
+                        <option value="__other" @selected(old('currency') === '__other')>{{ __('Other: type your own...') }}</option>
+                    </select>
+                    <input type="text" name="currency_custom" id="cur-custom" value="{{ old('currency_custom') }}" maxlength="12" placeholder="{{ __('For example BND or Fr') }}" aria-label="{{ __('Type your currency') }}" style="margin-top:8px" @if (old('currency') !== '__other') hidden @endif>
+                    @error('currency_custom')<small class="mute" style="color:var(--red)">{{ $message }}</small>@enderror
+                </div>
             </div>
             <div class="f"><span>{{ __('Colour of your staff area and chat') }}</span>
                 <div class="swatches" id="accent-swatches">
@@ -219,6 +227,10 @@
       if (navigator.clipboard) { navigator.clipboard.writeText(el.value).then(done); } else { el.select(); document.execCommand('copy'); done(); }
     });
   });
+
+  // Currency: "Other" shows a box to type your own.
+  var curSel = document.getElementById('cur-sel'), curBox = document.getElementById('cur-custom');
+  if (curSel && curBox) { curSel.addEventListener('change', function () { curBox.hidden = curSel.value !== '__other'; if (!curBox.hidden) { curBox.focus(); } }); }
 
   // Team pop-up: add and edit.
   var dlg = document.getElementById('member-dialog'), form = document.getElementById('md-form');

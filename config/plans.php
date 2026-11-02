@@ -3,7 +3,7 @@
 // The plans a business can choose. Prices are in US cents per month. Edit freely: limits are read from here.
 // A limit of null means unlimited.
 return [
-    'currency' => 'USD',
+    'currency' => env('BILLING_CURRENCY', 'USD'),     // what your plans are priced in, e.g. USD or MYR (the prices below are in cents of this currency)
     'trial_days' => 14,
     'signup_mode' => env('SIGNUP_MODE', 'open'),       // open, or invite (invite-only beta: a code from the platform console is needed)
     'provider' => env('BILLING_PROVIDER', 'local'),   // local (test mode) or stripe

@@ -26,7 +26,8 @@ class SettingsController extends Controller
             'active' => 'settings',
             'team' => User::query()->where('business_id', $business->id)->orderBy('name')->get(),
             'timezones' => $this->timezones($business->timezone),
-            'currencies' => ['RM' => 'RM (Malaysian ringgit)', 'S$' => 'S$ (Singapore dollar)', 'HK$' => 'HK$ (Hong Kong dollar)', '$' => '$ (dollar)', '€' => '€ (euro)', '£' => '£ (pound)', '¥' => '¥ (yuan or yen)', 'Rp' => 'Rp (rupiah)', '฿' => '฿ (baht)'],
+            'currencyGroups' => \App\Support\Currencies::GROUPS,
+            'currencies' => \App\Support\Currencies::all(),
             'palette' => ['#0f766e', '#2563eb', '#7c3aed', '#db2777', '#b91c1c', '#c2410c', '#15803d', '#475569'],
             'teamUsed' => app(Plans::class)->used($business, 'staff'),
             'teamLimit' => app(Plans::class)->limit($business, 'staff'),
@@ -60,7 +61,8 @@ class SettingsController extends Controller
             'timezone' => ['required', 'timezone:all'],
             'accent' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'address' => ['nullable', 'string', 'max:200'],
-            'currency' => ['nullable', 'string', 'max:6'],
+            'currency' => ['nullable', 'string', 'max:8'],      // up to 6 for a real currency, and "__other" for the type-your-own choice
+            'currency_custom' => ['nullable', 'string', 'max:12'],
         ]);
 
         $business = $request->user()->business;
@@ -70,7 +72,13 @@ class SettingsController extends Controller
             $settings['address'] = $data['address'];
         }
         if (! empty($data['currency'])) {
-            $settings['currency'] = $data['currency'];
+            // "Other" means the owner typed their own; anything else must be a listed currency or the one already saved.
+            $picked = $data['currency'] === '__other' ? \App\Support\Currencies::clean($data['currency_custom'] ?? null) : (\App\Support\Currencies::isListed($data['currency']) || $data['currency'] === ($settings['currency'] ?? null) ? $data['currency'] : null);
+
+            if ($picked === null) {
+                return back()->withErrors(['currency_custom' => __('Type a short currency, up to 6 letters or signs, for example "BND" or "Fr".')])->withInput();
+            }
+            $settings['currency'] = $picked;
         }
         $business->update(['name' => $data['name'], 'timezone' => $data['timezone'], 'settings' => $settings]);
 
