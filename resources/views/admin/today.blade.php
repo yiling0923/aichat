@@ -69,8 +69,34 @@
         <a class="tp-stat" href="{{ route('schedule') }}"><span class="tp-sl">{{ __('Bookings today') }}</span><b>{{ $bookings->count() }}</b><span class="tp-sn">{{ __(':n tomorrow', ['n' => $tomorrow]) }}</span></a>
         <a class="tp-stat" href="{{ route('inbox') }}"><span class="tp-sl">{{ __('Open chats') }}</span><b>{{ $openChats }}</b><span class="tp-sn">{{ __('all channels') }}</span></a>
         <a class="tp-stat" href="{{ route('customers') }}"><span class="tp-sl">{{ __('New customers') }}</span><b>{{ $newLeads }}</b><span class="tp-sn {{ $leadsDelta > 0 ? 'up' : ($leadsDelta < 0 ? 'down' : '') }}">{{ $leadsDelta === 0 ? __('same as last week') : __(':v vs last week', ['v' => $leadsDelta > 0 ? '▲ '.$leadsDelta : '▼ '.abs($leadsDelta)]) }}</span></a>
-        <a class="tp-stat" href="{{ route('orders') }}"><span class="tp-sl">{{ __('Paid, 7 days') }}</span><b>{{ $money($revenueWeek) }}</b><span class="tp-sn {{ ($revenueDelta ?? 0) > 0 ? 'up' : (($revenueDelta ?? 0) < 0 ? 'down' : '') }}">{{ $revenueDelta === null ? __('no sales the week before') : __(':v vs week before', ['v' => ($revenueDelta >= 0 ? '▲ ' : '▼ ').abs($revenueDelta).'%']) }}</span></a>
     </section>
+
+    @if ($sales)
+        @php $dayMax = max(1, collect($sales['days'])->max('amount')); @endphp
+        <section class="tp-panel sl-panel">
+            <div class="tp-head"><h3>{{ __('Sales') }}</h3><a href="{{ route('reports') }}" class="tp-link">{{ __('Open reports') }}</a></div>
+            <div class="sl-body">
+                <div class="sl-nums">
+                    <a href="{{ route('orders') }}"><span>{{ __('Today') }}</span><b>{{ $money($sales['today']['amount']) }}</b><small>{{ $sales['today']['orders'] === 1 ? __('1 order') : __(':n orders', ['n' => $sales['today']['orders']]) }}</small></a>
+                    <a href="{{ route('orders') }}"><span>{{ __('Yesterday') }}</span><b>{{ $money($sales['yesterday']['amount']) }}</b><small>{{ $sales['yesterday']['orders'] === 1 ? __('1 order') : __(':n orders', ['n' => $sales['yesterday']['orders']]) }}</small></a>
+                    <a href="{{ route('orders') }}"><span>{{ __('Last 7 days') }}</span><b>{{ $money($sales['week']['amount']) }}</b><small>{{ $sales['week']['orders'] === 1 ? __('1 order') : __(':n orders', ['n' => $sales['week']['orders']]) }}</small></a>
+                    <a href="{{ route('orders') }}"><span>{{ __('This month') }}</span><b>{{ $money($sales['month']['amount']) }}</b><small class="{{ ($sales['monthDelta'] ?? 0) > 0 ? 'up' : (($sales['monthDelta'] ?? 0) < 0 ? 'down' : '') }}">{{ $sales['monthDelta'] === null ? ($sales['month']['orders'] === 1 ? __('1 order') : __(':n orders', ['n' => $sales['month']['orders']])) : __(':v vs last month', ['v' => ($sales['monthDelta'] >= 0 ? '▲ ' : '▼ ').abs($sales['monthDelta']).'%']) }}</small></a>
+                </div>
+                <div class="sl-chart" aria-label="{{ __('Sales per day, last 7 days') }}">
+                    @foreach ($sales['days'] as $d)
+                        <div class="tp-day {{ $d['today'] ? 'today' : '' }}" title="{{ $d['label'].': '.$money($d['amount']) }}">
+                            <span class="n">{{ $d['amount'] > 0 ? number_format($d['amount'], 0) : '' }}</span>
+                            <i style="height: {{ $d['amount'] > 0 ? max(8, round($d['amount'] / $dayMax * 64)) : 3 }}px"></i>
+                            <small>{{ $d['label'] }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @if ($sales['pendingCount'])
+                <a class="tp-row sl-pending" href="{{ route('orders') }}"><span class="at-ic" style="background:var(--ambers);color:var(--amber)">$</span><div class="tp-id"><b>{{ $sales['pendingCount'] === 1 ? __('1 order not paid yet') : __(':n orders not paid yet', ['n' => $sales['pendingCount']]) }}</b><small>{{ $money($sales['pendingAmount']) }} {{ __('waiting to be collected') }}</small></div><span class="btn small">{{ __('Open orders') }}</span></a>
+            @endif
+        </section>
+    @endif
 
     <div class="tp-cols">
         <div class="tp-main">
@@ -179,7 +205,7 @@
                     <div><b>{{ $d['bookings_made'] }}</b><span>{{ __('Bookings made') }}</span></div>
                     <div><b>{{ $d['visits'] }}</b><span>{{ __('Visits') }}</span></div>
                     <div><b>{{ $d['new_customers'] }}</b><span>{{ __('New customers') }}</span></div>
-                    <div><b>{{ $d['currency'] }} {{ number_format($d['revenue'], 0) }}</b><span>{{ $d['orders_paid'] === 1 ? __('Paid (1 order)') : __('Paid (:n orders)', ['n' => $d['orders_paid']]) }}</span></div>
+                    @if ($sales)<div><b>{{ $d['currency'] }} {{ number_format($d['revenue'], 0) }}</b><span>{{ $d['orders_paid'] === 1 ? __('Paid (1 order)') : __('Paid (:n orders)', ['n' => $d['orders_paid']]) }}</span></div>@endif
                     <div><b>{{ $d['cancelled'] }}</b><span>{{ __('Cancelled') }}</span></div>
                 </div>
                 @if ($d['topics'])

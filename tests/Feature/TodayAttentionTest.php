@@ -35,4 +35,18 @@ class TodayAttentionTest extends TestCase
         $owner = User::factory()->create(['business_id' => $b->id, 'role' => 'owner']);
         $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('All clear')->assertDontSee('Needs your attention');
     }
+
+    public function test_sales_show_on_today_for_people_who_may_see_reports(): void
+    {
+        $b = Business::factory()->create(['slug' => 'sale-co', 'plan' => 'starter', 'subscription_status' => 'active', 'timezone' => 'UTC', 'settings' => ['currency' => 'RM']]);
+        $owner = User::factory()->create(['business_id' => $b->id, 'role' => 'owner']);
+        $staff = User::factory()->create(['business_id' => $b->id, 'role' => 'staff', 'permissions' => ['inbox']]);
+        app(CurrentBusiness::class)->runAs($b, function () {
+            \App\Models\Order::create(['reference' => 'S1', 'items' => 'Facial', 'amount' => 120, 'status' => 'paid', 'ordered_at' => now()]);
+            \App\Models\Order::create(['reference' => 'S2', 'items' => 'Mask', 'amount' => 80, 'status' => 'pending', 'ordered_at' => now()]);
+        });
+
+        $this->actingAs($owner)->get('/admin/today')->assertOk()->assertSee('Sales')->assertSee('RM 120')->assertSee('1 order not paid yet')->assertSee('RM 80');
+        $this->actingAs($staff)->get('/admin/today')->assertOk()->assertDontSee('Open reports')->assertDontSee('RM 120');
+    }
 }

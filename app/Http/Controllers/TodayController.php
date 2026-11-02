@@ -60,6 +60,30 @@ class TodayController extends Controller
 
         $summary = app(\App\Services\DailySummary::class);
 
+        // Sales for people allowed to see reports (the owner always can): money in, by day, and what is still unpaid.
+        $sales = null;
+        if ($user->allows('reports')) {
+            $sum = fn ($from, $to) => ['amount' => (float) Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from->copy()->utc(), $to->copy()->utc()])->sum('amount'), 'orders' => Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from->copy()->utc(), $to->copy()->utc()])->count()];
+            $days = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $d = $now->copy()->subDays($i);
+                $days[] = ['label' => $d->translatedFormat('D'), 'today' => $i === 0] + $sum($d->copy()->startOfDay(), $d->copy()->endOfDay());
+            }
+            $monthNow = $sum($now->copy()->startOfMonth(), $now->copy()->endOfDay());
+            $monthPrev = $sum($now->copy()->subMonthNoOverflow()->startOfMonth(), $now->copy()->subMonthNoOverflow()->endOfMonth());
+            $pending = Order::query()->where('status', 'pending')->selectRaw('count(*) as n, coalesce(sum(amount), 0) as a')->first();
+            $sales = [
+                'today' => $sum($now->copy()->startOfDay(), $now->copy()->endOfDay()),
+                'yesterday' => $sum($now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay()),
+                'week' => ['amount' => $revenueWeek, 'orders' => $sum($now->copy()->subDays(6)->startOfDay(), $now->copy()->endOfDay())['orders']],
+                'month' => $monthNow,
+                'monthDelta' => $monthPrev['amount'] > 0 ? (int) round(($monthNow['amount'] - $monthPrev['amount']) / $monthPrev['amount'] * 100) : null,
+                'days' => $days,
+                'pendingCount' => (int) $pending->n,
+                'pendingAmount' => (float) $pending->a,
+            ];
+        }
+
         // Everything that needs a person, most urgent first. Each line links straight to where it is fixed.
         $unmarked = $bookings->filter(fn ($b) => $b->status === 'confirmed' && $b->ends_at->lt(now()))->count();
         $badChannels = \App\Models\Channel::query()->where('active', true)->whereNotNull('last_error')->count();
@@ -97,6 +121,7 @@ class TodayController extends Controller
             'waiting' => $waiting,
             'bookings' => $bookings,
             'tasks' => $tasks,
+            'sales' => $sales,
             'overdue' => $overdue,
             'overdueCount' => $overdueCount,
             'attention' => $attention,

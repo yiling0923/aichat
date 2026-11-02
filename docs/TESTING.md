@@ -1018,3 +1018,8 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 2. With none of these it shows a green "All clear".
 3. Overdue tasks have their own red "Overdue" card (top of the right column) with how late each is and a tick button; "Tasks" below now only holds today's and undated tasks.
 4. The Daily summary moved to the bottom of the page.
+
+## DU. Today page: Sales
+
+1. The owner (and anyone allowed "Reports") sees a Sales card on Today: today, yesterday, last 7 days and this month (with the change against last month), a 7-day bar chart, and a line for orders not paid yet with their total.
+2. Staff without the Reports permission do not see the Sales card, the paid figure in the Daily summary, or any money on this page.
