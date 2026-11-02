@@ -1004,9 +1004,3 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 5. Wrong codes (`RM`, `US`, `U1D`) and negative prices are refused; a business owner gets "forbidden".
 6. The change appears in the platform audit log as "Billing settings changed".
 
-## DS. "Paid to you" in the currency you choose
-
-1. In `/platform`, each row's "Paid to you" cell has its own small currency box. "As paid" shows each payment in its own currency.
-2. Pick MYR (or any other): amounts are converted. Currencies you have no rate for stay as paid (hover shows why).
-3. Set rates in the coins dialog ("1 EUR = ? USD"); they are used only for this display, not for charging.
-4. Each row remembers its own choice while the tab is open.

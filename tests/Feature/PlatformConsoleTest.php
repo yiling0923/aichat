@@ -337,6 +337,6 @@ class PlatformConsoleTest extends TestCase
         $this->actingAs($this->platform)->post('/platform/settings/billing', ['currency' => 'USD', 'rate' => ['EUR' => '1.1', 'xx' => '5', 'GBP' => '-2']])->assertSessionHasErrors('rate.GBP');
         $this->actingAs($this->platform)->post('/platform/settings/billing', ['currency' => 'USD', 'rate' => ['EUR' => '1.1', 'xx' => '5']])->assertSessionHasNoErrors();
         $this->assertSame(['EUR' => 1.1], \App\Models\PlatformSetting::get('billing.rates'));
-        $this->actingAs($this->platform)->get('/platform')->assertOk()->assertSee('class="paid-cur"', false)->assertSee('rate[EUR]', false);
+        $this->actingAs($this->platform)->get('/platform')->assertOk()->assertDontSee('paid-cur', false);
     }
 }
