@@ -858,4 +858,24 @@ class ChannelTest extends TestCase
         $this->meta(['graph.facebook.com/*' => Http::response(['error' => ['message' => 'Invalid OAuth access token']], 400)]);
         $this->actingAs($owner)->post("/admin/channels/{$fb->id}/check")->assertSessionHasErrors('channel');
     }
+
+    public function test_a_messenger_customer_gets_the_saved_answer_for_a_typed_topic(): void
+    {
+        $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'PAGE1', 'access_token' => 't']));
+        $this->in(fn () => \App\Models\KnowledgeEntry::create(['title' => 'Parking', 'answer' => ['en' => 'Free parking behind the shop.'], 'active' => true]));
+        $this->in(fn () => \App\Models\KnowledgeEntry::create(['title' => 'Payment methods', 'answer' => ['en' => 'Cash, card or DuitNow.'], 'active' => true]));
+        $send = fn (array $m) => $this->hook(['object' => 'page', 'entry' => [['id' => 'PAGE1', 'messaging' => [$m + ['recipient' => ['id' => 'PAGE1'], 'timestamp' => now()->timestamp * 1000]]]]]);
+
+        // Typing a topic straight away (the language question is still open), after choosing English, and in different words.
+        $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm1', 'text' => 'parking']]);
+        $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm2', 'text' => 'English', 'quick_reply' => ['payload' => 'lang_en']]]);
+        $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm3', 'text' => 'Payment methods']]);
+        $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm4', 'text' => 'can i pay by card?']]);
+        $send(['sender' => ['id' => 'U1'], 'message' => ['mid' => 'm5', 'text' => 'Parking']]);
+
+        $texts = array_map(fn ($b) => $b['message']['text'], $this->sent());
+        $this->assertContains('Free parking behind the shop.', $texts);
+        $this->assertSame(2, count(array_keys($texts, 'Cash, card or DuitNow.')));
+        $this->assertSame(2, count(array_keys($texts, 'Free parking behind the shop.')));
+    }
 }

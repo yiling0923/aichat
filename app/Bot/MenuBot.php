@@ -103,6 +103,11 @@ class MenuBot
         }
 
         if ($node === null) {
+            // A brand-new chat that opens with a topic the owner taught ("parking?") gets that answer first, then the usual first menu.
+            if ($optionId === null && $conversation->business !== null && $conversation->channel !== 'preview' && ($saved = app(SavedAnswers::class)->find($text, $conversation->language ?? $language, true)) !== null) {
+                $out[] = $conversation->addMessage('out', 'bot', $saved, ['saved_answer' => true]);
+            }
+
             return $this->enter($conversation, $flow, $state, $flow->start(), $out);
         }
 

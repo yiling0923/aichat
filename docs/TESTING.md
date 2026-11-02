@@ -886,3 +886,5 @@ The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers
 4. Reports > Marketing > "Where customers come from" now also shows messages from customers and money paid per channel. Pick a channel at the top to see only that row.
 5. The Export CSV list also has "Money by channel", and the channel CSV has the two new columns.
 Note: in the sample data only website chats are linked to customers, so WhatsApp shows RM 0.00 there. Real chats link when a customer books.
+
+(DA, updated) A brand-new chat that opens with a topic you taught (for example the first message is "parking?") now gets your answer first, then the usual language menu. Before, the first message only ever showed the language menu. Saved answers also work for Messenger customers in the middle of a chat (covered by a test).
