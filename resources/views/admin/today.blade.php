@@ -199,6 +199,47 @@
         </section>
     @endif
 
+    @php
+        $dsIcon = [
+            'chat' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+            'cal' => '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+            'door' => '<path d="M5 21V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17"/><path d="M3 21h18M12 12v.01"/>',
+            'user' => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+            'coin' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.6-2.5 1.9-2.5.8-2.5 1.9 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/>',
+            'x' => '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+        ];
+    @endphp
+    <section class="tp-panel ds" id="ds">
+        <div class="tp-head"><h3>{{ __('Daily summary') }}</h3>
+            <div class="seg" id="ds-tabs"><a href="#" data-d="yesterday" class="on">{{ __('Yesterday') }}</a><a href="#" data-d="today">{{ __('Today so far') }}</a></div>
+        </div>
+        @foreach ($summaries as $key => $d)
+            @php
+                $tiles = [
+                    ['chat', 'blue', $d['new_chats'], __('New chats')],
+                    ['cal', 'violet', $d['bookings_made'], __('Bookings made')],
+                    ['door', 'teal', $d['visits'], __('Visits')],
+                    ['user', 'green', $d['new_customers'], __('New customers')],
+                ];
+                if ($sales) { $tiles[] = ['coin', 'amber', $d['currency'].' '.number_format($d['revenue'], 0), $d['orders_paid'] === 1 ? __('Paid (1 order)') : __('Paid (:n orders)', ['n' => $d['orders_paid']])]; }
+                $tiles[] = ['x', 'red', $d['cancelled'], __('Cancelled')];
+            @endphp
+            <div class="ds-body" data-d="{{ $key }}" @if ($key !== 'yesterday') hidden @endif>
+                <p class="ds-date">{{ $d['label'] }}</p>
+                <div class="ds-grid">
+                    @foreach ($tiles as [$ic, $tone, $val, $lab])
+                        <div class="ds-tile t-{{ $tone }} {{ (string) $val === '0' ? 'zero' : '' }}"><span class="ds-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $dsIcon[$ic] !!}</svg></span><b>{{ $val }}</b><span class="ds-lab">{{ $lab }}</span></div>
+                    @endforeach
+                </div>
+                @if ($d['topics'])
+                    <p class="ds-topics"><span class="mute">{{ __('Customers asked about') }}</span> @foreach ($d['topics'] as $t)<span class="ds-topic">{{ __($t['name']) }} <b>{{ $t['count'] }}</b></span>@endforeach</p>
+                @else
+                    <p class="ds-topics mute">{{ $key === 'today' ? __('No tagged topics yet today.') : __('No tagged topics that day.') }}</p>
+                @endif
+            </div>
+        @endforeach
+    </section>
+
     <div class="tp-cols">
         <div class="tp-main">
             @if ($recent->count())
@@ -237,46 +278,7 @@
         </aside>
     </div>
 
-    @php
-        $dsIcon = [
-            'chat' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
-            'cal' => '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
-            'door' => '<path d="M5 21V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17"/><path d="M3 21h18M12 12v.01"/>',
-            'user' => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-            'coin' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.6-2.5 1.9-2.5.8-2.5 1.9 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/>',
-            'x' => '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
-        ];
-    @endphp
-    <section class="tp-panel ds" id="ds" style="margin-top:18px">
-        <div class="tp-head"><h3>{{ __('Daily summary') }}</h3>
-            <div class="seg" id="ds-tabs"><a href="#" data-d="yesterday" class="on">{{ __('Yesterday') }}</a><a href="#" data-d="today">{{ __('Today so far') }}</a></div>
-        </div>
-        @foreach ($summaries as $key => $d)
-            @php
-                $tiles = [
-                    ['chat', 'blue', $d['new_chats'], __('New chats')],
-                    ['cal', 'violet', $d['bookings_made'], __('Bookings made')],
-                    ['door', 'teal', $d['visits'], __('Visits')],
-                    ['user', 'green', $d['new_customers'], __('New customers')],
-                ];
-                if ($sales) { $tiles[] = ['coin', 'amber', $d['currency'].' '.number_format($d['revenue'], 0), $d['orders_paid'] === 1 ? __('Paid (1 order)') : __('Paid (:n orders)', ['n' => $d['orders_paid']])]; }
-                $tiles[] = ['x', 'red', $d['cancelled'], __('Cancelled')];
-            @endphp
-            <div class="ds-body" data-d="{{ $key }}" @if ($key !== 'yesterday') hidden @endif>
-                <p class="ds-date">{{ $d['label'] }}</p>
-                <div class="ds-grid">
-                    @foreach ($tiles as [$ic, $tone, $val, $lab])
-                        <div class="ds-tile t-{{ $tone }} {{ (string) $val === '0' ? 'zero' : '' }}"><span class="ds-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $dsIcon[$ic] !!}</svg></span><b>{{ $val }}</b><span class="ds-lab">{{ $lab }}</span></div>
-                    @endforeach
-                </div>
-                @if ($d['topics'])
-                    <p class="ds-topics"><span class="mute">{{ __('Customers asked about') }}</span> @foreach ($d['topics'] as $t)<span class="ds-topic">{{ __($t['name']) }} <b>{{ $t['count'] }}</b></span>@endforeach</p>
-                @else
-                    <p class="ds-topics mute">{{ $key === 'today' ? __('No tagged topics yet today.') : __('No tagged topics that day.') }}</p>
-                @endif
-            </div>
-        @endforeach
-    </section>
+
 @endsection
 @push('scripts')
 <script>
