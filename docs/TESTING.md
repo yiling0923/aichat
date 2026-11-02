@@ -1006,7 +1006,7 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 
 ## DS. "Paid to you" in the currency you choose
 
-1. In `/platform`, the "Paid to you" heading has a small currency box. "As paid" shows each payment in its own currency.
+1. In `/platform`, each row's "Paid to you" cell has its own small currency box. "As paid" shows each payment in its own currency.
 2. Pick MYR (or any other): amounts are converted. Currencies you have no rate for stay as paid (hover shows why).
 3. Set rates in the coins dialog ("1 EUR = ? USD"); they are used only for this display, not for charging.
-4. Your choice is remembered while the tab is open.
+4. Each row remembers its own choice while the tab is open.

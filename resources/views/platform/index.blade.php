@@ -149,6 +149,9 @@
         </div>
         <div class="table-wrap" style="max-height:none">
         <table class="table" id="biz-table">
+            @php
+            $curChoices = collect([$currency])->merge($paidCurrencies)->merge(array_keys(\App\Support\Currencies::isoAll()))->unique()->values();
+            @endphp
             <thead><tr>
                 <th class="col-check"><input type="checkbox" id="biz-all" aria-label="{{ __('Select all') }}"></th>
                 <th aria-sort="none"><button type="button" class="sortbtn" data-sort="name" data-type="text">{{ __('Business') }}</button></th>
@@ -162,8 +165,7 @@
                 <th class="num">{{ __('Bookings') }}</th>
                 <th class="num">{{ __('Customer money') }}</th>
                 <th class="num">{{ __('AI (month)') }}</th>
-                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="paid" data-type="num">{{ __('Paid to you') }}</button>
-                    <select id="paid-cur" class="paid-cur" aria-label="{{ __('Show amounts in') }}" title="{{ __('Show amounts in') }}"><option value="">{{ __('As paid') }}</option>@foreach (collect([$currency])->merge($paidCurrencies)->merge(array_keys(\App\Support\Currencies::isoAll()))->unique()->values() as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach</select></th>
+                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="paid" data-type="num">{{ __('Paid to you') }}</button></th>
                 <th class="num">{{ __('Actions') }}</th>
             </tr></thead>
             <tbody>
@@ -184,7 +186,8 @@
                     <td class="num">{{ $r['bookings'] }}</td>
                     <td class="num" style="white-space:nowrap">{{ $r['sales'] > 0 ? $r['currency'].' '.number_format($r['sales'], 0) : '-' }}</td>
                     <td class="num">{{ $r['ai'] }}</td>
-                    <td class="num paid-cell" style="white-space:nowrap" data-text="{{ $r['paidText'] }}" data-by="{{ json_encode($r['paidBy']) }}">{{ $r['paidText'] }}</td>
+                    <td class="num paid-cell" style="white-space:nowrap" data-id="{{ $b->id }}" data-text="{{ $r['paidText'] }}" data-by="{{ json_encode($r['paidBy']) }}"><span class="paid-val">{{ $r['paidText'] }}</span>
+                        <select class="paid-cur" aria-label="{{ __('Show amounts in') }}" title="{{ __('Show amounts in') }}"><option value="">{{ __('As paid') }}</option>@foreach ($curChoices as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach</select></td>
                     <td class="num tm-actions">
                         <a class="ibtn ibtn-primary" href="{{ route('platform.show', $b->id) }}" data-tip="{{ __('Open') }}" aria-label="{{ __('Open') }}">{!! $svg('open') !!}</a>
                         <a class="ibtn" href="{{ route('chat.show', $b->slug) }}" target="_blank" rel="noopener" data-tip="{{ __('Customer chat') }}" aria-label="{{ __('Customer chat') }}">{!! $svg('chat') !!}</a>
@@ -424,21 +427,23 @@
   applySort();
 
   // Show the "Paid to you" column in a chosen currency, using the rates saved in Billing settings (1 unit = n of the plan currency).
-  var RATES = @json((object) $rates), BASE = @json($currency), paidSel = document.getElementById('paid-cur');
+  var RATES = @json((object) $rates), BASE = @json($currency), PICKS = {};
   RATES[BASE] = 1;
-  function showPaid() {
-    var want = paidSel.value, missing = [];
-    try { sessionStorage.setItem('paidcur', want); } catch (e) {}
-    table.querySelectorAll('.paid-cell').forEach(function (td) {
-      if (!want) { td.textContent = td.dataset.text; return; }
-      var by = JSON.parse(td.dataset.by || '{}'), total = 0, ok = true;
-      Object.keys(by).forEach(function (c) { if (c === want) { total += by[c]; } else if (RATES[c] && RATES[want]) { total += by[c] * RATES[c] / RATES[want]; } else { ok = false; if (missing.indexOf(c) < 0) { missing.push(c); } } });
-      td.textContent = ok ? want + ' ' + (total / 100).toFixed(2) : td.dataset.text;
-      td.title = ok ? '' : '@lang('No exchange rate saved for this currency yet. Add one in Billing settings.')';
-    });
+  try { PICKS = JSON.parse(sessionStorage.getItem('paidpicks') || '{}') || {}; } catch (e) { PICKS = {}; }
+  function showCell(td) {
+    var want = td.querySelector('.paid-cur').value, val = td.querySelector('.paid-val');
+    if (!want) { val.textContent = td.dataset.text; td.title = ''; return; }
+    var by = JSON.parse(td.dataset.by || '{}'), total = 0, ok = true;
+    Object.keys(by).forEach(function (c) { if (c === want) { total += by[c]; } else if (RATES[c] && RATES[want]) { total += by[c] * RATES[c] / RATES[want]; } else { ok = false; } });
+    val.textContent = ok ? want + ' ' + (total / 100).toFixed(2) : td.dataset.text;
+    td.title = ok ? '' : '@lang('No exchange rate saved for this currency yet. Add one in Billing settings.')';
   }
-  try { var saved = sessionStorage.getItem('paidcur'); if (saved) { paidSel.value = saved; } } catch (e) {}
-  paidSel.addEventListener('change', showPaid); showPaid();
+  table.querySelectorAll('.paid-cell').forEach(function (td) {
+    var sel = td.querySelector('.paid-cur');
+    if (PICKS[td.dataset.id]) { sel.value = PICKS[td.dataset.id]; }
+    sel.addEventListener('change', function () { PICKS[td.dataset.id] = sel.value; try { sessionStorage.setItem('paidpicks', JSON.stringify(PICKS)); } catch (e) {} showCell(td); });
+    showCell(td);
+  });
 
   // Bulk actions.
   function fillIds(form) {
