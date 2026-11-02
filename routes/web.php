@@ -298,6 +298,7 @@ Route::middleware(['auth', 'platform'])->prefix('platform')->group(function () {
     Route::get('/', [$p, 'index'])->name('platform.index');
     Route::get('/export', [$p, 'export'])->name('platform.export');
     Route::post('/businesses', [$p, 'store']);
+    Route::post('/businesses/bulk', [$p, 'bulk']);
     Route::get('/businesses/{id}', [$p, 'show'])->whereNumber('id')->name('platform.show');
     Route::post('/businesses/{id}/plan', [$p, 'plan'])->whereNumber('id');
     Route::post('/businesses/{id}/limits', [$p, 'limits'])->whereNumber('id');

@@ -1951,5 +1951,20 @@
     "Support view ended": "支持查看结束",
     "Invitation made": "已生成邀请",
     "Resumed": "已恢复",
-    "Locked out": "进不去"
+    "Locked out": "进不去",
+    "Paying, trial, needs attention, paused, internal": "付费、试用、需要关注、已暂停、内部",
+    "vs the :n days before": "对比之前的 :n 天",
+    "Change plan": "更改方案",
+    "Clear selection": "清除选择",
+    "Joined": "加入时间",
+    "Reason: :why": "原因::why",
+    "Pause the selected businesses?": "暂停所选业务吗?",
+    "Their customer chat and staff area are switched off until you resume them. Nothing is deleted.": "它们的客户聊天和员工后台会被关闭,直到您恢复。不会删除任何内容。",
+    "Pause them": "暂停它们",
+    "Change the plan of the selected businesses": "更改所选业务的方案",
+    "Apply to the selected": "应用到所选业务",
+    "Resume the selected businesses?": "恢复所选业务吗?",
+    "Choose a plan first.": "请先选择方案。",
+    ":n skipped (nothing to change).": "跳过 :n 个(没有需要更改的)。",
+    "Expired": "已过期"
 }

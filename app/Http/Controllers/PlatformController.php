@@ -33,7 +33,7 @@ class PlatformController extends Controller
 {
     private const PERIODS = [7, 30, 90];
 
-    /** @return array{days: int, rows: \Illuminate\Support\Collection<int, array<string, mixed>>} */
+    /** @return array{days: int, rows: \Illuminate\Support\Collection<int, array<string, mixed>>, series: array<string, list<int>>, before: array<string, int>} */
     private function overview(Request $request, Plans $plans): array
     {
         $days = in_array((int) $request->query('days'), self::PERIODS, true) ? (int) $request->query('days') : 30;
@@ -65,12 +65,32 @@ class PlatformController extends Controller
             'revenue' => (int) ($revenue[$b->id] ?? 0),
         ]);
 
-        return ['days' => $days, 'rows' => $rows];
+        // One number per day for the little trend lines in the top cards, and the period before for the "up/down" arrows.
+        $series = function (string $model, ?callable $tweak = null) use ($days, $since): array {
+            $perDay = $model::query()->withoutGlobalScopes()->where('created_at', '>=', $since)->when($tweak, fn ($q) => $tweak($q))
+                ->selectRaw('date(created_at) as d, count(*) as n')->groupBy('d')->pluck('n', 'd');
+            $out = [];
+            for ($i = $days - 1; $i >= 0; $i--) {
+                $out[] = (int) ($perDay[now()->subDays($i)->format('Y-m-d')] ?? 0);
+            }
+
+            return $out;
+        };
+        $before = fn (string $model, ?callable $tweak = null) => $model::query()->withoutGlobalScopes()->whereBetween('created_at', [now()->subDays($days * 2), $since])->when($tweak, fn ($q) => $tweak($q))->count();
+        $notPreview = fn ($q) => $q->where('channel', '!=', 'preview');
+        $notCancelled = fn ($q) => $q->where('status', '!=', 'cancelled');
+
+        return [
+            'days' => $days,
+            'rows' => $rows,
+            'series' => ['chats' => $series(Conversation::class, $notPreview), 'bookings' => $series(Booking::class, $notCancelled)],
+            'before' => ['chats' => $before(Conversation::class, $notPreview), 'bookings' => $before(Booking::class, $notCancelled)],
+        ];
     }
 
     public function index(Request $request, Plans $plans): View
     {
-        ['days' => $days, 'rows' => $rows] = $this->overview($request, $plans);
+        ['days' => $days, 'rows' => $rows, 'series' => $series, 'before' => $before] = $this->overview($request, $plans);
         $businesses = $rows->pluck('business');
         $paying = $businesses->filter(fn (Business $b) => in_array($plans->state($b), ['active'], true) && $b->plan !== 'trial');
 
@@ -80,6 +100,8 @@ class PlatformController extends Controller
         return view('platform.index', [
             'rows' => $rows,
             'days' => $days,
+            'series' => $series,
+            'before' => $before,
             'totals' => [
                 'businesses' => $businesses->count(),
                 'trials' => $businesses->filter(fn (Business $b) => $plans->state($b) === 'trial')->count(),
@@ -177,23 +199,69 @@ class PlatformController extends Controller
             'date' => ['nullable', 'date'],
             'extend_days' => ['nullable', 'integer', 'between:1,365'],
         ]);
+        $this->applyPlan($business, $data['plan'], $data['date'] ?? null, isset($data['extend_days']) ? (int) $data['extend_days'] : null);
+
+        return back()->with('status', __('Plan saved.'));
+    }
+
+    /** Move one business to a plan (or change its trial end / paid-until date) and write it in the activity log. */
+    private function applyPlan(Business $business, string $plan, ?string $date, ?int $extendDays, string $note = ''): void
+    {
         $before = ($business->plan ?? 'internal').($business->trial_ends_at ? ' (trial to '.$business->trial_ends_at->format('Y-m-d').')' : '');
 
-        if ($data['plan'] === 'internal') {
+        if ($plan === 'internal') {
             $business->forceFill(['plan' => null, 'subscription_status' => null, 'trial_ends_at' => null, 'current_period_ends_at' => null]);
-        } elseif ($data['plan'] === 'trial') {
-            $end = ! empty($data['extend_days'])
-                ? max($business->trial_ends_at ?? now(), now())->copy()->addDays((int) $data['extend_days'])
-                : (! empty($data['date']) ? Carbon::parse($data['date'])->endOfDay() : ($business->trial_ends_at ?? now()->addDays((int) config('plans.trial_days'))));
+        } elseif ($plan === 'trial') {
+            $end = $extendDays
+                ? max($business->trial_ends_at ?? now(), now())->copy()->addDays($extendDays)
+                : ($date ? Carbon::parse($date)->endOfDay() : ($business->trial_ends_at ?? now()->addDays((int) config('plans.trial_days'))));
             $business->forceFill(['plan' => 'trial', 'subscription_status' => 'trialing', 'trial_ends_at' => $end, 'current_period_ends_at' => null]);
         } else {
-            $business->forceFill(['plan' => $data['plan'], 'subscription_status' => 'active', 'trial_ends_at' => null, 'current_period_ends_at' => ! empty($data['date']) ? Carbon::parse($data['date'])->endOfDay() : null]);
+            $business->forceFill(['plan' => $plan, 'subscription_status' => 'active', 'trial_ends_at' => null, 'current_period_ends_at' => $date ? Carbon::parse($date)->endOfDay() : null]);
         }
         $business->save();
 
-        PlatformAudit::record('plan_changed', $business->id, 'From '.$before.' to '.($business->plan ?? 'internal').($business->plan === 'trial' ? ' (trial to '.$business->trial_ends_at?->format('Y-m-d').')' : ($business->current_period_ends_at ? ' (paid until '.$business->current_period_ends_at->format('Y-m-d').')' : '')));
+        PlatformAudit::record('plan_changed', $business->id, 'From '.$before.' to '.($business->plan ?? 'internal').($business->plan === 'trial' ? ' (trial to '.$business->trial_ends_at?->format('Y-m-d').')' : ($business->current_period_ends_at ? ' (paid until '.$business->current_period_ends_at->format('Y-m-d').')' : '')).$note);
+    }
 
-        return back()->with('status', __('Plan saved.'));
+    /** Change several businesses at once: pause, resume, or move them to a plan (or extend their trial). */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:200'],
+            'ids.*' => ['integer'],
+            'action' => ['required', Rule::in(['pause', 'resume', 'plan'])],
+            'reason' => ['nullable', 'string', 'max:150'],
+            'plan' => ['nullable', Rule::in(array_merge(array_keys((array) config('plans.plans')), ['internal']))],
+            'date' => ['nullable', 'date'],
+            'extend_days' => ['nullable', 'integer', 'between:1,365'],
+        ]);
+
+        if ($data['action'] === 'plan' && empty($data['plan'])) {
+            return back()->withErrors(['bulk' => __('Choose a plan first.')]);
+        }
+
+        $done = 0;
+        $skipped = 0;
+
+        foreach (Business::query()->whereIn('id', $data['ids'])->get() as $business) {
+            if ($data['action'] === 'pause') {
+                if ($business->status === 'paused') { $skipped++; continue; }
+                $business->forceFill(['status' => 'paused', 'paused_reason' => $data['reason'] ?? null])->save();
+                PlatformAudit::record('paused', $business->id, trim(($data['reason'] ?? '').' (bulk)'));
+            } elseif ($data['action'] === 'resume') {
+                if ($business->status !== 'paused') { $skipped++; continue; }
+                $business->forceFill(['status' => 'active', 'paused_reason' => null])->save();
+                PlatformAudit::record('resumed', $business->id, 'bulk');
+            } else {
+                // Extending a trial only makes sense for a business that is on a trial.
+                if (! empty($data['extend_days']) && $data['plan'] === 'trial' && $business->plan !== 'trial') { $skipped++; continue; }
+                $this->applyPlan($business, $data['plan'], $data['date'] ?? null, isset($data['extend_days']) ? (int) $data['extend_days'] : null, ' (bulk)');
+            }
+            $done++;
+        }
+
+        return back()->with('status', __(':n updated.', ['n' => $done]).($skipped > 0 ? ' '.__(':n skipped (nothing to change).', ['n' => $skipped]) : ''));
     }
 
     /** Give one business its own limits instead of the plan's. */

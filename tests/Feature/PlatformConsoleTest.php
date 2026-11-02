@@ -177,4 +177,64 @@ class PlatformConsoleTest extends TestCase
         $this->actingAs($this->platform)->post('/platform/businesses/'.$empty->id.'/support', ['mode' => 'read'])->assertSessionHasErrors('support');
         $this->assertSame($this->platform->id, auth()->id());
     }
+
+    public function test_the_table_has_sortable_columns_icon_buttons_and_does_not_repeat_the_plan(): void
+    {
+        $paid = Business::factory()->create(['name' => 'Paid Co', 'plan' => 'starter', 'subscription_status' => 'active']);
+        Business::factory()->create(['name' => 'Inside Co', 'plan' => null]);
+
+        $html = $this->actingAs($this->platform)->get('/platform')->assertOk()
+            ->assertSee('data-sort="joined"', false)->assertSee('data-sort="chats"', false)->assertSee('id="biz-bulk"', false)->assertSee('biz-sel', false)
+            ->assertSee('data-tip="Open"', false)->assertSee('data-tip="Pause"', false)->assertSee('data-tip="Export CSV"', false)->assertSee('data-tip="Add a business"', false)->getContent();
+
+        $row = fn (string $name) => substr($html, $at = strpos($html, '<b>'.$name.'</b>'), strpos($html, '</tr>', $at) - $at);
+        $this->assertSame(1, substr_count(strip_tags($row('Inside Co')), 'Internal'));          // the plan is said once, not twice
+        $this->assertSame(1, substr_count($row('Rose Clinic'), 'Free trial'));
+        $this->assertStringContainsString('<span class="tag ok">Internal</span>', $row('Inside Co'));
+        $this->assertStringContainsString('Starter', $row('Paid Co'));
+        $this->assertStringContainsString('<span class="tag ok">Active</span>', $row('Paid Co'));
+        $this->assertStringContainsString('Free trial', $row('Rose Clinic'));
+        $this->assertStringContainsString('ends ', $row('Rose Clinic'));
+    }
+
+    public function test_several_businesses_can_be_paused_resumed_or_moved_to_a_plan_together(): void
+    {
+        $a = Business::factory()->create(['plan' => 'trial', 'trial_ends_at' => now()->addDays(3), 'subscription_status' => 'trialing']);
+        $b = Business::factory()->create(['plan' => 'starter', 'subscription_status' => 'active']);
+        $ids = [$a->id, $b->id];
+        $url = '/platform/businesses/bulk';
+
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'pause', 'reason' => 'Review'])->assertRedirect()->assertSessionHas('status', fn ($m) => str_contains($m, '2 updated'));
+        $this->assertSame(['paused', 'paused'], [$a->fresh()->status, $b->fresh()->status]);
+        $this->assertSame('Review', $a->fresh()->paused_reason);
+
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'pause'])->assertSessionHas('status', fn ($m) => str_contains($m, '0 updated') && str_contains($m, '2 skipped'));
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'resume'])->assertRedirect();
+        $this->assertSame(['active', 'active'], [$a->fresh()->status, $b->fresh()->status]);
+
+        // Extending a trial only touches businesses that are on a trial; a plan change touches all.
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'plan', 'plan' => 'trial', 'extend_days' => 10])->assertSessionHas('status', fn ($m) => str_contains($m, '1 updated') && str_contains($m, '1 skipped'));
+        $this->assertTrue($a->fresh()->trial_ends_at->isSameDay(now()->addDays(13)));
+        $this->assertSame('starter', $b->fresh()->plan);
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'plan', 'plan' => 'growth'])->assertRedirect();
+        $this->assertSame(['growth', 'growth'], [$a->fresh()->plan, $b->fresh()->plan]);
+
+        $this->assertGreaterThanOrEqual(6, PlatformAudit::query()->whereIn('business_id', $ids)->count());
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'plan'])->assertSessionHasErrors('bulk');
+        $this->actingAs($this->platform)->post($url, ['ids' => [], 'action' => 'pause'])->assertSessionHasErrors('ids');
+        $this->actingAs($this->platform)->post($url, ['ids' => $ids, 'action' => 'delete'])->assertSessionHasErrors('action');
+        $this->actingAs($this->owner)->post($url, ['ids' => $ids, 'action' => 'pause'])->assertForbidden();
+        $this->assertSame('active', $a->fresh()->status);
+    }
+
+    public function test_the_top_cards_show_trend_lines_and_changes_against_the_period_before(): void
+    {
+        $this->in(function () {
+            \App\Models\Conversation::startFor('web');
+            \App\Models\Conversation::startFor('web');
+        });
+        $this->in(fn () => \App\Models\Conversation::startFor('web')->forceFill(['created_at' => now()->subDays(40)])->save());
+
+        $this->actingAs($this->platform)->get('/platform')->assertOk()->assertSee('pk-spark', false)->assertSee('vs the 30 days before')->assertSee('pk-stack', false);
+    }
 }

@@ -958,3 +958,12 @@ Sign in as the platform owner (platform@example.com in the sample) and you land 
 Still private by design: you see counts and money totals, never a business's customers or chats unless you open a support view.
 
 (DN, layout) The platform console now uses the whole screen width: all the number cards in one row on a wide screen, a roomier table that does not wrap business names, and the business page in three columns (two on a tablet, one on a phone). Nothing sideways-scrolls on a phone.
+
+## DO. Platform console: sortable table, bulk changes, icon buttons, livelier cards
+
+1. **Cards:** each top card has its own colour and icon. Businesses shows a bar of paying / trial / needs attention / paused / internal; On trial and Paying show their share of all businesses; Chats and Bookings show a small trend line for the period and an up or down percentage against the same number of days before; the customers' money is listed per currency.
+2. **Plan column:** said once. Internal shows just "Internal"; a trial shows "Free trial" with its end date; a paid plan shows its name with Active, Expired, Past due or Canceled.
+3. **Sort:** click any column heading to sort by it and click again to flip it (▲ ▼). It opens newest first (Joined). Business and Plan sort A to Z, the numbers sort biggest first.
+4. **Bulk:** tick businesses (or the top box for all shown). A bar offers Change plan (a plan, a trial end or paid-until date, or "extend the trial by days"), Pause (with a reason), Resume and Clear. The message says how many were updated and skipped (for example, extending a trial skips businesses not on a trial). Each change is written in the Activity log.
+5. **Icons with hover words:** Open, Customer chat, Pause / Resume in every row, and Export CSV, Add a business and the bulk buttons. Point at one to see its name.
+6. The table fits without sideways scrolling from about a 1366-pixel-wide screen up; on smaller screens it scrolls inside its box.
