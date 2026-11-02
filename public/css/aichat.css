@@ -1942,3 +1942,12 @@ details.au-card[open] > summary::after { content: none; }
 .conv .nm { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .conv .nm b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .conv .nm .tag { flex: none; font-size: 11px; padding: 1px 8px; }
+
+/* Inbox list: chats nobody has opened since the customer wrote */
+.conv.unread { background: #eaf3ff; box-shadow: inset 3px 0 0 #2563eb; }
+.conv.unread:hover { background: #dfecfd; }
+.conv.unread b { font-weight: 800; }
+.conv.unread p { color: var(--ink); font-weight: 600; }
+.conv.unread.on { background: var(--accent-l); }
+.conv .ct .udot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #2563eb; margin-left: 2px; align-self: center; }
+.conv .ct time { margin-left: auto; }

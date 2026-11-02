@@ -1826,5 +1826,6 @@
     "Opening hours, services, practitioners and Google Calendar.": "营业时间、服务、服务人员和 Google 日历。",
     "You do not have access to this. Ask the business owner to switch it on for you (Settings > Team).": "您没有权限使用此功能。请联系老板为您开启(设置 > 团队)。",
     "Tick what this person may use.": "勾选此人可以使用的功能。",
-    "Switched off: this person gets the usual access for the role (shown below).": "未开启:此人按其角色获得通常的权限(如下所示)。"
+    "Switched off: this person gets the usual access for the role (shown below).": "未开启:此人按其角色获得通常的权限(如下所示)。",
+    "Unread": "未读"
 }

@@ -899,3 +899,9 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 6. Also fixed: a team member added by the owner can now sign in straight away. Before, they were sent to "Confirm your email" because the confirmation date was not saved.
 
 (DF, updated) Inbox list: the "Needs a person" (or "Staff") tag now sits right beside the customer's name instead of on the bottom line. The channel (Website, WhatsApp ...) stays below.
+
+## DH. Unread chats in a different colour
+
+1. Inbox: a chat where the customer wrote and nobody on the team has opened it since is light blue with a blue edge, a bold name and a blue dot beside the time. "Needs a person" chats keep their amber colour (and also get the dot if unread).
+2. Open the chat: it goes back to normal. Your own reply never makes it unread. A new customer message turns it blue again.
+3. It is shared by the team: when one person opens a chat, it counts as read for everyone. Chats that existed before this update start as read. This needs `php artisan migrate`.

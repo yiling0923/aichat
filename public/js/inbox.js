@@ -58,11 +58,12 @@
       }
       data.conversations.forEach(function (c) {
         var d = document.createElement('div');
-        d.className = 'conv' + (current === c.id ? ' on' : '') + (c.needs_reply ? ' urgent' : '');
+        d.className = 'conv' + (current === c.id ? ' on' : '') + (c.needs_reply ? ' urgent' : '') + (c.unread && current !== c.id ? ' unread' : '');
         d.innerHTML = '<span class="av"></span><div class="cb"><div class="ct"><span class="nm"><b></b></span><time></time></div><p></p><div class="cm"></div></div>';
         d.querySelector('.av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
         d.querySelector('b').textContent = c.name;
         d.querySelector('time').textContent = ago(c.last_message_at);
+        if (c.unread && current !== c.id) { var dot = document.createElement('i'); dot.className = 'udot'; dot.title = __t('Unread'); dot.setAttribute('aria-label', __t('Unread')); d.querySelector('.ct').appendChild(dot); }
         d.querySelector('p').textContent = c.preview || __t('No messages yet');
         var meta = d.querySelector('.cm');
         var ch = document.createElement('span'); ch.className = 'chan'; ch.textContent = CHANNELS[c.channel] || c.channel; meta.appendChild(ch);

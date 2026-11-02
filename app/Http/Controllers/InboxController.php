@@ -34,8 +34,13 @@ class InboxController extends Controller
             ->when(in_array($request->query('channel'), ['web', 'whatsapp', 'messenger', 'instagram'], true), fn ($q) => $q->where('channel', $request->query('channel')))
             ->orderByDesc('last_message_at')
             ->limit(100)
-            ->get()
-            ->map(function (Conversation $c) {
+            ->get();
+
+        // The newest message each customer sent, to tell which chats nobody on the team has opened since.
+        $lastFromCustomer = Message::query()->whereIn('conversation_id', $items->pluck('id'))->where('direction', 'in')->where('sender_type', 'customer')->where('is_private', false)
+            ->groupBy('conversation_id')->selectRaw('conversation_id, max(created_at) as at')->pluck('at', 'conversation_id');
+
+        $items = $items->map(function (Conversation $c) use ($lastFromCustomer) {
                 $last = Message::query()
                     ->where('conversation_id', $c->id)
                     ->where('is_private', false)
@@ -51,6 +56,7 @@ class InboxController extends Controller
                     'preview' => $last?->body,
                     'last_from' => $last?->direction,
                     'needs_reply' => $c->status === 'open' && $c->mode === 'human',
+                    'unread' => isset($lastFromCustomer[$c->id]) && ($c->staff_read_at === null || \Illuminate\Support\Carbon::parse($lastFromCustomer[$c->id], 'UTC')->gt($c->staff_read_at)),
                     'assigned_to' => $c->assigned_to,
                     'tags' => $c->tags->map->only(['id', 'name', 'color'])->values()->all(),
                     'last_message_at' => $c->last_message_at?->toIso8601String(),
@@ -64,6 +70,9 @@ class InboxController extends Controller
     {
         $conversation = Conversation::query()->with('customer')->findOrFail($id);
         $after = (int) $request->query('after', 0);
+
+        // Opening (or keeping open) a chat marks it read for the team.
+        Conversation::query()->whereKey($conversation->id)->toBase()->update(['staff_read_at' => now()]);
 
         $messages = Message::query()
             ->where('conversation_id', $conversation->id)

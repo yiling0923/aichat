@@ -35,6 +35,7 @@ class Conversation extends Model
         'handover_at',
         'opted_out_at',
         'last_message_at',
+        'staff_read_at',
         'state',
     ];
 
@@ -45,6 +46,7 @@ class Conversation extends Model
             'opted_out_at' => 'datetime',
             'last_message_at' => 'datetime',
             'last_inbound_at' => 'datetime',
+            'staff_read_at' => 'datetime',
             'state' => 'array',
         ];
     }

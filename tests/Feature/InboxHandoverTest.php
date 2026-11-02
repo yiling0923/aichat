@@ -149,4 +149,23 @@ class InboxHandoverTest extends TestCase
         $this->assertSame(['From Web'], $names('&channel=web'));
         $this->assertCount(3, $names('&channel=nonsense'));        // an unknown channel is ignored, not an error
     }
+
+    public function test_chats_are_unread_until_someone_opens_them_and_again_after_a_new_customer_message(): void
+    {
+        $token = $this->postJson('/api/chat/demo/messages', ['text' => 'Hello'])->json('token');
+        $conversation = app(CurrentBusiness::class)->runAs($this->business, fn () => Conversation::where('token', $token)->first());
+        $unread = fn () => $this->actingAs($this->staff)->getJson('/admin/api/conversations?status=all')->assertOk()->json('conversations.0.unread');
+
+        $this->assertTrue($unread());                                                            // a customer wrote, nobody has looked
+
+        $this->actingAs($this->staff)->getJson('/admin/api/conversations/'.$conversation->id)->assertOk();
+        $this->assertFalse($unread());                                                           // opening it marks it read
+
+        $this->actingAs($this->staff)->postJson('/admin/api/conversations/'.$conversation->id.'/reply', ['text' => 'Hi, this is Amy'])->assertOk();
+        $this->assertFalse($unread());                                                           // our own reply is not "unread"
+
+        $this->travel(2)->minutes();
+        $this->postJson('/api/chat/demo/messages', ['text' => 'Are you there?', 'token' => $token])->assertOk();
+        $this->assertTrue($unread());                                                            // a new customer message lights it up again
+    }
 }
