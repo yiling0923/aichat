@@ -132,4 +132,21 @@ class InboxHandoverTest extends TestCase
             $this->assertSame(1, Message::where('conversation_id', $conversation->id)->count());
         });
     }
+
+    public function test_the_inbox_list_can_be_limited_to_one_channel(): void
+    {
+        app(CurrentBusiness::class)->runAs($this->business, function () {
+            Conversation::startFor('whatsapp')->forceFill(['contact_name' => 'From WA'])->save();
+            Conversation::startFor('messenger')->forceFill(['contact_name' => 'From FB'])->save();
+            Conversation::startFor('web')->forceFill(['contact_name' => 'From Web'])->save();
+        });
+
+        $names = fn (string $q) => array_column($this->actingAs($this->staff)->getJson('/admin/api/conversations?status=all'.$q)->assertOk()->json('conversations'), 'name');
+
+        $this->assertEqualsCanonicalizing(['From WA', 'From FB', 'From Web'], $names(''));
+        $this->assertSame(['From WA'], $names('&channel=whatsapp'));
+        $this->assertSame(['From FB'], $names('&channel=messenger'));
+        $this->assertSame(['From Web'], $names('&channel=web'));
+        $this->assertCount(3, $names('&channel=nonsense'));        // an unknown channel is ignored, not an error
+    }
 }

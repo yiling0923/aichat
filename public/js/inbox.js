@@ -7,6 +7,8 @@
   var logEl = document.getElementById('thread-log');
   var textEl = document.getElementById('reply-text');
   var statusSel = document.getElementById('status-filter');
+  var channelSel = document.getElementById('channel-filter');
+  try { var savedCh = sessionStorage.getItem('inbox-channel'); if (savedCh !== null && channelSel) { channelSel.value = savedCh; } } catch (e) { /* storage blocked: fine */ }
   var jumpBtn = document.getElementById('btn-jump');
   var current = null, seen = {}, lastId = 0, lastDay = '', lastInfoKey = null, mode = 'reply', unseen = 0, lastTemplates = [];
   var curLang = null, curName = '', businessName = root.dataset.business || '', toastTimer = null;
@@ -48,7 +50,7 @@
 
   // ---------- list ----------
   function loadList() {
-    api('/conversations?status=' + encodeURIComponent(statusSel.value)).then(function (data) {
+    api('/conversations?status=' + encodeURIComponent(statusSel.value) + '&channel=' + encodeURIComponent(channelSel ? channelSel.value : '')).then(function (data) {
       listEl.innerHTML = '';
       if (!data.conversations.length) {
         listEl.innerHTML = '<div class="empty">' + __t('No conversations yet.') + '<br>' + __t('Open the test chat and send a message.') + '</div>';
@@ -462,6 +464,7 @@
   }
 
   statusSel.addEventListener('change', loadList);
+  if (channelSel) { channelSel.addEventListener('change', function () { try { sessionStorage.setItem('inbox-channel', channelSel.value); } catch (e) { /* fine */ } loadList(); }); }
 
   loadList();
   var wanted = parseInt(new URLSearchParams(location.search).get('c') || '', 10);

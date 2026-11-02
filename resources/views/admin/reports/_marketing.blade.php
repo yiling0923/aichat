@@ -14,8 +14,8 @@
 <div class="card">
     <div class="bar spread"><h3>{{ __('Where customers come from') }}</h3><a class="btn small" href="{{ $q('mk_channels') }}">{{ __('Export CSV') }}</a></div>
     @if ($marketing['channels'])
-        <div class="table-wrap"><table class="table"><thead><tr><th>{{ __('Channel') }}</th><th class="num">{{ __('Chats') }}</th><th class="num">{{ __('Left their details') }}</th><th class="num">{{ __('Bookings') }}</th><th>{{ __('Chats that became a booking') }}</th></tr></thead><tbody>
-            @foreach ($marketing['channels'] as $c)<tr><td><b>{{ __($c['label']) }}</b></td><td class="num">{{ $c['chats'] }}</td><td class="num">{{ $c['leads'] }}</td><td class="num">{{ $c['bookings'] }}</td><td><div class="mini-track"><i style="width: {{ min(100, $c['rate']) }}%"></i></div> <b>{{ $c['rate'] }}%</b></td></tr>@endforeach
+        <div class="table-wrap"><table class="table"><thead><tr><th>{{ __('Channel') }}</th><th class="num">{{ __('Chats') }}</th><th class="num">{{ __('Messages from customers') }}</th><th class="num">{{ __('Left their details') }}</th><th class="num">{{ __('Bookings') }}</th><th>{{ __('Chats that became a booking') }}</th><th class="num">{{ __('Paid') }}</th></tr></thead><tbody>
+            @foreach ($marketing['channels'] as $c)<tr><td><b>{{ __($c['label']) }}</b></td><td class="num">{{ $c['chats'] }}</td><td class="num">{{ $c['messages'] }}</td><td class="num">{{ $c['leads'] }}</td><td class="num">{{ $c['bookings'] }}</td><td><div class="mini-track"><i style="width: {{ min(100, $c['rate']) }}%"></i></div> <b>{{ $c['rate'] }}%</b></td><td class="num">{{ $cur }} {{ number_format($c['money'], 2) }}</td></tr>@endforeach
         </tbody></table></div>
     @else<p class="mute">{{ __('No chats in this period.') }}</p>@endif
 </div>
@@ -60,4 +60,4 @@
         <p class="mute rp-note"><a class="btn small primary" href="{{ route('broadcasts') }}">{{ __('Write a message to them in Broadcasts') }}</a></p>
     @else<p class="mute">{{ __('Nobody to win back right now.') }}</p>@endif
 </div>
-<p class="mute rp-note">{{ __('Only the period filter applies on this tab, except customers by language and tag, the list size and win-back, which show everyone.') }}</p>
+<p class="mute rp-note">{{ __('The period filter applies on this tab, and the channel filter limits the table of channels. Customers by language and tag, the list size and win-back show everyone.') }}</p>

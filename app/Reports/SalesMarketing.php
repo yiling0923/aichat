@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Broadcast;
 use App\Models\Conversation;
 use App\Models\Customer;
+use App\Models\Message;
 use App\Models\Order;
 use App\Models\Survey;
 use App\Models\Tag;
@@ -37,7 +38,46 @@ class SalesMarketing
 
     private function paid(Carbon $from, Carbon $to)
     {
-        return Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from, $to]);
+        return $this->inChannel(Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from, $to]));
+    }
+
+    /** @var Collection<int, string>|null customer id => the channel they first wrote from */
+    private ?Collection $origins = null;
+
+    /** Money is credited to the channel the customer first wrote from (website, WhatsApp, Messenger ...). */
+    private function origins(): Collection
+    {
+        return $this->origins ??= Conversation::query()->where('channel', '!=', 'preview')->whereNotNull('customer_id')->orderBy('id')->get(['customer_id', 'channel'])->unique('customer_id')->pluck('channel', 'customer_id');
+    }
+
+    /** Limits an orders query to customers who came from the channel chosen on the Reports page (all of them when none is chosen). */
+    private function inChannel($query)
+    {
+        if ($this->r->channel === null) {
+            return $query;
+        }
+
+        return $query->whereIn('customer_id', $this->origins()->filter(fn ($c) => $c === $this->r->channel)->keys());
+    }
+
+    /** Limits a bookings query to chats on the chosen channel. */
+    private function bookingsInChannel($query)
+    {
+        return $this->r->channel === null ? $query : $query->whereIn('conversation_id', Conversation::query()->where('channel', $this->r->channel)->select('id'));
+    }
+
+    /** @param  Collection<int, Order>  $orders @return array<string, float> money per channel label, orders with no chat grouped apart */
+    private function moneyByChannel(Collection $orders): array
+    {
+        $totals = [];
+        foreach ($orders as $o) {
+            $channel = $o->customer_id !== null ? $this->origins()->get($o->customer_id) : null;
+            $label = $channel !== null ? (ReportData::CHANNELS[$channel] ?? ucfirst((string) $channel)) : 'No chat (typed in by hand)';
+            $totals[$label] = ($totals[$label] ?? 0) + (float) $o->amount;
+        }
+        arsort($totals);
+
+        return $totals;
     }
 
     private function delta(float $now, float $before): ?int
@@ -98,20 +138,20 @@ class SalesMarketing
         $returningRevenue = (float) $orders->filter(fn ($o) => $returning->contains($o->customer_id))->sum('amount');
 
         // Unpaid and refunded.
-        $pending = Order::query()->where('status', 'pending')->whereBetween('ordered_at', [$from, $to]);
-        $overdueQuery = Order::query()->where('status', 'pending')->where('ordered_at', '<', now()->subDays(self::OVERDUE_DAYS));
+        $pending = $this->inChannel(Order::query()->where('status', 'pending')->whereBetween('ordered_at', [$from, $to]));
+        $overdueQuery = $this->inChannel(Order::query()->where('status', 'pending')->where('ordered_at', '<', now()->subDays(self::OVERDUE_DAYS)));
         $overdue = (clone $overdueQuery)->with('customer')->orderBy('ordered_at')->limit(10)->get()
             ->map(fn ($o) => ['id' => $o->id, 'customer' => $o->customer?->name ?: ($o->customer?->phone ?: '-'), 'items' => $o->items, 'amount' => (float) $o->amount, 'days' => (int) $o->ordered_at->diffInDays(now())])->all();
 
         // Booked ahead, and what no-shows and cancellations cost.
-        $ahead = Booking::query()->with('service')->where('status', 'confirmed')->whereBetween('starts_at', [now(), now()->addDays(30)])->limit(2000)->get();
-        $lost = Booking::query()->with('service')->whereIn('status', ['no_show', 'cancelled'])->whereBetween('starts_at', [$from, $to])->limit(2000)->get();
+        $ahead = $this->bookingsInChannel(Booking::query()->with('service')->where('status', 'confirmed')->whereBetween('starts_at', [now(), now()->addDays(30)]))->limit(2000)->get();
+        $lost = $this->bookingsInChannel(Booking::query()->with('service')->whereIn('status', ['no_show', 'cancelled'])->whereBetween('starts_at', [$from, $to]))->limit(2000)->get();
 
         // From first message to payment.
-        $chats = $this->r->chatCount($from, $to);
-        $leads = Customer::query()->whereBetween('created_at', [$from, $to])->count();
-        $made = Booking::query()->whereBetween('created_at', [$from, $to])->where('status', '!=', 'cancelled')->count();
-        $visited = Booking::query()->whereBetween('starts_at', [$from, $to])->where('status', 'completed')->count();
+        $chats = $this->r->channel === null ? $this->r->chatCount($from, $to) : Conversation::query()->where('channel', $this->r->channel)->whereBetween('created_at', [$from, $to])->count();
+        $leads = Customer::query()->whereBetween('created_at', [$from, $to])->when($this->r->channel !== null, fn ($q) => $q->whereIn('id', $this->origins()->filter(fn ($c) => $c === $this->r->channel)->keys()))->count();
+        $made = $this->bookingsInChannel(Booking::query()->whereBetween('created_at', [$from, $to])->where('status', '!=', 'cancelled'))->count();
+        $visited = $this->bookingsInChannel(Booking::query()->whereBetween('starts_at', [$from, $to])->where('status', 'completed'))->count();
         $funnel = [['label' => 'Chats started', 'n' => $chats], ['label' => 'Customers who left their details', 'n' => $leads], ['label' => 'Bookings made', 'n' => $made], ['label' => 'Visits completed', 'n' => $visited], ['label' => 'Paid orders', 'n' => $count]];
 
         return [
@@ -119,9 +159,9 @@ class SalesMarketing
             'orders' => $count, 'ordersDelta' => $this->delta($count, $beforeCount),
             'aov' => $aov, 'aovDelta' => $this->delta($aov, $beforeAov),
             'pendingAmount' => (float) (clone $pending)->sum('amount'), 'pendingCount' => (clone $pending)->count(),
-            'refunded' => (float) Order::query()->where('status', 'refunded')->whereBetween('ordered_at', [$from, $to])->sum('amount'),
+            'refunded' => (float) $this->inChannel(Order::query()->where('status', 'refunded')->whereBetween('ordered_at', [$from, $to]))->sum('amount'),
             'overdueAmount' => (float) (clone $overdueQuery)->sum('amount'), 'overdueCount' => (clone $overdueQuery)->count(), 'overdue' => $overdue,
-            'byService' => $this->rows($byService), 'byPerson' => $this->rows($byPerson),
+            'byService' => $this->rows($byService), 'byPerson' => $this->rows($byPerson), 'byChannel' => $this->rows($this->moneyByChannel($orders)),
             'byWeek' => collect($weeks)->map(fn ($v, $k) => ['label' => Carbon::parse($k)->format('j M'), 'n' => round($v, 2)])->values()->all(),
             'byWeekday' => collect(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])->map(fn ($l, $i) => ['label' => $l, 'n' => round($weekdays[$i], 2)])->all(),
             'topCustomers' => $top,
@@ -149,12 +189,23 @@ class SalesMarketing
 
         // Where customers come from, and how many of those chats end in a booking.
         $bookingsByChat = Booking::query()->whereBetween('created_at', [$from, $to])->where('status', '!=', 'cancelled')->whereNotNull('conversation_id')->pluck('conversation_id')->unique();
+        $messages = Message::query()->join('conversations', 'conversations.id', '=', 'messages.conversation_id')->where('conversations.channel', '!=', 'preview')
+            ->where('messages.direction', 'in')->whereBetween('messages.created_at', [$from, $to])
+            ->select('conversations.channel', DB::raw('count(*) as n'))->groupBy('conversations.channel')->pluck('n', 'channel');
+        $paidAll = Order::query()->where('status', 'paid')->whereBetween('ordered_at', [$from, $to])->get(['customer_id', 'amount']);
+        $channelMoney = [];
+        foreach ($paidAll as $o) {
+            $ch = $o->customer_id !== null ? $this->origins()->get($o->customer_id) : null;
+            if ($ch !== null) {
+                $channelMoney[$ch] = ($channelMoney[$ch] ?? 0) + (float) $o->amount;
+            }
+        }
         $channels = [];
-        foreach ($chats->groupBy('channel') as $channel => $group) {
+        foreach ($chats->when($this->r->channel !== null, fn ($c) => $c->where('channel', $this->r->channel))->groupBy('channel') as $channel => $group) {
             $n = $group->count();
             $booked = $group->filter(fn ($c) => $bookingsByChat->contains($c->id))->count();
             $channels[] = [
-                'label' => ReportData::CHANNELS[$channel] ?? ucfirst((string) $channel), 'chats' => $n,
+                'label' => ReportData::CHANNELS[$channel] ?? ucfirst((string) $channel), 'chats' => $n, 'messages' => (int) ($messages[$channel] ?? 0), 'money' => round($channelMoney[$channel] ?? 0, 2),
                 'leads' => $group->pluck('customer_id')->filter()->unique()->count(), 'bookings' => $booked,
                 'rate' => $n > 0 ? (int) round($booked / $n * 100) : 0,
             ];
@@ -252,11 +303,12 @@ class SalesMarketing
     {
         return match ($section) {
             'sales_summary' => $this->salesExport(),
+            'sales_channel' => [['Channel', 'Paid (money)'], array_map(fn ($r) => [$r['label'], number_format($r['n'], 2, '.', '')], $this->sales()['byChannel'])],
             'sales_service' => [['Service', 'Paid (money)'], array_map(fn ($r) => [$r['label'], number_format($r['n'], 2, '.', '')], $this->sales()['byService'])],
             'sales_person' => [['Practitioner', 'Paid (money)'], array_map(fn ($r) => [$r['label'], number_format($r['n'], 2, '.', '')], $this->sales()['byPerson'])],
             'sales_customers' => [['Customer', 'Orders', 'Spent', 'Last order'], array_map(fn ($r) => [$r['name'], $r['orders'], number_format($r['spent'], 2, '.', ''), $r['last']], $this->sales()['topCustomers'])],
             'sales_funnel' => [['Step', 'Count'], array_map(fn ($r) => [$r['label'], $r['n']], $this->sales()['funnel'])],
-            'mk_channels' => [['Channel', 'Chats', 'Left details', 'Bookings', 'Chat to booking %'], array_map(fn ($r) => [$r['label'], $r['chats'], $r['leads'], $r['bookings'], $r['rate']], $this->marketing()['channels'])],
+            'mk_channels' => [['Channel', 'Chats', 'Messages from customers', 'Left details', 'Bookings', 'Chat to booking %', 'Paid (money)'], array_map(fn ($r) => [$r['label'], $r['chats'], $r['messages'], $r['leads'], $r['bookings'], $r['rate'], number_format($r['money'], 2, '.', '')], $this->marketing()['channels'])],
             'mk_topics' => [['Topic customers asked about', 'Chats'], array_map(fn ($r) => [$r['label'], $r['n']], $this->marketing()['topics'])],
             'mk_broadcasts' => [['Broadcast', 'Sent on', 'Delivered', 'Skipped', 'Failed', 'Booked within 7 days', 'Paid within 7 days'], array_map(fn ($r) => [$r['name'], $r['sent_at'], $r['sent'], $r['skipped'], $r['failed'], $r['booked'], number_format($r['revenue'], 2, '.', '')], $this->marketing()['broadcasts'])],
             'mk_automations' => [['Automatic message', 'Sent', 'Skipped', 'Failed'], array_map(fn ($r) => [$r['label'], $r['sent'], $r['skipped'], $r['failed']], $this->marketing()['automations'])],

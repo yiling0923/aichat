@@ -281,7 +281,7 @@ class ReportData
 
     /** CSV files offered next to the Sales and Marketing tabs (built in SalesMarketing). */
     public const DETAIL_EXPORTS = [
-        'sales_summary' => 'Sales numbers', 'sales_service' => 'Money by service', 'sales_person' => 'Money by practitioner', 'sales_customers' => 'Best customers', 'sales_funnel' => 'First message to payment',
+        'sales_summary' => 'Sales numbers', 'sales_channel' => 'Money by channel', 'sales_service' => 'Money by service', 'sales_person' => 'Money by practitioner', 'sales_customers' => 'Best customers', 'sales_funnel' => 'First message to payment',
         'mk_channels' => 'Where customers come from', 'mk_topics' => 'What customers ask about', 'mk_broadcasts' => 'Broadcast results', 'mk_automations' => 'Automatic messages', 'mk_winback' => 'Customers to win back',
     ];
 

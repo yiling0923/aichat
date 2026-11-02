@@ -1798,5 +1798,12 @@
     "This token belongs to the Page \":name\" (ID :id), but this channel uses the ID :ext. Messages for the other ID are ignored. Put :id in the Page ID box, or use the token of the right Page.": "此令牌属于主页“:name”(ID :id),但此渠道使用的是 ID :ext。发往其他 ID 的消息会被忽略。请把 :id 填入主页 ID 框,或改用正确主页的令牌。",
     "This token cannot subscribe the Page itself. Do it in Meta instead: Messenger API settings, next to your Page press \"Add subscriptions\" and tick messages.": "此令牌无法自行订阅主页。请改在 Meta 里操作:Messenger API 设置中,在您的主页旁按“Add subscriptions”并勾选 messages。",
     "Meta accepted the token. It will not show the Page name without an extra permission, but messaging does not need it. Send a message to your Page to test.": "Meta 已接受此令牌。没有额外权限时它不会显示主页名称,但发送消息并不需要该权限。请给您的主页发一条消息来测试。",
-    "1 time": "1 次"
+    "1 time": "1 次",
+    "Money by channel": "各渠道收入",
+    "Money is credited to the channel the customer first wrote from. Use the Channel filter at the top to see only WhatsApp, Messenger, Instagram or the website.": "收入记在客户第一次联系时使用的渠道上。用上方的“渠道”筛选可只看 WhatsApp、Messenger、Instagram 或网站。",
+    "Only the period and channel filters apply on this tab.": "此页受时间段和渠道筛选影响。",
+    "Messages from customers": "客户发来的消息",
+    "The period filter applies on this tab, and the channel filter limits the table of channels. Customers by language and tag, the list size and win-back show everyone.": "此页受时间段筛选影响,渠道筛选会限制渠道表格。按语言和标签统计的客户、名单人数和挽回名单显示全部客户。",
+    "Channel applies to chats, bookings and sales (money is credited to the channel the customer first wrote from). Service and practitioner apply to bookings only. Surveys are always for the whole business.": "渠道筛选适用于聊天、预约和销售(收入记在客户第一次联系时使用的渠道上)。服务和人员筛选只适用于预约。满意度调查始终统计整个业务。",
+    "Money counts orders marked paid. Service and practitioner come from the visit the order was made from; orders typed in by hand are grouped as Other. Only the period and channel filters apply on this tab.": "收入只统计已标记为已付款的订单。服务和人员来自下单时的预约;手动输入的订单归为“其他”。此页受时间段和渠道筛选影响。"
 }

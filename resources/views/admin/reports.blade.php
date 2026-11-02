@@ -37,7 +37,7 @@
         @if ($r->filtered() || $r->period !== '30')<a class="btn" href="{{ route('reports') }}">{{ __('Reset') }}</a>@endif
     </form>
     @if ($r->channel || $r->serviceId || $r->practitionerId)
-        <p class="mute" style="font-size:12px;margin:-4px 0 12px">{{ __('Channel applies to chats and bookings. Service and practitioner apply to bookings only. Customers, orders and surveys are always for the whole business.') }}</p>
+        <p class="mute" style="font-size:12px;margin:-4px 0 12px">{{ __('Channel applies to chats, bookings and sales (money is credited to the channel the customer first wrote from). Service and practitioner apply to bookings only. Surveys are always for the whole business.') }}</p>
     @endif
 
     @php

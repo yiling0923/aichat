@@ -149,4 +149,33 @@ class ReportsTest extends TestCase
         auth()->logout();
         $this->get('/admin/reports/export')->assertRedirect(route('login'));
     }
+
+    public function test_sales_can_be_seen_per_channel_and_the_filter_limits_them(): void
+    {
+        $this->in(function () {
+            $wa = Customer::create(['name' => 'Wanda WA', 'phone' => '6011', 'language' => 'en']);
+            $web = Customer::create(['name' => 'Webb Web', 'phone' => '6022', 'language' => 'en']);
+            $typed = Customer::create(['name' => 'Walkin Wally', 'phone' => '6033', 'language' => 'en']);
+            Conversation::startFor('whatsapp')->forceFill(['customer_id' => $wa->id])->save();
+            Conversation::startFor('web')->forceFill(['customer_id' => $web->id])->save();
+            Order::create(['customer_id' => $wa->id, 'amount' => 100, 'status' => 'paid', 'ordered_at' => now()]);
+            Order::create(['customer_id' => $web->id, 'amount' => 40, 'status' => 'paid', 'ordered_at' => now()]);
+            Order::create(['customer_id' => $typed->id, 'amount' => 7, 'status' => 'paid', 'ordered_at' => now()]);
+            \App\Models\Message::query()->create(['conversation_id' => Conversation::query()->where('channel', 'whatsapp')->first()->id, 'direction' => 'in', 'sender_type' => 'customer', 'body' => 'hello']);
+        });
+
+        $all = $this->actingAs($this->user)->get('/admin/reports?period=30d')->assertOk()->assertSee('Money by channel')->assertSee('No chat (typed in by hand)');
+        $this->assertStringContainsString('147.00', $all->getContent());
+
+        $wa = $this->actingAs($this->user)->get('/admin/reports?period=30d&channel=whatsapp')->assertOk();
+        $this->assertStringContainsString('RM 100.00', $wa->getContent());
+        $this->assertStringNotContainsString('Webb Web', $wa->getContent());
+        $this->assertStringNotContainsString('Walkin Wally', $wa->getContent());
+
+        $csv = $this->actingAs($this->user)->get('/admin/reports/export?section=sales_channel')->assertOk()->streamedContent();
+        $this->assertStringContainsString('WhatsApp,100.00', $csv);
+        $this->assertStringContainsString('Website,40.00', $csv);
+        $channels = $this->actingAs($this->user)->get('/admin/reports/export?section=mk_channels')->streamedContent();
+        $this->assertStringContainsString('"Messages from customers"', $channels);
+    }
 }

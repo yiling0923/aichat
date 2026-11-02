@@ -31,6 +31,7 @@ class InboxController extends Controller
             ->where('channel', '!=', 'preview')
             ->with('tags')
             ->when(in_array($status, ['open', 'resolved'], true), fn ($q) => $q->where('status', $status))
+            ->when(in_array($request->query('channel'), ['web', 'whatsapp', 'messenger', 'instagram'], true), fn ($q) => $q->where('channel', $request->query('channel')))
             ->orderByDesc('last_message_at')
             ->limit(100)
             ->get()

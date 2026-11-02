@@ -26,6 +26,10 @@
     @endforeach
 </div>
 
+<div class="card"><div class="bar spread"><h3>{{ __('Money by channel') }}</h3><a class="btn small" href="{{ $q('sales_channel') }}">{{ __('Export CSV') }}</a></div>
+    <p class="mute">{{ __('Money is credited to the channel the customer first wrote from. Use the Channel filter at the top to see only WhatsApp, Messenger, Instagram or the website.') }}</p>
+    @include('admin.reports._money_bars', ['rows' => $sales['byChannel'], 'cur' => $cur])</div>
+
 <div class="rp-two">
     <div class="card"><div class="bar spread"><h3>{{ __('Money by service') }}</h3><a class="btn small" href="{{ $q('sales_service') }}">{{ __('Export CSV') }}</a></div>@include('admin.reports._money_bars', ['rows' => $sales['byService'], 'cur' => $cur])</div>
     <div class="card"><div class="bar spread"><h3>{{ __('Money by practitioner') }}</h3><a class="btn small" href="{{ $q('sales_person') }}">{{ __('Export CSV') }}</a></div>@include('admin.reports._money_bars', ['rows' => $sales['byPerson'], 'cur' => $cur])</div>
@@ -68,4 +72,4 @@
         @else<p class="mute">{{ __('Nothing is overdue. Well done.') }}</p>@endif
     </div>
 </div>
-<p class="mute rp-note">{{ __('Money counts orders marked paid. Service and practitioner come from the visit the order was made from; orders typed in by hand are grouped as Other. Only the period filter applies on this tab.') }} <a href="{{ $q('sales_summary') }}">{{ __('Export all sales numbers') }}</a></p>
+<p class="mute rp-note">{{ __('Money counts orders marked paid. Service and practitioner come from the visit the order was made from; orders typed in by hand are grouped as Other. Only the period and channel filters apply on this tab.') }} <a href="{{ $q('sales_summary') }}">{{ __('Export all sales numbers') }}</a></p>

@@ -877,3 +877,12 @@ The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers
 (DE, updated) If Meta answers "(#100) ... pages_read_engagement" to Check connection on a Messenger or Instagram channel, the check now says "Meta accepted the token ..." and clears the old red "Last problem". The real test is a message sent to the Page.
 
 (DB, checked in a browser) Answer keywords, the missed-question list, the picture on a menu step, the Day view and the print layout were all tried in a real browser. Fixed on the way: after saving an answer the page now stays on Teach it even when you opened it from a link; the missed-question card reads cleanly ("1 time"); and Print / save as PDF shows the full tables instead of cutting them at the scroll box.
+
+## DF. See sales and messages per channel
+
+1. Inbox: next to Open / Resolved / All there is a channel box (All channels, Website, WhatsApp, Messenger, Instagram). Pick one to list only those chats. It stays chosen while you move around.
+2. Reports > the Channel box at the top now also limits Sales: money taken, orders, average order, waiting for payment, overdue, refunded, new against returning, booked ahead, lost value, and the funnel. Money is credited to the channel the customer first wrote from (customers get linked to a chat when they book or leave their details).
+3. Reports > Sales > "Money by channel" shows the split (WhatsApp, Messenger, Website ...); orders for customers with no chat are grouped as "No chat (typed in by hand)". It has its own Export CSV.
+4. Reports > Marketing > "Where customers come from" now also shows messages from customers and money paid per channel. Pick a channel at the top to see only that row.
+5. The Export CSV list also has "Money by channel", and the channel CSV has the two new columns.
+Note: in the sample data only website chats are linked to customers, so WhatsApp shows RM 0.00 there. Real chats link when a customer books.

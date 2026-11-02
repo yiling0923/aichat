@@ -27,6 +27,13 @@
                         <option value="resolved">{{ __('Resolved') }}</option>
                         <option value="all">{{ __('All') }}</option>
                     </select>
+                    <select class="small" id="channel-filter" aria-label="{{ __('Channel') }}">
+                        <option value="">{{ __('All channels') }}</option>
+                        <option value="web">{{ __('Website') }}</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="messenger">Messenger</option>
+                        <option value="instagram">Instagram</option>
+                    </select>
                     <a class="mini-link" href="{{ route('conversations') }}">{{ __('Search all chats') }} &rarr;</a>
                 </div>
             </div>
