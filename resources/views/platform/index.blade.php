@@ -151,16 +151,16 @@
             <thead><tr>
                 <th class="col-check"><input type="checkbox" id="biz-all" aria-label="{{ __('Select all') }}"></th>
                 <th aria-sort="none"><button type="button" class="sortbtn" data-sort="name" data-type="text">{{ __('Business') }}</button></th>
-                <th aria-sort="none"><button type="button" class="sortbtn" data-sort="plan" data-type="text">{{ __('Plan') }}</button></th>
-                <th aria-sort="none"><button type="button" class="sortbtn" data-sort="status" data-type="text">{{ __('Status') }}</button></th>
+                <th>{{ __('Plan') }}</th>
+                <th>{{ __('Status') }}</th>
                 <th aria-sort="descending" class="sorted desc"><button type="button" class="sortbtn" data-sort="joined" data-type="num">{{ __('Joined') }}</button></th>
                 <th aria-sort="none"><button type="button" class="sortbtn" data-sort="ends" data-type="num">{{ __('Ends') }}</button></th>
-                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="people" data-type="num">{{ __('People') }}</button></th>
+                <th class="num">{{ __('People') }}</th>
                 <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="chats" data-type="num">{{ __('Chats') }}</button></th>
-                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="customers" data-type="num">{{ __('New customers') }}</button></th>
-                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="bookings" data-type="num">{{ __('Bookings') }}</button></th>
-                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="money" data-type="num">{{ __('Customer money') }}</button></th>
-                <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="ai" data-type="num">{{ __('AI (month)') }}</button></th>
+                <th class="num">{{ __('New customers') }}</th>
+                <th class="num">{{ __('Bookings') }}</th>
+                <th class="num">{{ __('Customer money') }}</th>
+                <th class="num">{{ __('AI (month)') }}</th>
                 <th class="num" aria-sort="none"><button type="button" class="sortbtn" data-sort="paid" data-type="num">{{ __('Paid to you') }}</button></th>
                 <th class="num">{{ __('Actions') }}</th>
             </tr></thead>

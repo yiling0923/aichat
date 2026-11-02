@@ -969,3 +969,5 @@ Still private by design: you see counts and money totals, never a business's cus
 6. The table fits without sideways scrolling from about a 1366-pixel-wide screen up; on smaller screens it scrolls inside its box.
 
 (DO, updated) **Plan, Status and Ends are three separate columns.** Plan says what the business has (Free trial, Starter, Growth, Internal). Status says how it is doing: Active, Expired, Past due, Canceled or Paused. Ends shows the trial end or paid-until date (or "-"). Every status, everywhere in the platform console (the table, the business page, channels, payments, invitations), is the same outlined pill with a coloured dot: green Active, red Expired / Past due / Paused, grey Canceled, amber waiting. No word is repeated between Plan and Status, and the old "ends 11 Nov" is gone from the plan cell. Plan, Status and Ends can all be sorted.
+
+(DO, updated) Only the useful column headings can be sorted (they show an arrow): Business, Joined, Ends, Chats and Paid to you. The other headings are plain text. It still opens newest first.

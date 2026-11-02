@@ -198,8 +198,13 @@ class PlatformConsoleTest extends TestCase
         $trialEnd = \App\Support\Lang::fmt($this->shop->trial_ends_at, 'j M Y', 'Y年n月j日');
         $this->assertStringContainsString($trialEnd, $row('Rose Clinic'));
         $this->assertStringNotContainsString('ends ', strip_tags($row('Rose Clinic')));
-        $this->assertStringContainsString('data-sort="ends"', $html);
-        $this->assertStringContainsString('data-sort="status"', $html);
+        // Only the useful columns can be sorted: Business, Joined, Ends, Chats and Paid to you.
+        foreach (['name', 'joined', 'ends', 'chats', 'paid'] as $key) {
+            $this->assertStringContainsString('data-sort="'.$key.'"', $html);
+        }
+        foreach (['plan', 'status', 'people', 'customers', 'bookings', 'money', 'ai'] as $key) {
+            $this->assertStringNotContainsString('data-sort="'.$key.'"', $html);
+        }
     }
 
     public function test_several_businesses_can_be_paused_resumed_or_moved_to_a_plan_together(): void
