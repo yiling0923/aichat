@@ -30,7 +30,8 @@
     <div class="page-head">
         <div>
             <h1>{{ $b->name }} @if ($b->status === 'paused') {!! $st(__('Paused'), 'hot') !!}@endif</h1>
-            <p class="mute">{{ $b->slug }} · {{ __('joined :date', ['date' => $date($b->created_at)]) }} · {{ $b->timezone }}@if ($b->paused_reason) · {{ __('Paused: :why', ['why' => $b->paused_reason]) }}@endif</p>
+            <p class="mute">{{ $b->slug }} · {{ __('joined :date', ['date' => $date($b->created_at)]) }} · {{ $b->timezone }}</p>
+            @if ($b->status === 'paused' && $b->paused_reason)<p style="margin:8px 0 0"><span class="reason-box" title="{{ __('Why it was paused') }}">{{ __('Reason: :why', ['why' => $b->paused_reason]) }}</span></p>@endif
         </div>
         <div class="bar" style="gap:8px;flex-wrap:wrap">
             <a class="btn small" href="{{ route('chat.show', $b->slug) }}" target="_blank" rel="noopener">{{ __('Customer chat') }}</a>

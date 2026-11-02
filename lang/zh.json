@@ -1968,5 +1968,6 @@
     ":n skipped (nothing to change).": "跳过 :n 个(没有需要更改的)。",
     "Expired": "已过期",
     "Ends": "到期",
-    "Paid until": "付费至"
+    "Paid until": "付费至",
+    "Why it was paused": "暂停的原因"
 }

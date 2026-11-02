@@ -171,7 +171,7 @@
                     data-name="{{ mb_strtolower($b->name) }}" data-plan="{{ mb_strtolower($planName($b)) }}" data-status="{{ mb_strtolower($stLabel) }}" data-ends="{{ $ends?->timestamp ?? 0 }}" data-joined="{{ $b->created_at?->timestamp }}" data-people="{{ $r['users'] }}" data-chats="{{ $r['chats'] }}"
                     data-customers="{{ $r['customers'] }}" data-bookings="{{ $r['bookings'] }}" data-money="{{ $r['sales'] }}" data-ai="{{ $r['ai'] }}" data-paid="{{ $r['revenue'] }}" @class(['is-paused' => $b->status === 'paused'])>
                     <td class="col-check"><input type="checkbox" class="biz-sel" value="{{ $b->id }}" aria-label="{{ __('Select :name', ['name' => $b->name]) }}"></td>
-                    <td><a href="{{ route('platform.show', $b->id) }}"><b>{{ $b->name }}</b></a><br><span class="mute">{{ $b->slug }}</span>@if ($b->status === 'paused' && $b->paused_reason)<br><small class="mute">{{ __('Reason: :why', ['why' => $b->paused_reason]) }}</small>@endif</td>
+                    <td><a href="{{ route('platform.show', $b->id) }}"><b>{{ $b->name }}</b></a><br><span class="mute">{{ $b->slug }}</span>@if ($b->status === 'paused' && $b->paused_reason)<br><span class="reason-box" title="{{ __('Why it was paused') }}">{{ __('Reason: :why', ['why' => $b->paused_reason]) }}</span>@endif</td>
                     <td>{{ $planName($b) }}</td>
                     <td>{!! $st(__($stLabel), $stTone) !!}</td>
                     <td style="white-space:nowrap">{{ \App\Support\Lang::fmt($b->created_at, 'j M Y', 'Y年n月j日') }}</td>

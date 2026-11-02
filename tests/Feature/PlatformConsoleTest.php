@@ -250,7 +250,7 @@ class PlatformConsoleTest extends TestCase
 
     public function test_every_status_uses_the_same_outlined_pill(): void
     {
-        Business::factory()->create(['name' => 'Paused Co', 'status' => 'paused', 'plan' => 'starter', 'subscription_status' => 'active']);
+        Business::factory()->create(['name' => 'Paused Co', 'status' => 'paused', 'paused_reason' => 'Unpaid', 'plan' => 'starter', 'subscription_status' => 'active']);
         Business::factory()->create(['name' => 'Expired Co', 'plan' => 'trial', 'trial_ends_at' => now()->subDay(), 'subscription_status' => 'trialing']);
         Business::factory()->create(['name' => 'Late Co', 'plan' => 'growth', 'subscription_status' => 'past_due']);
         Business::factory()->create(['name' => 'Gone Co', 'plan' => 'growth', 'subscription_status' => 'canceled', 'current_period_ends_at' => now()->subDay()]);
@@ -259,6 +259,7 @@ class PlatformConsoleTest extends TestCase
         $row = fn (string $name) => substr($html, $at = strpos($html, '<b>'.$name.'</b>'), strpos($html, '</tr>', $at) - $at);
 
         $this->assertStringContainsString('<span class="st st-hot">Paused</span>', $row('Paused Co'));
+        $this->assertStringContainsString('<span class="reason-box" title="Why it was paused">Reason: Unpaid</span>', $row('Paused Co'));          // the reason sits in its own outlined box
         $this->assertStringContainsString('<span class="st st-hot">Expired</span>', $row('Expired Co'));
         $this->assertStringContainsString('<span class="st st-hot">Past due</span>', $row('Late Co'));
         $this->assertStringContainsString('<span class="st st-mute">Canceled</span>', $row('Gone Co'));

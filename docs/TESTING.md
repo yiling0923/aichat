@@ -971,3 +971,5 @@ Still private by design: you see counts and money totals, never a business's cus
 (DO, updated) **Plan, Status and Ends are three separate columns.** Plan says what the business has (Free trial, Starter, Growth, Internal). Status says how it is doing: Active, Expired, Past due, Canceled or Paused. Ends shows the trial end or paid-until date (or "-"). Every status, everywhere in the platform console (the table, the business page, channels, payments, invitations), is the same outlined pill with a coloured dot: green Active, red Expired / Past due / Paused, grey Canceled, amber waiting. No word is repeated between Plan and Status, and the old "ends 11 Nov" is gone from the plan cell. Plan, Status and Ends can all be sorted.
 
 (DO, updated) Only the useful column headings can be sorted (they show an arrow): Business, Joined, Ends, Chats and Paid to you. The other headings are plain text. It still opens newest first.
+
+(DO, updated) The reason a business was paused ("Reason: Unpaid") is now in its own outlined red box, under the name in the table and under the heading on the business page, so it is easy to see. The paused row's tint now fills the whole row.
