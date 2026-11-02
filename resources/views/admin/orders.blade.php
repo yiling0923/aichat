@@ -49,7 +49,7 @@
 
     <div class="table-wrap" style="max-height:none">
     <table class="table">
-        <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Customer') }}</th><th>{{ __('What') }}</th><th style="text-align:right">{{ __('Amount') }}</th><th>{{ __('Status') }}</th><th></th></tr></thead>
+        <thead><tr>{!! \App\Support\SortLink::th('date', __('Date'), $sort, $dir) !!}{!! \App\Support\SortLink::th('customer', __('Customer'), $sort, $dir) !!}<th>{{ __('What') }}</th>{!! \App\Support\SortLink::th('amount', __('Amount'), $sort, $dir, 'num') !!}{!! \App\Support\SortLink::th('status', __('Status'), $sort, $dir) !!}<th></th></tr></thead>
         <tbody>
         @forelse ($orders as $o)
             @php $local = $o->ordered_at?->copy()->setTimezone($business->timezone); @endphp

@@ -1034,3 +1034,8 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 
 1. On Customers, the headings Name, Interested in, Lead level and Added have small up/down arrows. Click once for A→Z / low→high (up arrow lit), again to flip. The current sort stays when you search, filter or change page.
 2. Lead level sorts Ready to book first (descending) or Just browsing first (ascending).
+
+## DX. Orders: sortable headings, new arrow style
+
+1. Orders headings Date, Customer, Amount and Status sort the whole list (click again to reverse). Newest first by default.
+2. The arrow style is the same on Orders, Customers and the platform console: a small grey chip with up/down arrows; the sorted column's chip turns green with a single ↑ or ↓.

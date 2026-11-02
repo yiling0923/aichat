@@ -70,4 +70,20 @@ class TodayAttentionTest extends TestCase
         $this->actingAs($owner)->get('/admin/customers?sort=lead&dir=desc')->assertOk()->assertSeeInOrder(['Amy', 'Cat', 'Bob']);
         $this->actingAs($owner)->get('/admin/customers?sort=evil;drop')->assertOk();
     }
+
+    public function test_the_order_list_sorts_by_amount_and_customer(): void
+    {
+        $b = Business::factory()->create(['slug' => 'ord-co', 'plan' => 'starter', 'subscription_status' => 'active']);
+        $owner = User::factory()->create(['business_id' => $b->id, 'role' => 'owner']);
+        app(CurrentBusiness::class)->runAs($b, function () {
+            $z = \App\Models\Customer::create(['name' => 'Zed']);
+            $a = \App\Models\Customer::create(['name' => 'Ann']);
+            \App\Models\Order::create(['customer_id' => $z->id, 'reference' => 'O1', 'items' => 'AAA', 'amount' => 50, 'status' => 'paid', 'ordered_at' => now()]);
+            \App\Models\Order::create(['customer_id' => $a->id, 'reference' => 'O2', 'items' => 'BBB', 'amount' => 300, 'status' => 'pending', 'ordered_at' => now()->subDay()]);
+        });
+        $this->actingAs($owner)->get('/admin/orders?sort=amount&dir=desc')->assertOk()->assertSeeInOrder(['BBB', 'AAA']);
+        $this->actingAs($owner)->get('/admin/orders?sort=amount&dir=asc')->assertOk()->assertSeeInOrder(['AAA', 'BBB']);
+        $this->actingAs($owner)->get('/admin/orders?sort=customer&dir=asc')->assertOk()->assertSeeInOrder(['BBB', 'AAA']);
+        $this->actingAs($owner)->get('/admin/orders?sort=x;y')->assertOk();
+    }
 }

@@ -22,6 +22,8 @@ class OrderController extends Controller
 
     public function index(Request $request): View
     {
+        $sort = \App\Support\SortLink::pick($request->query('sort'), ['date', 'customer', 'amount', 'status'], 'date');
+        $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
         $status = (string) $request->query('status', '');
         $customer = (int) $request->query('customer', 0);
         $q = trim((string) $request->query('q', ''));
@@ -51,7 +53,15 @@ class OrderController extends Controller
 
         $orders = $base()->with('customer')
             ->when(in_array($status, self::STATUSES, true), fn ($w) => $w->where('status', $status))
-            ->orderByDesc('ordered_at')->orderByDesc('id')->paginate(25)->withQueryString();
+            ->tap(function ($w) use ($sort, $dir) {
+                match ($sort) {
+                    'customer' => $w->orderBy(Customer::query()->select('name')->whereColumn('customers.id', 'orders.customer_id'), $dir),
+                    'amount' => $w->orderBy('amount', $dir),
+                    'status' => $w->orderBy('status', $dir),
+                    default => $w->orderBy('ordered_at', $dir),
+                };
+                $w->orderByDesc('id');
+            })->paginate(25)->withQueryString();
 
         return view('admin.orders', [
             'business' => $business,
@@ -59,7 +69,7 @@ class OrderController extends Controller
             'orders' => $orders,
             'customers' => Customer::query()->orderBy('name')->limit(300)->get(['id', 'name', 'phone']),
             'statuses' => self::STATUSES,
-            'status' => $status, 'customerId' => $customer, 'q' => $q, 'period' => $period, 'periods' => self::PERIODS,
+            'sort' => $sort, 'dir' => $dir, 'status' => $status, 'customerId' => $customer, 'q' => $q, 'period' => $period, 'periods' => self::PERIODS,
             'paidTotal' => (float) ($totals['paid']->total ?? 0),
             'sums' => collect(self::STATUSES)->mapWithKeys(fn ($s) => [$s => ['n' => (int) ($totals[$s]->n ?? 0), 'total' => (float) ($totals[$s]->total ?? 0)]])->all(),
             'filterCustomer' => $customer > 0 ? Customer::query()->find($customer) : null,

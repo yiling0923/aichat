@@ -2345,19 +2345,15 @@ th.sorted.desc .sortbtn::after { content: "\25BC"; opacity: 1; font-size: 11px; 
 .tp-cols:last-of-type { margin-bottom: 0; }
 .ds { margin-bottom: 18px; }
 
-/* Sortable table headings (server side) */
-th.sortable a { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; }
+/* Sort indicators, one style everywhere: a small rounded chip with an arrow */
+th.sortable a { display: inline-flex; align-items: center; gap: 7px; color: inherit; text-decoration: none; }
+th.sortable.num a { justify-content: flex-end; }
 th.sortable a:hover { color: var(--accent); }
-th.sortable .arrows { display: inline-flex; flex-direction: column; line-height: .7; font-size: 8px; }
-th.sortable .arrows i { font-style: normal; color: #b8c4c4; }
-th.sortable .arrows i.on { color: var(--accent); }
-th.sortable.sorted a { color: var(--accent-d); }
-
-/* Inbox: every channel has its own colour (stripe, avatar, pill) */
-.conv { --cc: #64748b; box-shadow: inset 3px 0 0 var(--cc); }
-.conv.ch-web { --cc: #0f766e; } .conv.ch-whatsapp { --cc: #1c8a4f; } .conv.ch-messenger { --cc: #2f6fd0; } .conv.ch-instagram { --cc: #c2255c; }
-.conv .av { background: color-mix(in srgb, var(--cc) 16%, #fff); color: var(--cc); }
-.conv.urgent { box-shadow: inset 3px 0 0 var(--amber); }
-.conv .chan, #thread-meta .chan { --c: #64748b; display: inline-flex; align-items: center; padding: 1px 9px; border: 1px solid color-mix(in srgb, var(--c) 55%, #fff); border-radius: 999px; background: color-mix(in srgb, var(--c) 14%, #fff); color: var(--c); font-size: 12px; font-weight: 700; line-height: 1.5; margin: 0; }
-#thread-meta .chan.ch-web, .conv .chan.ch-web { --c: #0f766e; } #thread-meta .chan.ch-whatsapp, .conv .chan.ch-whatsapp { --c: #1c8a4f; } #thread-meta .chan.ch-messenger, .conv .chan.ch-messenger { --c: #2f6fd0; } #thread-meta .chan.ch-instagram, .conv .chan.ch-instagram { --c: #c2255c; }
-#thread-av.ch-web { background: #d9f0ec; color: #0f766e; } #thread-av.ch-whatsapp { background: #dcf3e5; color: #1c8a4f; } #thread-av.ch-messenger { background: #e0ebfb; color: #2f6fd0; } #thread-av.ch-instagram { background: #fbe1ea; color: #c2255c; }
+.arrows, .sortbtn::after { flex: none; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; background: var(--line-s); color: var(--faint); font-size: 12px; font-weight: 800; line-height: 1; opacity: 1; }
+.arrows::before { content: "\21C5"; }
+.sortbtn::after { content: "\21C5"; font-size: 12px; }
+a:hover > .arrows, .sortbtn:hover::after { background: var(--accent-l); color: var(--accent); opacity: 1; }
+th.sorted.asc .arrows::before { content: "\2191"; } th.sorted.desc .arrows::before { content: "\2193"; }
+th.sorted .arrows, th.sorted .sortbtn::after { background: var(--accent); color: #fff; opacity: 1; }
+th.sorted.asc .sortbtn::after { content: "\2191"; font-size: 12px; } th.sorted.desc .sortbtn::after { content: "\2193"; font-size: 12px; }
+th.sorted a, th.sorted .sortbtn { color: var(--accent-d); }
