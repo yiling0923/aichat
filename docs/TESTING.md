@@ -943,3 +943,16 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 2. Tap the hamburger: the side menu slides in over the page. Tap the dark area, a menu item, or press Esc to close it. Your name and Sign out are at the bottom of the menu.
 3. The Inbox list now fills the screen under the top bar (it used to stop after two chats and leave a blank area).
 4. On a computer nothing changes: the side menu stays on the left and there is no hamburger.
+
+## DN. Platform console, completed (platform owner only)
+
+Sign in as the platform owner (platform@example.com in the sample) and you land on /platform.
+1. **Businesses side by side:** pick 7, 30 or 90 days. Each business shows plan and state, people, chats, new customers, bookings, customer money (its own currency), AI calls this month and what it paid you. The top cards add them up. **Export CSV** downloads the table.
+2. **Open** a business for its own page: status, plan, usage against limits, the last 30 days, team, channels (no tokens shown), payments, and what you did to it.
+3. **Plan:** choose Free trial, Starter, Growth or Internal (no limits, no billing). Set the trial end, extend the trial by days, or set "paid until". A paid plan set here is manual: no payment is taken.
+4. **Limits:** for AI replies, team members, practitioners and channels choose Plan default, a Custom number, or Unlimited, just for this business.
+5. **Look inside (support):** "View (read-only)" opens the owner's staff area with nothing changeable; "Act as the owner" lets you make changes (it asks first). An orange banner shows on every page, including the Inbox, and "Return to the platform console" ends it. Opening a business this way does not mark its chats as read. A paused business can still be opened.
+6. **Locked out?** Set a new password for anyone in that business (the password itself is never written to the log).
+7. **+ Add a business** makes a business and its owner on a free trial; the owner can sign in straight away.
+8. **Activity** tab (and each business page) lists plan changes, limits, passwords set, support views (start and end), invitations, pauses and resumes, with who did it. This needs `php artisan migrate`.
+Still private by design: you see counts and money totals, never a business's customers or chats unless you open a support view.

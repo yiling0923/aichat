@@ -66,6 +66,15 @@ class Plans
             return 0;
         }
 
+        // The platform owner can give one business its own limit (a number, or "unlimited") instead of the plan's.
+        $custom = ((array) $business->settings)['limit_overrides'][$kind] ?? null;
+        if ($custom === 'unlimited') {
+            return null;
+        }
+        if (is_numeric($custom)) {
+            return max(0, (int) $custom);
+        }
+
         $value = $this->definition($business)['limits'][$kind] ?? null;
 
         return $value === null ? null : (int) $value;

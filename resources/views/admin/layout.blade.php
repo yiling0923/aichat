@@ -11,7 +11,8 @@
     @include('admin._push')
     @include('admin._i18n')
 </head>
-<body>
+<body @if (session('support')) class="has-support" @endif>
+@include('admin._support')
 <div class="shell">
     @include('admin._side', ['active' => $active])
     <main class="page">

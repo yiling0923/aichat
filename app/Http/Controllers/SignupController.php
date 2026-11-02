@@ -54,30 +54,8 @@ class SignupController extends Controller
             'terms' => ['accepted'],
         ], ['terms.accepted' => 'Please accept the terms and the privacy notice.']);
 
-        $user = DB::transaction(function () use ($data, $invite): User {
-            $business = Business::create([
-                'name' => $data['business_name'],
-                'slug' => $this->uniqueSlug($data['business_name']),
-                'timezone' => 'Asia/Kuala_Lumpur',
-                'default_language' => 'en',
-                'languages' => ['en', 'zh'],
-                'status' => 'active',
-                'plan' => 'trial',
-                'subscription_status' => 'trialing',
-                'trial_ends_at' => now()->addDays((int) config('plans.trial_days')),
-                'settings' => ['hours' => [
-                    'mon' => ['09:00', '18:00'], 'tue' => ['09:00', '18:00'], 'wed' => ['09:00', '18:00'],
-                    'thu' => ['09:00', '18:00'], 'fri' => ['09:00', '18:00'],
-                ]],
-            ]);
-
-            $flow = SetupApplier::neutralFlow();
-            (new BotFlow(['draft' => $flow, 'published' => $flow, 'published_at' => now()]))->forceFill(['business_id' => $business->id])->save();
-
-            $invite?->forceFill(['used_at' => now(), 'business_id' => $business->id])->save();
-
-            return User::create(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password'], 'business_id' => $business->id, 'role' => 'owner', 'active' => true]);
-        });
+        [$business, $user] = app(\App\Services\BusinessProvisioner::class)->create($data['business_name'], $data['name'], $data['email'], $data['password']);
+        $invite?->forceFill(['used_at' => now(), 'business_id' => $business->id])->save();
 
         Mail::to($user->email)->send(new VerifyEmailMail($user));
 
@@ -121,18 +99,5 @@ class SignupController extends Controller
         }
 
         return back()->with('status', __('We sent the email again.'));
-    }
-
-    private function uniqueSlug(string $name): string
-    {
-        $base = Str::slug($name) ?: 'business';
-        $slug = $base;
-        $i = 1;
-
-        while (Business::query()->where('slug', $slug)->exists() || in_array($slug, ['admin', 'api', 'login', 'signup', 'platform', 'chat', 'webhook'], true)) {
-            $slug = $base.'-'.++$i;
-        }
-
-        return $slug;
     }
 }

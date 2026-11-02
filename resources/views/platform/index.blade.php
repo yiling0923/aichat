@@ -35,10 +35,22 @@
         <div class="kpi"><span class="kpi-l">{{ __('Taken, last 30 days') }}</span><b>{{ $money($totals['revenue30']) }}</b><span class="kpi-s">{{ __(':n AI calls this month', ['n' => number_format($totals['ai'])]) }}</span></div>
     </div>
 
+    <div class="kpis main">
+        <div class="kpi"><span class="kpi-l">{{ __('Chats, last :n days', ['n' => $days]) }}</span><b>{{ number_format($totals['chats']) }}</b><span class="kpi-s">{{ __('all businesses') }}</span></div>
+        <div class="kpi"><span class="kpi-l">{{ __('Bookings, last :n days', ['n' => $days]) }}</span><b>{{ number_format($totals['bookings']) }}</b><span class="kpi-s">{{ __('all businesses') }}</span></div>
+        <div class="kpi" style="grid-column: span 2"><span class="kpi-l">{{ __('Customers paid their businesses, last :n days', ['n' => $days]) }}</span><b style="font-size:22px">{{ $totals['sales'] }}</b><span class="kpi-s">{{ __('by currency, paid orders only') }}</span></div>
+    </div>
+
     <div class="page-head">
         <div class="seg" id="plat-tabs">
             <a href="#businesses" data-tab="businesses" class="on">{{ __('Businesses') }} ({{ $totals['businesses'] }})</a>
             <a href="#invites" data-tab="invites">{{ __('Invitations') }} ({{ count($invites) }})</a>
+            <a href="#activity" data-tab="activity">{{ __('Activity') }}</a>
+        </div>
+        <div class="bar" style="gap:8px;flex-wrap:wrap">
+            <div class="seg" id="plat-days">@foreach ([7, 30, 90] as $d)<a href="{{ url('/platform?days='.$d) }}" @class(['on' => $days === $d])>{{ __(':n days', ['n' => $d]) }}</a>@endforeach</div>
+            <a class="btn small" href="{{ route('platform.export', ['days' => $days]) }}">{{ __('Export CSV') }}</a>
+            <button type="button" class="btn small primary" id="new-business">{{ __('+ Add a business') }}</button>
         </div>
     </div>
 
@@ -55,18 +67,22 @@
         </div>
         <div class="table-wrap" style="max-height:none">
         <table class="table" id="biz-table">
-            <thead><tr><th>{{ __('Business') }}</th><th>{{ __('Plan') }}</th><th style="text-align:right">{{ app()->getLocale() === 'zh' ? '员工' : 'People' }}</th><th style="text-align:right">{{ __('Chats (30 d)') }}</th><th style="text-align:right">{{ __('AI (month)') }}</th><th style="text-align:right">{{ __('Revenue') }}</th><th></th></tr></thead>
+            <thead><tr><th>{{ __('Business') }}</th><th>{{ __('Plan') }}</th><th style="text-align:right">{{ __('People') }}</th><th style="text-align:right">{{ __('Chats') }}</th><th style="text-align:right">{{ __('New customers') }}</th><th style="text-align:right">{{ __('Bookings') }}</th><th style="text-align:right">{{ __('Customer money') }}</th><th style="text-align:right">{{ __('AI (month)') }}</th><th style="text-align:right">{{ __('Paid to you') }}</th><th></th></tr></thead>
             <tbody>
             @foreach ($rows as $r)
                 @php $b = $r['business']; @endphp
                 <tr data-g="{{ $group($r) }}" data-s="{{ mb_strtolower($b->name.' '.$b->slug) }}" @class(['is-paused' => $b->status === 'paused'])>
-                    <td><b>{{ $b->name }}</b> @if ($b->status === 'paused')<span class="tag hot">{{ __('Paused') }}</span>@endif<br><span class="mute">{{ $b->slug }} · {{ __('joined :date', ['date' => \App\Support\Lang::fmt($b->created_at, 'j M Y', 'Y年n月j日')]) }}</span>@if ($b->status === 'paused' && $b->paused_reason)<br><small class="mute">{{ __('Reason:') }} {{ $b->paused_reason }}</small>@endif</td>
+                    <td><a href="{{ route('platform.show', $b->id) }}"><b>{{ $b->name }}</b></a> @if ($b->status === 'paused')<span class="tag hot">{{ __('Paused') }}</span>@endif<br><span class="mute">{{ $b->slug }} · {{ __('joined :date', ['date' => \App\Support\Lang::fmt($b->created_at, 'j M Y', 'Y年n月j日')]) }}</span>@if ($b->status === 'paused' && $b->paused_reason)<br><small class="mute">{{ __('Reason:') }} {{ $b->paused_reason }}</small>@endif</td>
                     <td>{{ __(ucfirst($b->plan ?? 'internal')) }}<br><span class="tag {{ $tone($r['state']) }}">{{ __(ucfirst(str_replace('_', ' ', $r['state']))) }}</span>@if ($r['state'] === 'trial' && $b->trial_ends_at)<br><small class="mute">{{ __('ends :date', ['date' => \App\Support\Lang::fmt($b->trial_ends_at, 'j M', 'n月j日')]) }}</small>@endif</td>
                     <td style="text-align:right">{{ $r['users'] }}</td>
                     <td style="text-align:right">{{ $r['chats'] }}</td>
+                    <td style="text-align:right">{{ $r['customers'] }}</td>
+                    <td style="text-align:right">{{ $r['bookings'] }}</td>
+                    <td style="text-align:right;white-space:nowrap">{{ $r['sales'] > 0 ? $r['currency'].' '.number_format($r['sales'], 0) : '-' }}</td>
                     <td style="text-align:right">{{ $r['ai'] }}</td>
                     <td style="text-align:right;white-space:nowrap">{{ $money($r['revenue'], 2) }}</td>
                     <td style="text-align:right;white-space:nowrap">
+                        <a class="btn small primary" href="{{ route('platform.show', $b->id) }}">{{ __('Open') }}</a>
                         <a class="btn small" href="{{ route('chat.show', $b->slug) }}" target="_blank" rel="noopener">{{ __('Chat') }}</a>
                         @if ($b->status === 'paused')
                             <form method="post" action="{{ url('/platform/businesses/'.$b->id.'/resume') }}" style="display:inline">@csrf<button class="btn small primary" type="submit">{{ __('Resume') }}</button></form>
@@ -76,7 +92,7 @@
                     </td>
                 </tr>
             @endforeach
-            <tr id="biz-empty" hidden><td colspan="7" class="empty">{{ __('No businesses match.') }}</td></tr>
+            <tr id="biz-empty" hidden><td colspan="10" class="empty">{{ __('No businesses match.') }}</td></tr>
             </tbody>
         </table>
         </div>
@@ -107,7 +123,42 @@
         </table>
         </div>
     </section>
+
+    <section data-panel="activity" hidden>
+        <p class="mute" style="margin-bottom:10px">{{ __('What you did on the platform: plan changes, pauses, support views and more. The latest 100.') }}</p>
+        <div class="table-wrap" style="max-height:none">
+        <table class="table">
+            <thead><tr><th>{{ __('When') }}</th><th>{{ __('What') }}</th><th>{{ __('Business') }}</th><th>{{ __('Details') }}</th><th>{{ __('By') }}</th></tr></thead>
+            <tbody>
+            @forelse ($audits as $a)
+                <tr>
+                    <td style="white-space:nowrap">{{ \App\Support\Lang::fmt($a->created_at, 'j M Y, H:i', 'Y年n月j日 H:i') }}</td>
+                    <td><span class="tag">{{ __(\App\Support\PlatformActions::label($a->action)) }}</span></td>
+                    <td>@if ($a->business)<a href="{{ route('platform.show', $a->business_id) }}">{{ $a->business->name }}</a>@else - @endif</td>
+                    <td>{{ $a->details ?: '-' }}</td>
+                    <td class="mute">{{ $a->user?->email ?? '-' }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="5" class="empty">{{ __('Nothing yet.') }}</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+        </div>
+    </section>
 </main>
+
+<dialog id="business-dialog" class="dlg">
+    <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
+    <h3>{{ __('Add a business') }}</h3>
+    <p class="mute" style="margin-top:4px">{{ __('Makes the business and its first owner, on a free trial. Give the owner the email and password to sign in; they can change the password in My account.') }}</p>
+    <form method="post" action="{{ url('/platform/businesses') }}">@csrf
+        <label class="f" style="margin-top:12px"><span>{{ __('Business name') }}</span><input type="text" name="business_name" required minlength="2" maxlength="100"></label>
+        <label class="f"><span>{{ __('Owner name') }}</span><input type="text" name="name" required maxlength="100"></label>
+        <label class="f"><span>{{ __('Owner email') }}</span><input type="email" name="email" required maxlength="150"></label>
+        <label class="f"><span>{{ __('Password (8 or more characters)') }}</span><input type="text" name="password" required minlength="8" maxlength="100" autocomplete="off"></label>
+        <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Create business') }}</button></div>
+    </form>
+</dialog>
 
 <dialog id="pause-dialog" class="dlg">
     <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
@@ -131,7 +182,7 @@
 <div class="toast" id="toast" hidden></div>
 <script>
 (function () {
-  var tab = location.hash === '#invites' || @json(session('status') && (str_contains((string) session('status'), 'Invitation code') || str_contains((string) session('status'), '邀请码'))) ? 'invites' : 'businesses';
+  var tab = location.hash === '#activity' ? 'activity' : location.hash === '#invites' || @json(session('status') && (str_contains((string) session('status'), 'Invitation code') || str_contains((string) session('status'), '邀请码'))) ? 'invites' : 'businesses';
   function showTab(t) {
     document.querySelectorAll('#plat-tabs a').forEach(function (a) { a.classList.toggle('on', a.dataset.tab === t); });
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== t; });
@@ -151,7 +202,9 @@
   });
 
   function dlg(id) { var d = document.getElementById(id); d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('.dlg-x')) { d.close(); } }); return d; }
-  var pd = dlg('pause-dialog'), iv = dlg('invite-dialog');
+  var pd = dlg('pause-dialog'), iv = dlg('invite-dialog'), bd = dlg('business-dialog');
+  document.getElementById('new-business').addEventListener('click', function () { bd.showModal(); });
+  @if ($errors->any()) bd.showModal(); @endif
   document.querySelectorAll('[data-pause]').forEach(function (b) {
     b.addEventListener('click', function () { document.getElementById('pd-form').action = b.dataset.action; document.getElementById('pd-title').textContent = @json(__('Pause :name?', ['name' => '__N__'])).replace('__N__', b.dataset.name); pd.showModal(); });
   });

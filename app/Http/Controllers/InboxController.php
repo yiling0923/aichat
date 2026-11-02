@@ -72,7 +72,9 @@ class InboxController extends Controller
         $after = (int) $request->query('after', 0);
 
         // Opening (or keeping open) a chat marks it read for the team.
-        Conversation::query()->whereKey($conversation->id)->toBase()->update(['staff_read_at' => now()]);
+        if (! $request->session()->has('support')) {      // looking in for support must not change what the team has read
+            Conversation::query()->whereKey($conversation->id)->toBase()->update(['staff_read_at' => now()]);
+        }
 
         $messages = Message::query()
             ->where('conversation_id', $conversation->id)

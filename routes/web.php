@@ -296,10 +296,20 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 Route::middleware(['auth', 'platform'])->prefix('platform')->group(function () {
     $p = \App\Http\Controllers\PlatformController::class;
     Route::get('/', [$p, 'index'])->name('platform.index');
+    Route::get('/export', [$p, 'export'])->name('platform.export');
+    Route::post('/businesses', [$p, 'store']);
+    Route::get('/businesses/{id}', [$p, 'show'])->whereNumber('id')->name('platform.show');
+    Route::post('/businesses/{id}/plan', [$p, 'plan'])->whereNumber('id');
+    Route::post('/businesses/{id}/limits', [$p, 'limits'])->whereNumber('id');
+    Route::post('/businesses/{id}/password', [$p, 'password'])->whereNumber('id')->middleware('throttle:10,1');
+    Route::post('/businesses/{id}/support', [$p, 'support'])->whereNumber('id')->middleware('throttle:20,1');
     Route::post('/invites', [$p, 'invite']);
     Route::post('/businesses/{id}/pause', [$p, 'pause'])->whereNumber('id');
     Route::post('/businesses/{id}/resume', [$p, 'resume'])->whereNumber('id');
 });
+
+// Leaving a support view and going back to the platform console (only works inside a support session).
+Route::post('/admin/support/stop', [\App\Http\Controllers\PlatformController::class, 'stopSupport'])->middleware('auth')->name('support.stop');
 
 // Phase 7: monitoring, password reset.
 Route::post('/webhook/stripe', \App\Http\Controllers\StripeWebhookController::class)->middleware('throttle:meta-webhook');

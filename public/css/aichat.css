@@ -2042,3 +2042,22 @@ details.au-card[open] > summary::after { content: none; }
   .inbox .list { max-height: none; height: 100%; overflow-y: auto; border-bottom: 0; }
   .inbox.chat-open .thread { height: 100%; min-height: 0; }
 }
+
+/* Platform owner: support view banner */
+.support-bar { position: sticky; top: 0; z-index: 90; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 8px 16px; background: #b45309; color: #fff; font-size: 13px; }
+.support-bar .btn { background: #fff; color: #7c2d12; border-color: #fff; }
+.support-bar form { margin: 0; }
+@media (max-width: 900px) { .has-support .mbar { top: 0; position: static; } .has-support .support-bar { padding: 8px 12px; } }
+
+/* Platform console: limits table and business page */
+.lim-table { display: grid; gap: 4px; margin: 6px 0 4px; }
+.lim-row { display: grid; grid-template-columns: 1fr 150px 90px; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line-s); }
+.lim-row:first-child { border-top: 0; }
+.lim-l { display: flex; flex-direction: column; min-width: 0; }
+.lim-l small { margin-top: 2px; }
+.lim-row select, .lim-row input { height: 34px; min-width: 0; }
+.plat-main .rp-two { margin-top: 14px; }
+.plat-main .crumb { display: inline-block; margin-bottom: 8px; }
+@media (max-width: 700px) { .lim-row { grid-template-columns: 1fr 1fr; } .lim-l { grid-column: 1 / -1; } }
+#biz-table td:first-child { min-width: 200px; }
+#biz-table td:nth-child(2) { min-width: 110px; }
