@@ -110,7 +110,7 @@
             @foreach ($unanswered as $u)
                 <div class="missed-row">
                     <span class="missed-q">{{ $u->text }}</span>
-                    <small class="mute">{{ __(':n times', ['n' => $u->times]) }} · {{ $u->last_asked_at?->diffForHumans() }}</small>
+                    <small class="mute">{{ $u->times === 1 ? __('1 time') : __(':n times', ['n' => $u->times]) }} · {{ $u->last_asked_at?->diffForHumans() }}</small>
                     <button type="button" class="btn small primary" data-missed="{{ $u->id }}" data-title="{{ $u->text }}">{{ __('Teach an answer') }}</button>
                     <form method="post" action="{{ url('/admin/ai/unanswered/'.$u->id.'/dismiss') }}">@csrf<button class="btn small" type="submit">{{ __('Ignore') }}</button></form>
                 </div>
@@ -215,7 +215,8 @@
   tabs.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.dataset.tab, true); history.replaceState(null, '', '#' + a.dataset.tab); }); });
   window.addEventListener('hashchange', function () { showTab(location.hash.replace('#', ''), true); });
   var saved = ''; try { saved = sessionStorage.getItem('ai-tab') || ''; } catch (e) { /* ignore */ }
-  showTab(location.hash.replace('#', '') || saved || 'mode', false);
+  var fromHash = location.hash.replace('#', '');
+  showTab(fromHash || saved || 'mode', !!fromHash);
 
   // Mode cards.
   document.querySelectorAll('.mode input').forEach(function (r) {
@@ -263,7 +264,7 @@
   document.getElementById('new-answer').addEventListener('click', function () { open(null); });
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   document.querySelectorAll('[data-idea]').forEach(function (b) { b.addEventListener('click', function () { open({ title: b.dataset.idea }); }); });
-  document.querySelectorAll('[data-missed]').forEach(function (b) { b.addEventListener('click', function () { open({ title: b.dataset.title, keywords: b.dataset.title, missed: b.dataset.missed }); }); });
+  document.querySelectorAll('[data-missed]').forEach(function (b) { b.addEventListener('click', function () { open({ title: b.dataset.title, missed: b.dataset.missed }); }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });
 })();
 </script>

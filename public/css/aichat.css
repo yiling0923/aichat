@@ -1917,6 +1917,7 @@ details.au-card[open] > summary::after { content: none; }
     .card, .rp-kpi, .rp-tiles .tile, .rp-funnel, .rk-row, .fn-row { break-inside: avoid; box-shadow: none !important; }
     .rp-two { grid-template-columns: 1fr 1fr; }
     .rtab[hidden] { display: none !important; }
+    .table-wrap, .week-scroll { max-height: none !important; overflow: visible !important; }
     canvas { max-width: 100% !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
@@ -1924,3 +1925,5 @@ details.au-card[open] > summary::after { content: none; }
 /* Sidebar: clearer sections */
 .side .sec.first { margin-top: 12px; }
 .side .help-link { margin-top: 14px; }
+.teach-missed .ti-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.teach-missed .ti-head small { font-size: 13px; color: var(--mute); }

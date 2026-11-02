@@ -875,3 +875,5 @@ The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers
 3. If "Subscribe to messages" is refused for a missing permission, the message tells you to press "Add subscriptions" in Meta instead.
 
 (DE, updated) If Meta answers "(#100) ... pages_read_engagement" to Check connection on a Messenger or Instagram channel, the check now says "Meta accepted the token ..." and clears the old red "Last problem". The real test is a message sent to the Page.
+
+(DB, checked in a browser) Answer keywords, the missed-question list, the picture on a menu step, the Day view and the print layout were all tried in a real browser. Fixed on the way: after saving an answer the page now stays on Teach it even when you opened it from a link; the missed-question card reads cleanly ("1 time"); and Print / save as PDF shows the full tables instead of cutting them at the scroll box.
