@@ -3,16 +3,18 @@
 @section('content')
     @php $owner = $role === 'owner'; @endphp
     @php
-        $can = fn (string $need) => match ($need) { 'owner' => $role === 'owner', 'manager' => in_array($role, ['owner', 'manager'], true), default => true };
+        $can = fn (string $need) => match ($need) { 'any' => true, 'owner' => $role === 'owner', default => auth()->user()->allows($need) };
         $tasks = array_values(array_filter([
-            ['Reply to a customer', 'Open the Inbox, pick a chat, type, press Enter.', route('inbox'), 'chat', 'any'],
-            ['Change opening hours', 'Set the days and times customers can book.', route('booking.setup'), 'clock', 'owner'],
-            ['Add a service or change a price', 'Name, minutes and price for each service.', route('booking.setup'), 'tag', 'owner'],
-            ['Change what the bot says', 'Edit the menu in English and Chinese, then Publish.', route('menu'), 'edit', 'owner'],
+            ['Reply to a customer', 'Open the Inbox, pick a chat, type, press Enter.', route('inbox'), 'chat', 'inbox'],
+            ['Change opening hours', 'Set the days and times customers can book.', route('booking.setup'), 'clock', 'booking'],
+            ['Add a service or change a price', 'Name, minutes and price for each service.', route('booking.setup'), 'tag', 'booking'],
+            ['Change what the bot says', 'Edit the menu in English and Chinese, then Publish.', route('menu'), 'edit', 'menu'],
+            ['Teach the bot an answer', 'Parking, payment methods, policies: write it once.', route('ai'), 'edit', 'ai'],
             ['Get alerts on my phone', 'A pop-up for new chats, even when the page is closed.', route('account').'#phone-alerts', 'bell', 'any'],
-            ['Message many customers', 'Send an offer to a group, only to those who agreed.', route('broadcasts'), 'send', 'manager'],
-            ['See how the business is doing', 'Chats, bookings, money and ratings for any period.', route('reports'), 'chart', 'any'],
+            ['Message many customers', 'Send an offer to a group, only to those who agreed.', route('broadcasts'), 'send', 'marketing'],
+            ['See sales and marketing numbers', 'Money, channels, best customers and who to win back.', route('reports'), 'chart', 'reports'],
             ['Add a team member', 'Give someone their own sign-in and alerts.', route('settings', ['tab' => 'team']), 'people', 'owner'],
+            ['Choose what each person can use', 'Switch areas on or off for one person or many.', route('settings', ['tab' => 'team']), 'people', 'owner'],
             ['Download my data', 'Customers, bookings, orders and chats as spreadsheets.', route('backup'), 'download', 'owner'],
         ], fn ($t) => $can($t[4])));
         $icons = [
@@ -36,10 +38,10 @@
             ['customers', 'Customers, leads and tags', 'Who they are and how close to booking'],
             ['orders', 'Orders and payments', 'Paid, pending, pay at the shop'],
             ['marketing', 'Marketing and reviews', 'Ratings, review links, broadcasts'],
-            ['reports', 'Reports', 'Numbers for any period'],
+            ['reports', 'Reports', 'Sales, marketing and more, by channel'],
             ['alerts', 'Alerts and waiting customers', 'Bell, phone, email, reminders'],
             ['ai', 'The AI assistant', 'Optional, off by default'],
-            ['team', 'Team and roles', 'Who can do what'],
+            ['team', 'Team and roles', 'Roles and what each person can use'],
             ['billing', 'Plan and billing', 'Trial, limits, payments'],
             ['data', 'Your data and privacy', 'Export, backup, erase'],
             ['faq', 'Questions and fixes', 'When something does not work'],
@@ -118,7 +120,7 @@
                     <li><b>After the visit</b> the system can ask for a rating, ask for a review, and invite the customer back.</li>
                 </ol>
                 <p class="hp-tip"><b>Tip</b> Press <kbd>Ctrl</kbd> + <kbd>K</kbd> on any page to jump to a customer or a chat.</p>
-                <p class="mute">The side menu is the map: <b>Today</b> and <b>Inbox</b> are for every day, <b>Schedule</b>, <b>Customers</b>, <b>Tasks</b> and <b>Orders</b> are your work lists, <b>Marketing</b> and <b>Reports</b> help you grow, and <b>Set up</b> is where you change how the bot behaves.</p>
+                <p class="mute">The side menu is the map, in groups. <b>Daily work</b>: Today, Inbox, Schedule, Customers, Tasks and Orders. <b>Grow</b>: Marketing and Reports. <b>Chatbot</b>: Menu builder, AI assistant, Saved replies and Channels. <b>Business setup</b>: Setup guide, Booking setup and Settings. You only see the parts the owner allowed for you.</p>
             </section>
 
             <section class="card hp-sec" id="day">
@@ -153,6 +155,8 @@
                     <li><b>Handled by</b> assigns the chat to a team member. <b>+ Task</b> makes a follow-up.</li>
                     <li class="hp-tipli"><b>Tip.</b> In the reply box, <kbd>Enter</kbd> sends and <kbd>Shift</kbd> + <kbd>Enter</kbd> starts a new line.</li>
                     <li><b>WhatsApp 24-hour rule.</b> WhatsApp only lets you write freely for 24 hours after the customer's last message. After that you can only send an approved <b>template</b>. The Inbox tells you when this happens.</li>
+                                    <li><b>Unread chats are blue.</b> A chat with a blue edge, a bold name and a dot has a customer message nobody on the team has opened yet. Open it and it goes back to normal. Your own replies never make it unread. <b>Needs a person</b> sits right beside the name.</li>
+                    <li><b>Filter by channel.</b> Next to Open / Resolved / All, pick WhatsApp, Messenger, Instagram or Website to list only those chats.</li>
                 </ul>
             </section>
 
@@ -165,6 +169,9 @@
                     <li><b>Preview</b> lets you try it like a customer without creating real chats.</li>
                     <li><b>Keywords</b> on a button are words customers can type instead of tapping it (for example "price", "多少钱").</li>
                     <li>Fixed sentences the bot says by itself (sorry, booking confirmations, reminders) are built in and already translated.</li>
+                                    <li><b>A new step needs a button.</b> A step you add only exists in the list. Open the <b>Main</b> step, press <b>+ Add button</b>, and under <b>Goes to</b> choose your new step. Then <b>Publish</b>.</li>
+                    <li><b>Send a picture or file</b> with a step (a price list, a map): in the step, choose the file (JPG, PNG, PDF, MP4 or Office file, up to 16 MB). The bot sends it just before the text of that step.</li>
+                    <li><b>English and Chinese boxes.</b> If the Chinese box is empty, Chinese customers see the English text, and the box tells you so. <b>Translate from English</b> fills it using the AI, if you have connected a real AI. Always read the result before you save.</li>
                 </ul>
             </section>
 
@@ -178,6 +185,7 @@
                     <li><b>Google Calendar</b> (optional): give each person a calendar and bookings appear there, and busy times there block the chat.</li>
                     <li>On the <a href="{{ route('schedule') }}">Schedule</a> you see the week or month. Click a booking to open it, or drag a confirmed one to a new time. Colours show the status (confirmed, done, no-show).</li>
                     <li>Press <b>Mark done</b> on a booking and the payment details open, so you can record what the customer paid, including paying at the shop.</li>
+                                    <li>The Schedule has <b>Month</b>, <b>Week</b>, <b>Day</b> and <b>List</b>. <b>Day</b> shows one column for each person, which is easiest on a busy day. Click a day name in the Week view to open it. In the <b>List</b>, finished visits that are not marked Done or No-show are listed first so none is forgotten.</li>
                 </ul>
             </section>
 
@@ -207,12 +215,21 @@
                     <li><b>Broadcasts</b>: one message to many customers, picked by tag, lead level or language. Only people who agreed to marketing are included, and anyone who types <code>stop</code> is removed automatically.</li>
                     <li><b>Message templates</b>: WhatsApp needs approved templates for messages you start. Manage them in Marketing → Templates.</li>
                     <li><b>Activity log</b>: what was sent to whom, and the survey answers and review links (second tab).</li>
+                                    <li><b>When automations send.</b> All start switched off. <b>Satisfaction survey</b>: about 2 hours after a visit ends (a rating of 4 or 5 can send your review link; 1 or 2 alerts your team). <b>Rebooking reminder</b>: after 30 days without a visit. <b>No-show recovery</b>: 2 hours after you mark a no-show. <b>Ready to book follow-up</b>: after 24 hours. You can change the wording and the delay.</li>
+                    <li><b>Who they skip.</b> People who never agreed to messages or typed <code>stop</code>, chats a person is handling, and on WhatsApp, Messenger and Instagram people who last wrote more than 24 hours ago (WhatsApp can use an approved template). Reports → Marketing shows what was sent or skipped. They only run while the background job runs.</li>
                 </ul>
             </section>
 
             <section class="card hp-sec" id="reports">
                 <h2>Reports</h2>
-                <p><a href="{{ route('reports') }}">Reports</a> shows chats, bookings, money and ratings, for any period, channel, service or person. Every table can be downloaded as a spreadsheet.</p>
+                <p><a href="{{ route('reports') }}">Reports</a> shows the numbers behind the business, for any period. Pick the period, channel, service or person at the top. Every table has <b>Export CSV</b>, and <b>Print / save as PDF</b> prints the tab you are on.</p>
+                <ul>
+                    <li><b>Overview</b>: chats, new customers, bookings and paid orders, with a day-by-day chart.</li>
+                    <li><b>Sales</b>: money taken, paid orders, average order, waiting for payment, overdue and refunded; the path from first message to payment; money by service, person, week, weekday and <b>channel</b>; new against returning customers; best customers and overdue orders.</li>
+                    <li><b>Marketing</b>: where customers come from (chats, messages, bookings and money for each channel), what they ask about, when they write, how broadcasts and automatic messages did, ratings, and customers to win back.</li>
+                    <li><b>Bookings, People, Money</b>: busiest days and hours, services and people, repeat customers, and payments.</li>
+                    <li><b>Channel filter.</b> Choose WhatsApp, Messenger, Instagram or Website to see only those. Money is credited to the channel the customer first wrote from, once they book or leave their details.</li>
+                </ul>
             </section>
 
             <section class="card hp-sec" id="alerts">
@@ -224,6 +241,7 @@
                     <li><b>When nobody answers a waiting customer</b>, the system reminds the team at 5, 10, 20 and 30 minutes. At 10 and 30 minutes it can also email the owner and managers, and send a WhatsApp alert. Set this in Settings → Business and team.</li>
                     <li><b>Give the chat back to the bot</b> after a time you choose, so a customer is never left alone. They are told sorry and see the menu again.</li>
                     <li><b>Daily summary email</b> (optional): yesterday's numbers every morning at about 8:00.</li>
+                                    <li><b>Long waits</b> are written in days and hours ("3 days 22 hours"), not thousands of minutes. A very long wait usually means the background job was not running: if you see the yellow banner <i>Automatic jobs are not running</i>, run <code>tools\setup-scheduler.bat</code> once.</li>
                 </ul>
             </section>
 
@@ -234,6 +252,8 @@
                     <li>In <a href="{{ route('ai') }}">AI assistant</a> @unless ($role !== 'staff')<span class="tag">Owner and manager</span>@endunless you choose a mode and teach it your facts (price list, policies). It never invents prices: an answer with a price you did not give it is blocked.</li>
                     <li>With AI on, staff can press <b>Summarise with AI</b> in a chat, and the AI can draft replies for staff to approve before they are sent.</li>
                     <li>Each plan includes a number of AI replies per month. A message at the limit tells you.</li>
+                                    <li><b>Teach it.</b> Your extra answers (parking, payment methods, policies) are sent as you wrote them when a customer types the topic, <b>even with the AI off</b>. Add <b>keywords</b> to an answer (for example "toilet, restroom") so more wording matches. <b>Questions the bot could not answer</b> lists what customers typed that matched nothing, with a button to teach an answer.</li>
+                    <li><b>Translate button.</b> Needs a real AI connection. The <b>practice AI</b> only pretends, so it writes nothing and says so. Each translation counts as one AI call.</li>
                 </ul>
             </section>
 
@@ -245,6 +265,11 @@
                     <div><span class="tag">Staff</span><p>Inbox, schedule, customers, tasks, orders and reports.</p></div>
                 </div>
                 <p class="mute">Add people in Settings → Business and team → Team. Each person has their own sign-in and their own alerts.</p>
+                <ul>
+                    <li><b>Choose what each person can use</b> @unless ($owner)<span class="tag">Owner</span>@endunless: press the pencil next to a person and tick <b>Choose exactly what this person can use</b>. Areas: Inbox, Schedule, Customers, Customer tools, Tasks, Orders, Reports, Marketing, AI assistant, Saved replies (edit), Tags, Menu builder and Booking setup. Left unticked, the person keeps the usual access for their role. Channels, billing, backups, settings and the team always stay with owners.</li>
+                    <li><b>The Team table</b> shows each person's role, access and an <b>Active</b> switch (turns an account on or off at once). The key button sets a new password, the pencil edits. Search, filter by role or by Active / Switched off, or tick several people to change their role, switch them on or off, or return them to the usual access in one go. You cannot switch yourself off, and the last owner stays.</li>
+                    <li>If someone sees <i>You do not have access</i>, ask the owner to switch that area on for them.</li>
+                </ul>
             </section>
 
             <section class="card hp-sec" id="billing">
@@ -275,6 +300,10 @@
                 <details><summary>Customers see no free times.</summary><p>Check Booking setup: the service has a person who gives it, your opening hours are set, the days are not marked closed, and Google Calendar is not showing that person busy.</p></details>
                 <details><summary>A tag or lead level is wrong.</summary><p>Tags are guessed from words, so sometimes they are wrong. Click the tag to remove it. You can change a customer's lead level on their page.</p></details>
                 <details><summary>I changed the menu but customers still see the old one.</summary><p>Press <b>Publish</b> in the Menu builder. Edits stay in a draft until then.</p></details>
+                            <details><summary>I added a step in the Menu builder but customers do not see it.</summary><p>A step is only reached through a button. Open the <b>Main</b> step, add a button that goes to your new step, then press <b>Publish</b>. In WhatsApp type <code>menu</code> to see the new list.</p></details>
+                <details><summary>The bot stopped replying on WhatsApp or Messenger.</summary><p>Open Channels and read <i>Is Meta reaching this app?</i>. With a free tunnel, the address changes every time it restarts: update <code>APP_URL</code> in <code>.env</code>, run <code>php artisan config:clear</code> and press <b>Save these in Meta for me</b>. WhatsApp's test token lasts 24 hours, so generate a new one if the chat shows a red note about the token. If the chat says <i>Needs a person</i>, type <code>menu</code> to wake the bot.</p></details>
+                <details><summary>Translate says the practice AI only pretends.</summary><p>The practice AI cannot translate. Type the Chinese yourself, or connect a real AI key (AI assistant → How to turn it on).</p></details>
+                <details><summary>"Nobody answered for ... days" in a chat.</summary><p>The background job was not running, so waiting chats were only checked when it started again. Run the scheduler setup once so it runs all the time.</p></details>
             </section>
 
             <section class="card hp-sec" id="words">

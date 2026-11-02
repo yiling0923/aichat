@@ -930,3 +930,9 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 5. Who can use it: the owner, and team members allowed Menu builder, AI assistant or Saved replies (edit).
 
 (DK, updated) The practice AI ("Practice AI" label) only pretends to answer, so the Translate button refuses to use it: it writes nothing and says "The practice AI only pretends...". Real translation needs a real AI key.
+
+## DL. Help page brought up to date
+
+1. Help (English and 中文) now covers: the grouped side menu, unread blue chats and the channel filter in the Inbox, adding a button on Main for a new menu step, pictures or files on a step, the English/Chinese boxes with Translate, the Day view of the Schedule, what each automation does and who it skips, the Reports tabs (Sales, Marketing, channel filter, Export CSV, Print / save as PDF), long waits in days and hours, Teach it (answers work even with the AI off, keywords, questions the bot could not answer, practice AI), and Team roles with per-person access, the Team table, the Active switch, bulk changes and the password button.
+2. "I want to..." lists only what you may use (it follows each person's access) and has two new cards: Teach the bot an answer, and Choose what each person can use.
+3. New questions in "Questions and fixes": a new menu step customers cannot see, the bot not replying on WhatsApp or Messenger, the practice AI and Translate, and "Nobody answered for ... days".
