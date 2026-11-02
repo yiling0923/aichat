@@ -66,7 +66,7 @@
         if (c.unread && current !== c.id) { var dot = document.createElement('i'); dot.className = 'udot'; dot.title = __t('Unread'); dot.setAttribute('aria-label', __t('Unread')); d.querySelector('.ct').appendChild(dot); }
         d.querySelector('p').textContent = c.preview || __t('No messages yet');
         var meta = d.querySelector('.cm');
-        var ch = document.createElement('span'); ch.className = 'chan'; ch.textContent = CHANNELS[c.channel] || c.channel; meta.appendChild(ch);
+        var ch = document.createElement('span'); ch.className = 'chan ch-' + c.channel; ch.textContent = CHANNELS[c.channel] || c.channel; meta.appendChild(ch);
         // The status sits beside the customer's name so it is seen first.
         var nm = d.querySelector('.nm');
         if (c.needs_reply) { var n = document.createElement('span'); n.className = 'tag warn'; n.textContent = __t('Needs a person'); nm.appendChild(n); }
