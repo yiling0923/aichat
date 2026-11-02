@@ -484,7 +484,7 @@ body.lp { height: auto; background: var(--surface); }
 .bell-foot { border-top: 1px solid var(--line-s); }
 .bell-head button, .bell-foot button { border: 0; background: none; color: var(--accent); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .bell-foot button:disabled { color: var(--mute); cursor: default; }
-.bell-list { max-height: 380px; overflow: auto; }
+.bell-list { max-height: 340px; overflow: auto; }
 .bell-empty { padding: 22px 16px; color: var(--mute); font-size: 14px; text-align: center; }
 .bell-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid var(--line-s); color: var(--ink); }
 .bell-item:hover { background: #f8fafa; text-decoration: none; }
