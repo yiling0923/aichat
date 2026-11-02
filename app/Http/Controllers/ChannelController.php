@@ -67,18 +67,29 @@ class ChannelController extends Controller
         $channel = Channel::query()->findOrFail($id);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            'external_id' => ['nullable', 'string', 'max:100', 'regex:/^[0-9A-Za-z_\-]+$/'],
             'waba_id' => ['nullable', 'string', 'max:100', 'regex:/^[0-9A-Za-z_\-]+$/'],
             'access_token' => ['nullable', 'string', 'max:1000'],
             'active' => ['required', 'boolean'],
             'reminder_template' => ['nullable', 'string', 'max:80'],
         ]);
 
+        // The ID Meta puts in each message (Phone number ID, Page ID). Fixing a wrong one here saves removing and adding the channel again.
+        if (! empty($data['external_id']) && $data['external_id'] !== $channel->external_id) {
+            if (Channel::query()->withoutGlobalScopes()->where('type', $channel->type)->where('external_id', $data['external_id'])->where('id', '!=', $channel->id)->exists()) {
+                return back()->withErrors(['external_id' => __('This :type account is already connected.', ['type' => Channel::TYPES[$channel->type]])]);
+            }
+            $channel->external_id = $data['external_id'];
+        }
+
         $channel->fill(['name' => $data['name'], 'waba_id' => $data['waba_id'] ?? null, 'active' => (bool) $data['active']]);
         if (! empty($data['access_token'])) {
             $channel->access_token = $data['access_token'];
         }
         $settings = (array) $channel->settings;
-        $settings['reminder_template'] = $data['reminder_template'] ?: null;
+        if (array_key_exists('reminder_template', $data)) {      // only the WhatsApp form has it
+            $settings['reminder_template'] = $data['reminder_template'] ?: null;
+        }
         $channel->settings = $settings;
         $channel->save();
 

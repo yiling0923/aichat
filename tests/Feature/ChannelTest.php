@@ -809,4 +809,27 @@ class ChannelTest extends TestCase
         // A status for a message we do not know is ignored.
         $this->hook($this->waStatus('wamid.NOPE', 'failed', [['code' => 1]]))->assertOk();
     }
+
+    public function test_a_messenger_channel_can_be_saved_and_its_page_id_corrected(): void
+    {
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $fb = $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'WRONGPAGE', 'access_token' => 'tok-fb']));
+
+        // The Messenger form has no reminder template field: saving must not crash, and a new Page ID replaces the wrong one.
+        $this->actingAs($owner)->post('/admin/channels/'.$fb->id, ['name' => 'FB shop', 'external_id' => '1409457962254526', 'active' => 1])->assertRedirect()->assertSessionHasNoErrors();
+        $fb->refresh();
+        $this->assertSame('1409457962254526', $fb->external_id);
+        $this->assertSame('FB shop', $fb->name);
+        $this->assertSame('tok-fb', $fb->access_token);
+
+        // Another business's page cannot be taken over, and a bad value is refused.
+        $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'Theirs', 'external_id' => 'THEIRPAGE', 'access_token' => 'x']), $this->other);
+        $this->actingAs($owner)->post('/admin/channels/'.$fb->id, ['name' => 'FB shop', 'external_id' => 'THEIRPAGE', 'active' => 1])->assertSessionHasErrors('external_id');
+        $this->actingAs($owner)->post('/admin/channels/'.$fb->id, ['name' => 'FB shop', 'external_id' => 'a b<x>', 'active' => 1])->assertSessionHasErrors('external_id');
+        $this->assertSame('1409457962254526', $fb->fresh()->external_id);
+
+        // WhatsApp still keeps its reminder template.
+        $this->actingAs($owner)->post('/admin/channels/'.$this->wa->id, ['name' => 'Clinic WA', 'external_id' => 'PNID1', 'active' => 1, 'reminder_template' => 'booking_reminder'])->assertRedirect();
+        $this->assertSame('booking_reminder', $this->wa->fresh()->settings['reminder_template']);
+    }
 }

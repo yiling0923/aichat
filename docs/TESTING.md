@@ -861,3 +861,9 @@ Not yet checked in a browser. Check each:
 ## DC. Side menu in clear sections
 
 The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers, Tasks, Orders), Grow (Marketing, Reports), Chatbot (Menu builder, AI assistant, Saved replies, Channels), Business setup (Setup guide, Booking setup, Settings) and Help at the bottom. Staff who are not managers only see Daily work, Grow (Reports) and Help. On a phone the menu stays a single scrolling row.
+
+## DD. Saving a Messenger or Instagram channel, and correcting its ID
+
+1. Channels > open your Messenger card > Save settings. It now saves (before, it showed a 500 error because only WhatsApp has a reminder template).
+2. The settings pop-up now has an editable ID box (Phone number ID for WhatsApp, Facebook Page ID for Messenger, Instagram account ID). If Meta sends messages for a different ID than the one you typed, the Channels page says so; paste the ID from that message here and save. You do not need to remove and add the channel again.
+3. An ID that already belongs to another business, or one with spaces or symbols, is refused.

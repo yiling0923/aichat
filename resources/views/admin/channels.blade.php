@@ -94,6 +94,8 @@
                 @csrf
                 <div class="grid2" style="margin-top:12px">
                         <label class="f"><span>{{ __('Name') }}</span><input type="text" name="name" value="{{ $c->name }}"></label>
+                        <label class="f"><span>{{ $c->type === 'whatsapp' ? __('Phone number ID') : ($c->type === 'messenger' ? __('Facebook Page ID') : __('Instagram account ID')) }}</span>
+                            <input type="text" name="external_id" value="{{ $c->external_id }}" required></label>
                         <label class="f"><span>{{ $c->type === 'instagram' ? 'Linked Facebook Page ID' : ($c->type === 'whatsapp' ? 'WhatsApp Business Account ID' : 'Page ID (not needed)') }}</span>
                             <input type="text" name="waba_id" value="{{ $c->waba_id }}"></label>
                         <label class="f"><span>{{ __('New access token (leave empty to keep the current one)') }}</span><input type="password" name="access_token" autocomplete="off"></label>
