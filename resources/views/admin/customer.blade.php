@@ -137,8 +137,15 @@
         <form method="post" action="{{ url('/admin/customers/'.$customer->id.'/merge') }}">
             @csrf
             <label class="f" style="margin-top:12px"><span>{{ __('Search the other customer') }}</span><input type="search" id="merge-q" placeholder="{{ __('Name or phone') }}" autocomplete="off"></label>
-            <label class="f"><span>{{ __('The other customer') }}</span>
-                <select name="other_id" id="merge-pick" size="6" required>@foreach ($others as $o)<option value="{{ $o->id }}">{{ $o->name ?: __('No name') }} · {{ $o->phone ?: '-' }}</option>@endforeach</select></label>
+            <div class="f"><span>{{ __('Pick the other customer (it will be removed)') }}</span>
+                <div class="merge-list" id="merge-pick" role="radiogroup">
+                    @foreach ($others as $o)
+                        <label class="merge-opt"><input type="radio" name="other_id" value="{{ $o->id }}" required><span class="mo-av">{{ mb_strtoupper(mb_substr($o->name ?: '?', 0, 1)) }}</span><span class="mo-t"><b>{{ $o->name ?: __('No name') }}</b><small>{{ $o->phone ?: '-' }}</small></span></label>
+                    @endforeach
+                    <p class="merge-none mute" hidden>{{ __('No one matches.') }}</p>
+                </div>
+            </div>
+            <p class="merge-keep">{{ __('You keep :name. The one you pick here is removed.', ['name' => $customer->name ?: __('this customer')]) }}</p>
             <div class="dlg-foot"><button class="btn primary" type="submit" onclick="return confirm({{ json_encode(__('Join these two records? This cannot be undone.'), JSON_UNESCAPED_UNICODE) }})">{{ __('Join them') }}</button></div>
         </form>
     </dialog>
@@ -153,7 +160,7 @@
     md.addEventListener('click', function (e) { if (e.target === md || e.target.closest('.dlg-x')) { md.close(); } });
     document.getElementById('merge-q').addEventListener('input', function () {
       var q = this.value.trim().toLowerCase();
-      document.querySelectorAll('#merge-pick option').forEach(function (o) { o.hidden = q !== '' && o.textContent.toLowerCase().indexOf(q) === -1; });
+      var shown = 0; document.querySelectorAll('#merge-pick .merge-opt').forEach(function (o) { var hit = q === '' || o.textContent.toLowerCase().indexOf(q) !== -1; o.hidden = !hit; if (hit) { shown++; } }); document.querySelector('#merge-pick .merge-none').hidden = shown > 0;
     });
   }
   var dlg = document.getElementById('edit-dialog');

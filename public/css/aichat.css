@@ -2357,3 +2357,17 @@ th.sorted.asc .arrows::before { content: "\2191"; } th.sorted.desc .arrows::befo
 th.sorted .arrows, th.sorted .sortbtn::after { background: var(--accent); color: #fff; opacity: 1; }
 th.sorted.asc .sortbtn::after { content: "\2191"; font-size: 12px; } th.sorted.desc .sortbtn::after { content: "\2193"; font-size: 12px; }
 th.sorted a, th.sorted .sortbtn { color: var(--accent-d); }
+
+/* Join customers: a tall list you can click, one row per person */
+.merge-list { max-height: 260px; overflow-y: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.merge-opt { display: flex; align-items: center; gap: 12px; padding: 9px 12px; cursor: pointer; border-top: 1px solid var(--line-s); font-weight: 400; color: var(--ink); }
+.merge-opt:first-child { border-top: 0; }
+.merge-opt[hidden] { display: none; }
+.merge-opt:hover { background: #f7fafa; }
+.merge-opt:has(input:checked) { background: var(--accent-l); box-shadow: inset 3px 0 0 var(--accent); }
+.merge-opt input { flex: none; width: 16px; height: 16px; accent-color: var(--accent); }
+.mo-av { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--accent-m); color: var(--accent-d); display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+.mo-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.mo-t b { font-size: 14.5px; font-weight: 600; } .mo-t small { color: var(--mute); font-size: 13px; }
+.merge-none { padding: 14px; text-align: center; }
+.merge-keep { margin-top: 10px; padding: 9px 12px; border-radius: 10px; background: var(--ambers); color: var(--amber); font-size: 13.5px; font-weight: 600; }
