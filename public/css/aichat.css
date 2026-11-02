@@ -1937,3 +1937,8 @@ details.au-card[open] > summary::after { content: none; }
 .area small { color: var(--mute); font-size: 11.5px; line-height: 1.35; }
 .area-grid input:disabled + span { opacity: .65; }
 @media (max-width: 600px) { .area-grid { grid-template-columns: 1fr; } }
+
+/* Inbox list: the status tag sits beside the customer's name */
+.conv .nm { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.conv .nm b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.conv .nm .tag { flex: none; font-size: 11px; padding: 1px 8px; }

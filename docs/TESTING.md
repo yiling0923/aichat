@@ -897,3 +897,5 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 4. Switch it off again to go back to the role's usual access. Making someone an Owner clears the choice (owners always have everything).
 5. Channels (connections and tokens), billing, backups, settings and the team are always owner-only and cannot be given.
 6. Also fixed: a team member added by the owner can now sign in straight away. Before, they were sent to "Confirm your email" because the confirmation date was not saved.
+
+(DF, updated) Inbox list: the "Needs a person" (or "Staff") tag now sits right beside the customer's name instead of on the bottom line. The channel (Website, WhatsApp ...) stays below.

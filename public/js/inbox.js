@@ -59,15 +59,17 @@
       data.conversations.forEach(function (c) {
         var d = document.createElement('div');
         d.className = 'conv' + (current === c.id ? ' on' : '') + (c.needs_reply ? ' urgent' : '');
-        d.innerHTML = '<span class="av"></span><div class="cb"><div class="ct"><b></b><time></time></div><p></p><div class="cm"></div></div>';
+        d.innerHTML = '<span class="av"></span><div class="cb"><div class="ct"><span class="nm"><b></b></span><time></time></div><p></p><div class="cm"></div></div>';
         d.querySelector('.av').textContent = (c.name || '?').trim().charAt(0).toUpperCase();
         d.querySelector('b').textContent = c.name;
         d.querySelector('time').textContent = ago(c.last_message_at);
         d.querySelector('p').textContent = c.preview || __t('No messages yet');
         var meta = d.querySelector('.cm');
         var ch = document.createElement('span'); ch.className = 'chan'; ch.textContent = CHANNELS[c.channel] || c.channel; meta.appendChild(ch);
-        if (c.needs_reply) { var n = document.createElement('span'); n.className = 'tag warn'; n.textContent = __t('Needs a person'); meta.appendChild(n); }
-        else if (c.mode === 'human') { var h = document.createElement('span'); h.className = 'tag'; h.textContent = __t('Staff'); meta.appendChild(h); }
+        // The status sits beside the customer's name so it is seen first.
+        var nm = d.querySelector('.nm');
+        if (c.needs_reply) { var n = document.createElement('span'); n.className = 'tag warn'; n.textContent = __t('Needs a person'); nm.appendChild(n); }
+        else if (c.mode === 'human') { var h = document.createElement('span'); h.className = 'tag'; h.textContent = __t('Staff'); nm.appendChild(h); }
         d.addEventListener('click', function () { openConversation(c.id); });
         listEl.appendChild(d);
       });
