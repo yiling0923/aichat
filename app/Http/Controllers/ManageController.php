@@ -21,9 +21,9 @@ class ManageController extends Controller
                 $owner ? ['Setup guide', 'guide', 'Step by step to get ready for real customers.'] : null,
                 $owner ? ['Quick start wizard', 'setup', 'Draft your services from a price list, connect, test, go live.'] : null,
             ]),
-            'Organise' => [
-                ['Tags', 'tags', 'Labels for customers and chats.'],
-            ],
+            'Organise' => array_filter([
+                $user->allows('tags') ? ['Tags', 'tags', 'Labels for customers and chats.'] : null,
+            ]),
             'You' => [
                 ['Help', 'help', 'How the whole system works, in plain words.'],
                 ['My account', 'account', 'Your name and password.'],

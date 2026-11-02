@@ -129,6 +129,8 @@ class SettingsController extends Controller
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'max:100'],
             'role' => ['required', Rule::in(self::ROLES)],
+            'custom' => ['nullable', 'boolean'],
+            'areas' => ['nullable', 'array'],
         ]);
 
         $plans = app(Plans::class);
@@ -136,9 +138,23 @@ class SettingsController extends Controller
             return back()->withErrors(['email' => __('Your plan has reached its limit of team members. Upgrade under Plan & billing to add more.')]);
         }
 
-        User::create($data + ['business_id' => $request->user()->business_id, 'active' => true, 'email_verified_at' => now()]);
+        unset($data['custom'], $data['areas']);
+        // The owner vouches for this person, so their email counts as confirmed (it is not a fillable field, so it is set directly).
+        $member = new User($data + ['business_id' => $request->user()->business_id, 'active' => true, 'permissions' => $this->chosenAreas($request, $data['role'])]);
+        $member->email_verified_at = now();
+        $member->save();
 
         return back()->with('status', __('Team member added.'));
+    }
+
+    /** What the owner ticked for this person: a list of areas, or null for the role's usual access (owners always have everything). */
+    private function chosenAreas(Request $request, string $role): ?array
+    {
+        if ($role === 'owner' || ! $request->boolean('custom')) {
+            return null;
+        }
+
+        return \App\Support\Access::clean((array) $request->input('areas', []));
     }
 
     public function updateUser(Request $request, int $id): RedirectResponse
@@ -148,6 +164,8 @@ class SettingsController extends Controller
             'role' => ['required', Rule::in(self::ROLES)],
             'active' => ['required', 'boolean'],
             'password' => ['nullable', 'string', 'min:8', 'max:100'],
+            'custom' => ['nullable', 'boolean'],
+            'areas' => ['nullable', 'array'],
         ]);
 
         // Keep at least one active owner, and never lock yourself out by accident.
@@ -157,6 +175,7 @@ class SettingsController extends Controller
         }
 
         $user->role = $data['role'];
+        $user->permissions = $this->chosenAreas($request, $data['role']);
         $user->active = (bool) $data['active'];
         if (! empty($data['password'])) {
             $user->password = $data['password'];

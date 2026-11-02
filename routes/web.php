@@ -58,7 +58,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:lo
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Staff inbox.
-Route::middleware('staff')->prefix('admin')->group(function () {
+Route::middleware(['staff', 'perm:inbox'])->prefix('admin')->group(function () {
     Route::get('/', [InboxController::class, 'index'])->name('inbox');
     Route::get('/api/conversations', [InboxController::class, 'conversations']);
     Route::get('/api/conversations/{id}', [InboxController::class, 'show'])->whereNumber('id');
@@ -75,18 +75,22 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::post('/api/conversations/{id}/tag', [InboxController::class, 'tag'])->whereNumber('id');
     Route::post('/api/conversations/{id}/assign', [InboxController::class, 'assign'])->whereNumber('id');
     Route::post('/api/conversations/{id}/template', [\App\Http\Controllers\TemplateController::class, 'send'])->whereNumber('id');
+});
+
+// Alerts, phone notifications and search (every signed-in staff member).
+Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/api/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/api/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);
     Route::post('/api/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->whereNumber('id');
     Route::post('/api/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])->middleware('throttle:20,1');
     Route::post('/api/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->middleware('throttle:20,1');
     Route::post('/api/push/test', [\App\Http\Controllers\PushController::class, 'test'])->middleware('throttle:6,1');
-    Route::get('/api/search', \App\Http\Controllers\SearchController::class)->middleware('throttle:120,1');
+    Route::get('/api/search', \App\Http\Controllers\SearchController::class)->middleware(['throttle:120,1', 'perm:inbox,customers']);
     Route::get('/api/quick-replies', [\App\Http\Controllers\LibraryController::class, 'list']);
 });
 
-// Customers (all staff) and menu builder (owner only).
-Route::middleware('staff')->prefix('admin')->group(function () {
+// Customers.
+Route::middleware(['staff', 'perm:customers'])->prefix('admin')->group(function () {
     Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers');
     Route::get('/customers/{id}', [\App\Http\Controllers\CustomerController::class, 'show'])->whereNumber('id')->name('customers.show');
     Route::post('/customers/bulk', [\App\Http\Controllers\CustomerController::class, 'bulk']);
@@ -96,6 +100,10 @@ Route::middleware('staff')->prefix('admin')->group(function () {
 Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::get('/guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide');
     Route::post('/guide/{key}', [\App\Http\Controllers\GuideController::class, 'mark'])->where('key', '[a-z]+');
+});
+
+// Menu builder (the owner, or anyone the owner allows).
+Route::middleware(['staff', 'perm:menu'])->prefix('admin')->group(function () {
     Route::get('/menu', [\App\Http\Controllers\MenuController::class, 'index'])->name('menu');
     Route::get('/api/menu', [\App\Http\Controllers\MenuController::class, 'show']);
     Route::put('/api/menu', [\App\Http\Controllers\MenuController::class, 'save']);
@@ -106,15 +114,15 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::get('/api/menu/stats', [\App\Http\Controllers\MenuController::class, 'stats']);
 });
 
-// Schedule (all staff) and booking setup (owner only).
-Route::middleware('staff')->prefix('admin')->group(function () {
+// Schedule, and booking setup.
+Route::middleware(['staff', 'perm:schedule'])->prefix('admin')->group(function () {
     Route::get('/schedule', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('schedule');
     Route::post('/schedule/{id}/cancel', [\App\Http\Controllers\ScheduleController::class, 'cancel'])->whereNumber('id');
     Route::post('/schedule/{id}/move', [\App\Http\Controllers\ScheduleController::class, 'move'])->whereNumber('id');
     Route::post('/schedule/{id}/mark', [\App\Http\Controllers\ScheduleController::class, 'mark'])->whereNumber('id');
 });
 
-Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
+Route::middleware(['staff', 'perm:booking'])->prefix('admin')->group(function () {
     $c = \App\Http\Controllers\BookingSetupController::class;
     Route::get('/booking-setup', [$c, 'index'])->name('booking.setup');
     Route::post('/booking-setup/rules', [$c, 'saveRules']);
@@ -132,35 +140,45 @@ Route::middleware('staff')->prefix('admin')->group(function () {
     Route::get('/help', [\App\Http\Controllers\GuideController::class, 'help'])->name('help');
     Route::post('/language', [\App\Http\Controllers\AccountController::class, 'language'])->name('language')->middleware('throttle:20,1');
     Route::get('/today', [\App\Http\Controllers\TodayController::class, 'index'])->name('today');
-    Route::get('/conversations', [\App\Http\Controllers\ConversationsController::class, 'index'])->name('conversations');
-    Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks');
-    Route::post('/tasks', [\App\Http\Controllers\TaskController::class, 'store']);
-    Route::post('/tasks/{id}', [\App\Http\Controllers\TaskController::class, 'update'])->whereNumber('id');
-    Route::post('/tasks/{id}/toggle', [\App\Http\Controllers\TaskController::class, 'toggle'])->whereNumber('id');
-    Route::post('/tasks/{id}/delete', [\App\Http\Controllers\TaskController::class, 'destroy'])->whereNumber('id');
+    Route::get('/conversations', [\App\Http\Controllers\ConversationsController::class, 'index'])->name('conversations')->middleware('perm:inbox');
+    Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks')->middleware('perm:tasks');
+    Route::post('/tasks', [\App\Http\Controllers\TaskController::class, 'store'])->middleware('perm:tasks');
+    Route::post('/tasks/{id}', [\App\Http\Controllers\TaskController::class, 'update'])->whereNumber('id')->middleware('perm:tasks');
+    Route::post('/tasks/{id}/toggle', [\App\Http\Controllers\TaskController::class, 'toggle'])->whereNumber('id')->middleware('perm:tasks');
+    Route::post('/tasks/{id}/delete', [\App\Http\Controllers\TaskController::class, 'destroy'])->whereNumber('id')->middleware('perm:tasks');
     Route::get('/library', [\App\Http\Controllers\LibraryController::class, 'index'])->name('library');
 });
 
-Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
+// Pages the owner can allow per person: the settings hub (with Tags), customer tools, tags, saved-reply editing, AI and templates.
+Route::middleware(['staff', 'perm:tags'])->prefix('admin')->group(function () {
     Route::get('/manage', [\App\Http\Controllers\ManageController::class, 'index'])->name('manage');
+});
+
+Route::middleware(['staff', 'perm:customers_admin'])->prefix('admin')->group(function () {
     Route::get('/customers/{id}/export', [\App\Http\Controllers\CustomerController::class, 'export'])->whereNumber('id');
     Route::post('/customers/{id}/erase', [\App\Http\Controllers\CustomerController::class, 'erase'])->whereNumber('id');
     Route::post('/customers/{id}/merge', [\App\Http\Controllers\CustomerController::class, 'merge'])->whereNumber('id');
     Route::get('/customers/import-template', [\App\Http\Controllers\CustomerController::class, 'importTemplate']);
     Route::post('/customers/import', [\App\Http\Controllers\CustomerController::class, 'import'])->middleware('throttle:10,1');
+});
 
+Route::middleware(['staff', 'perm:tags'])->prefix('admin')->group(function () {
     $t = \App\Http\Controllers\TagController::class;
     Route::get('/tags', [$t, 'index'])->name('tags');
     Route::post('/tags', [$t, 'store']);
     Route::post('/tags/{id}', [$t, 'update'])->whereNumber('id');
     Route::post('/tags/{id}/merge', [$t, 'merge'])->whereNumber('id');
     Route::post('/tags/{id}/delete', [$t, 'destroy'])->whereNumber('id');
+});
 
+Route::middleware(['staff', 'perm:library'])->prefix('admin')->group(function () {
     $l = \App\Http\Controllers\LibraryController::class;
     Route::post('/library', [$l, 'store']);
     Route::post('/library/{id}', [$l, 'update'])->whereNumber('id');
     Route::post('/library/{id}/delete', [$l, 'destroy'])->whereNumber('id');
+});
 
+Route::middleware(['staff', 'perm:ai'])->prefix('admin')->group(function () {
     $ai = \App\Http\Controllers\AiSettingsController::class;
     Route::get('/ai', [$ai, 'index'])->name('ai');
     Route::post('/ai', [$ai, 'save']);
@@ -169,7 +187,9 @@ Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
     Route::post('/ai/knowledge/{id}', [$ai, 'updateEntry'])->whereNumber('id');
     Route::post('/ai/knowledge/{id}/delete', [$ai, 'destroyEntry'])->whereNumber('id');
     Route::post('/ai/unanswered/{id}/dismiss', [$ai, 'dismissUnanswered'])->whereNumber('id');
+});
 
+Route::middleware(['staff', 'perm:marketing'])->prefix('admin')->group(function () {
     $tp = \App\Http\Controllers\TemplateController::class;
     Route::get('/templates', [$tp, 'index'])->name('templates');
     Route::post('/templates', [$tp, 'store']);
@@ -206,18 +226,21 @@ Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
 Route::get('/webhook/meta', [\App\Http\Controllers\MetaWebhookController::class, 'verify']);
 Route::post('/webhook/meta', [\App\Http\Controllers\MetaWebhookController::class, 'receive'])->middleware('throttle:meta-webhook');
 
-// Phase 5: automations, broadcasts (owner or manager); orders and reports (everyone).
-Route::middleware('staff')->prefix('admin')->group(function () {
+// Orders, reports, automations and broadcasts.
+Route::middleware(['staff', 'perm:orders'])->prefix('admin')->group(function () {
     $o = \App\Http\Controllers\OrderController::class;
     Route::get('/orders', [$o, 'index'])->name('orders');
     Route::post('/orders', [$o, 'store']);
     Route::post('/orders/{id}', [$o, 'update'])->whereNumber('id');
     Route::post('/orders/{id}/delete', [$o, 'destroy'])->whereNumber('id');
+});
+
+Route::middleware(['staff', 'perm:reports'])->prefix('admin')->group(function () {
     Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('reports');
     Route::get('/reports/export', [\App\Http\Controllers\ReportsController::class, 'export'])->name('reports.export');
 });
 
-Route::middleware(['staff', 'manager'])->prefix('admin')->group(function () {
+Route::middleware(['staff', 'perm:marketing'])->prefix('admin')->group(function () {
     $a = \App\Http\Controllers\AutomationController::class;
     Route::get('/automations', [$a, 'index'])->name('automations');
     Route::get('/automations/activity', [$a, 'activity'])->name('automations.activity');

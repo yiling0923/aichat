@@ -1,7 +1,7 @@
 @extends('admin.layout')
 @section('title', __('Customers'))
 @section('content')
-    <div class="page-head"><h1>{{ __('Customers') }}</h1>@if (auth()->user()->canManage())<button type="button" class="btn" id="open-import">{{ __('Import from a spreadsheet') }}</button>@endif</div>
+    <div class="page-head"><h1>{{ __('Customers') }}</h1>@if (auth()->user()->allows('customers_admin'))<button type="button" class="btn" id="open-import">{{ __('Import from a spreadsheet') }}</button>@endif</div>
     <p class="mute">{{ __('One record per person (matched by phone number). Open a customer to see their chats, bookings and notes. Lead level: Ready to book = booked or ready to buy, Interested = left their details, Just browsing = low interest.') }}</p>
     <form method="get" class="fbar">
         <input type="search" name="q" value="{{ $search }}" placeholder="{{ __('Search name, phone or interest') }}">
@@ -54,7 +54,7 @@
         </table>
     </form>
     <div class="pager">{{ $customers->links('pagination.bar') }}</div>
-@if (auth()->user()->canManage())
+@if (auth()->user()->allows('customers_admin'))
     <dialog id="import-dialog" class="dlg">
         <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
         <h3>{{ __('Import customers') }}</h3>

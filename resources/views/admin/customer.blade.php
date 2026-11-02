@@ -32,7 +32,7 @@
             @if ($latestChat)<a class="btn primary" href="{{ route('inbox', ['c' => $latestChat->id]) }}">{{ __('Open chat') }}</a>@endif
             @if ($digits)<a class="btn" href="https://wa.me/{{ $digits }}" target="_blank" rel="noopener">WhatsApp</a>@endif
             <button type="button" class="btn" id="edit-customer">{{ __('Edit') }}</button>
-            @if (auth()->user()->canManage())
+            @if (auth()->user()->allows('customers_admin'))
                 <details class="menu">
                     <summary class="btn" aria-label="{{ __('More') }}">&#8943;</summary>
                     <div class="menu-body">
@@ -121,7 +121,7 @@
                 @forelse ($allTags as $t)
                     <label class="tp"><input type="checkbox" name="tags[]" value="{{ $t->id }}" @checked($customer->tags->contains('id', $t->id))><span class="chip" style="background:{{ $t->color }}">{{ __($t->name) }}</span></label>
                 @empty
-                    <small class="mute">{{ __('No customer tags yet.') }} @if (auth()->user()->canManage())<a href="{{ route('tags') }}">{{ __('Create some') }}</a>.@endif</small>
+                    <small class="mute">{{ __('No customer tags yet.') }} @if (auth()->user()->allows('tags'))<a href="{{ route('tags') }}">{{ __('Create some') }}</a>.@endif</small>
                 @endforelse
                 </div>
             </div>
@@ -129,7 +129,7 @@
             <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
         </form>
     </dialog>
-    @if (auth()->user()->canManage())
+    @if (auth()->user()->allows('customers_admin'))
     <dialog id="merge-dialog" class="dlg">
         <button type="button" class="dlg-x" aria-label="{{ __('Close') }}">&times;</button>
         <h3>{{ __('Join with another customer') }}</h3>

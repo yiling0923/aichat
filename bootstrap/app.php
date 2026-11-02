@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => \App\Http\Middleware\EnsureOwner::class,
             'platform' => \App\Http\Middleware\EnsurePlatformOwner::class,
             'manager' => \App\Http\Middleware\EnsureManager::class,
+            'perm' => \App\Http\Middleware\EnsurePermission::class,
         ]);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);

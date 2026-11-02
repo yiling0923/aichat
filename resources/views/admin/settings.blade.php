@@ -97,7 +97,7 @@
                     <span class="m-av">{{ $initials($u->name) }}</span>
                     <div class="m-id"><b>{{ $u->name }}@if ($u->id === auth()->id()) <span class="m-you">{{ __('(you)') }}</span>@endif</b><small class="mute">{{ $u->email }}</small></div>
                     <div class="m-tags"><span class="tag {{ $roleTone[$u->role] ?? '' }}">{{ __(ucfirst($u->role)) }}</span>@unless ($u->active)<span class="tag hot">{{ __('Switched off') }}</span>@endunless</div>
-                    <button type="button" class="btn small" data-edit data-action="{{ url('/admin/settings/team/'.$u->id) }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}" data-role="{{ $u->role }}" data-active="{{ $u->active ? 1 : 0 }}">{{ __('Edit') }}</button>
+                    <button type="button" class="btn small" data-edit data-action="{{ url('/admin/settings/team/'.$u->id) }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}" data-role="{{ $u->role }}" data-active="{{ $u->active ? 1 : 0 }}" data-custom="{{ is_array($u->permissions) ? 1 : 0 }}" data-areas="{{ json_encode($u->areas()) }}">{{ __('Edit') }}</button>
                 </div>
             @endforeach
         </div>
@@ -121,6 +121,16 @@
             <p id="md-who" class="mute" hidden style="margin:6px 0 10px"></p>
             <label class="f"><span>{{ __('Role') }}</span><select name="role" id="md-role">@foreach ($roleHelp as $r => $text)<option value="{{ $r }}" data-help="{{ $text }}">{{ __(ucfirst($r)) }}</option>@endforeach</select></label>
             <p class="mute small-note" id="md-help" style="padding:0;margin:-6px 0 12px"></p>
+            <div id="md-access">
+                <label class="chk"><input type="checkbox" name="custom" value="1" id="md-custom"> {{ __('Choose exactly what this person can use') }}</label>
+                <p class="mute small-note" id="md-access-help" style="padding:0;margin:4px 0 8px"></p>
+                <div class="area-grid" id="md-areas">
+                    @foreach (\App\Support\Access::AREAS as $key => [$name, $what])
+                        <label class="area"><input type="checkbox" name="areas[]" value="{{ $key }}"><span><b>{{ __($name) }}</b><small>{{ __($what) }}</small></span></label>
+                    @endforeach
+                </div>
+                <p class="mute small-note" style="padding:0">{{ __('Channels (connections and tokens), billing, backups, settings and the team are always for owners only.') }}</p>
+            </div>
             <label class="f" id="md-active-wrap" hidden><span>{{ __('Account') }}</span><select name="active" id="md-active"><option value="1">{{ __('Active') }}</option><option value="0">{{ __('Switched off (cannot sign in)') }}</option></select></label>
             <label class="f"><span id="md-pw-label">{{ __('Password (8 or more characters)') }}</span><input type="password" name="password" id="md-pw" autocomplete="new-password" minlength="8" maxlength="100"></label>
             <div class="dlg-foot"><button class="btn primary" type="submit">{{ __('Save') }}</button></div>
@@ -160,6 +170,21 @@
   var dlg = document.getElementById('member-dialog'), form = document.getElementById('md-form');
   var f = { name: 'md-name', email: 'md-email', role: 'md-role', active: 'md-active', pw: 'md-pw' };
   Object.keys(f).forEach(function (k) { f[k] = document.getElementById(f[k]); });
+  f.custom = document.getElementById('md-custom');
+  var ROLE_AREAS = {!! json_encode(['owner' => \App\Support\Access::keys(), 'manager' => \App\Support\Access::forRole('manager'), 'staff' => \App\Support\Access::forRole('staff')]) !!};
+  var areasNow = [];
+  var boxes = document.querySelectorAll('#md-areas input[type=checkbox]');
+  // The tick boxes show the role's usual access until the owner chooses exactly (then they are free to change).
+  function syncAreas() {
+    var isOwner = f.role.value === 'owner';
+    document.getElementById('md-access').hidden = isOwner;
+    if (!f.custom.checked) { areasNow = ROLE_AREAS[f.role.value] || []; }
+    boxes.forEach(function (b) { b.checked = areasNow.indexOf(b.value) !== -1; b.disabled = isOwner || !f.custom.checked; });
+    f.custom.disabled = isOwner;
+    document.getElementById('md-access-help').textContent = f.custom.checked ? {!! json_encode(__('Tick what this person may use.'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('Switched off: this person gets the usual access for the role (shown below).'), JSON_UNESCAPED_UNICODE) !!};
+  }
+  f.custom.addEventListener('change', function () { if (f.custom.checked) { areasNow = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { return b.value; }); } syncAreas(); });
+  boxes.forEach(function (b) { b.addEventListener('change', function () { areasNow = Array.prototype.filter.call(boxes, function (x) { return x.checked; }).map(function (x) { return x.value; }); }); });
   function open(d) {
     var edit = d && d.action;
     document.getElementById('md-title').textContent = edit ? {!! json_encode(__('Edit :name', ['name' => '@@NAME@@']), JSON_UNESCAPED_UNICODE) !!}.replace('@@NAME@@', d.name) : {!! json_encode(__('Add a team member'), JSON_UNESCAPED_UNICODE) !!};
@@ -171,10 +196,11 @@
     document.getElementById('md-active-wrap').hidden = !edit; f.active.disabled = !edit;
     f.role.value = edit ? d.role : 'staff'; f.active.value = edit ? d.active : '1'; f.pw.value = ''; f.name.value = ''; f.email.value = '';
     document.getElementById('md-pw-label').textContent = edit ? {!! json_encode(__('New password (leave empty to keep the current one)'), JSON_UNESCAPED_UNICODE) !!} : {!! json_encode(__('Password (8 or more characters)'), JSON_UNESCAPED_UNICODE) !!};
+    f.custom.checked = !!(edit && d.custom === '1'); areasNow = edit ? JSON.parse(d.areas || '[]') : []; syncAreas();
     help(); dlg.showModal(); (edit ? f.role : f.name).focus();
   }
   function help() { document.getElementById('md-help').textContent = f.role.options[f.role.selectedIndex].dataset.help; }
-  f.role.addEventListener('change', help);
+  f.role.addEventListener('change', function () { help(); syncAreas(); });
   document.getElementById('add-member').addEventListener('click', function () { open(null); });
   document.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset); }); });
   dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('.dlg-x')) { dlg.close(); } });

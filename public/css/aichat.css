@@ -1927,3 +1927,13 @@ details.au-card[open] > summary::after { content: none; }
 .side .help-link { margin-top: 14px; }
 .teach-missed .ti-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
 .teach-missed .ti-head small { font-size: 13px; color: var(--mute); }
+
+/* Team: what each person can use */
+.area-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 6px 0 10px; }
+.area { display: flex; gap: 8px; align-items: flex-start; padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; }
+.area input { margin-top: 3px; flex: none; }
+.area span { display: flex; flex-direction: column; min-width: 0; }
+.area b { font-size: 13px; }
+.area small { color: var(--mute); font-size: 11.5px; line-height: 1.35; }
+.area-grid input:disabled + span { opacity: .65; }
+@media (max-width: 600px) { .area-grid { grid-template-columns: 1fr; } }

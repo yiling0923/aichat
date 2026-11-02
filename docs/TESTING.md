@@ -888,3 +888,12 @@ The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers
 Note: in the sample data only website chats are linked to customers, so WhatsApp shows RM 0.00 there. Real chats link when a customer books.
 
 (DA, updated) A brand-new chat that opens with a topic you taught (for example the first message is "parking?") now gets your answer first, then the usual language menu. Before, the first message only ever showed the language menu. Saved answers also work for Messenger customers in the middle of a chat (covered by a test).
+
+## DG. Choose what each team member can use
+
+1. Settings > Team > Edit a person (not an owner). Under the role there is "Choose exactly what this person can use". Switched off: the tick boxes show the usual access of that role (Staff: Inbox, Schedule, Customers, Tasks, Orders, Reports; Manager: also Customer tools, Marketing, AI assistant, Saved replies edit, Tags).
+2. Tick it, then tick or untick any area (Inbox, Schedule, Customers, Customer tools, Tasks, Orders, Reports, Marketing, AI assistant, Saved replies (edit), Tags, Menu builder, Booking setup) and Save.
+3. Sign in as that person: the left menu shows only what they may use, and a page they may not use shows "You do not have access". Their phone alerts, Today, Help and My account always work.
+4. Switch it off again to go back to the role's usual access. Making someone an Owner clears the choice (owners always have everything).
+5. Channels (connections and tokens), billing, backups, settings and the team are always owner-only and cannot be given.
+6. Also fixed: a team member added by the owner can now sign in straight away. Before, they were sent to "Confirm your email" because the confirmation date was not saved.

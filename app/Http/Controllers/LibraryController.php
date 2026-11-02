@@ -21,7 +21,7 @@ class LibraryController extends Controller
             'business' => $request->user()->business,
             'active' => 'library',
             'replies' => QuickReply::query()->orderBy('category')->orderBy('title')->get(),
-            'canEdit' => $request->user()->canManage(),
+            'canEdit' => $request->user()->allows('library'),
             'categories' => self::CATEGORIES,
         ]);
     }
