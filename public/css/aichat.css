@@ -2263,3 +2263,20 @@ th.sorted.desc .sortbtn::after { content: "\25BC"; opacity: 1; font-size: 11px; 
 .announce-info { background: #e8f1fb; color: #1d4f8a; border-color: #c6dcf3; }
 .announce-warn { background: #fff4de; color: #8a5a00; border-color: #f0d9a8; }
 .announce-x { background: none; border: 0; font-size: 20px; line-height: 1; cursor: pointer; color: inherit; padding: 0 4px; }
+
+/* Today page: the attention list and overdue tasks */
+.at-panel { margin-bottom: 18px; border-color: #f2c7c2; background: #fff; }
+.at-panel .tp-head { background: linear-gradient(180deg, #fff7f6, #fff); border-bottom: 1px solid #f7dcd8; }
+.at-panel.clear { border-color: var(--line); }
+.at-row { border-top: 1px solid var(--line-s); }
+.at-row:first-of-type { border-top: 0; }
+.at-ic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+.at-red .at-ic { background: var(--reds); color: var(--red); }
+.at-amber .at-ic { background: var(--ambers); color: var(--amber); }
+.at-ok .at-ic { background: var(--greens); color: var(--green); }
+.at-row .tp-id b { white-space: normal; }
+.od-panel { border-color: #f2c7c2; }
+.od-panel .tp-head { background: linear-gradient(180deg, #fff7f6, #fff); }
+.tp-stat { padding: 18px 22px; }
+.tp-panel .tp-head h3 { letter-spacing: -.005em; }
+@media (max-width: 760px) { .at-row { flex-wrap: wrap; } .at-row .btn { margin-left: 46px; } }

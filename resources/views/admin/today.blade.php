@@ -49,41 +49,27 @@
         </section>
     @endif
 
+    <section class="tp-panel at-panel {{ count($attention) ? '' : 'clear' }}">
+        @if (count($attention))
+            <div class="tp-head"><h3>{{ __('Needs your attention') }}</h3><span class="tp-badge red">{{ count($attention) }}</span></div>
+            @foreach ($attention as $a)
+                <div class="tp-row at-row at-{{ $a['tone'] }}">
+                    <span class="at-ic">{{ $a['icon'] }}</span>
+                    <div class="tp-id"><b>{{ $a['title'] }}</b><small>{{ $a['sub'] }}</small></div>
+                    <a class="btn small {{ $a['tone'] === 'red' ? 'primary' : '' }}" href="{{ $a['url'] }}">{{ $a['cta'] }}</a>
+                </div>
+            @endforeach
+        @else
+            <div class="tp-row at-ok"><span class="at-ic">✓</span><div class="tp-id"><b>{{ __('All clear') }}</b><small>{{ __('Nothing is waiting for you right now.') }}</small></div></div>
+        @endif
+    </section>
+
     <section class="tp-stats">
         <a class="tp-stat {{ $waiting->count() ? 'alert' : '' }}" href="{{ route('inbox') }}"><span class="tp-sl">{{ __('Waiting for staff') }}</span><b>{{ $waiting->count() }}</b><span class="tp-sn">{{ $waiting->count() ? __('Reply to take over') : __('All handled by the bot') }}</span></a>
         <a class="tp-stat" href="{{ route('schedule') }}"><span class="tp-sl">{{ __('Bookings today') }}</span><b>{{ $bookings->count() }}</b><span class="tp-sn">{{ __(':n tomorrow', ['n' => $tomorrow]) }}</span></a>
         <a class="tp-stat" href="{{ route('inbox') }}"><span class="tp-sl">{{ __('Open chats') }}</span><b>{{ $openChats }}</b><span class="tp-sn">{{ __('all channels') }}</span></a>
         <a class="tp-stat" href="{{ route('customers') }}"><span class="tp-sl">{{ __('New customers') }}</span><b>{{ $newLeads }}</b><span class="tp-sn {{ $leadsDelta > 0 ? 'up' : ($leadsDelta < 0 ? 'down' : '') }}">{{ $leadsDelta === 0 ? __('same as last week') : __(':v vs last week', ['v' => $leadsDelta > 0 ? '▲ '.$leadsDelta : '▼ '.abs($leadsDelta)]) }}</span></a>
         <a class="tp-stat" href="{{ route('orders') }}"><span class="tp-sl">{{ __('Paid, 7 days') }}</span><b>{{ $money($revenueWeek) }}</b><span class="tp-sn {{ ($revenueDelta ?? 0) > 0 ? 'up' : (($revenueDelta ?? 0) < 0 ? 'down' : '') }}">{{ $revenueDelta === null ? __('no sales the week before') : __(':v vs week before', ['v' => ($revenueDelta >= 0 ? '▲ ' : '▼ ').abs($revenueDelta).'%']) }}</span></a>
-    </section>
-
-    <section class="tp-panel ds" id="ds">
-        <div class="tp-head"><h3>{{ __('Daily summary') }}</h3>
-            <div class="seg" id="ds-tabs"><a href="#" data-d="yesterday" class="on">{{ __('Yesterday') }}</a><a href="#" data-d="today">{{ __('Today so far') }}</a></div>
-        </div>
-        @foreach ($summaries as $key => $d)
-            <div class="ds-body" data-d="{{ $key }}" @if ($key !== 'yesterday') hidden @endif>
-                <p class="ds-date">{{ $d['label'] }}</p>
-                <div class="ds-grid">
-                    <div><b>{{ $d['new_chats'] }}</b><span>{{ __('New chats') }}</span></div>
-                    <div><b>{{ $d['bookings_made'] }}</b><span>{{ __('Bookings made') }}</span></div>
-                    <div><b>{{ $d['visits'] }}</b><span>{{ __('Visits') }}</span></div>
-                    <div><b>{{ $d['new_customers'] }}</b><span>{{ __('New customers') }}</span></div>
-                    <div><b>{{ $d['currency'] }} {{ number_format($d['revenue'], 0) }}</b><span>{{ $d['orders_paid'] === 1 ? __('Paid (1 order)') : __('Paid (:n orders)', ['n' => $d['orders_paid']]) }}</span></div>
-                    <div><b>{{ $d['cancelled'] }}</b><span>{{ __('Cancelled') }}</span></div>
-                </div>
-                @if ($d['topics'])
-                    <p class="ds-topics"><span class="mute">{{ __('Customers asked about') }}</span> @foreach ($d['topics'] as $t)<span class="tag">{{ __($t['name']) }} <b>{{ $t['count'] }}</b></span>@endforeach</p>
-                @else
-                    <p class="ds-topics mute">{{ $key === 'today' ? __('No tagged topics yet today.') : __('No tagged topics that day.') }}</p>
-                @endif
-            </div>
-        @endforeach
-        <div class="ds-attn">
-            <a href="{{ route('inbox') }}" class="{{ $summaries['today']['waiting_now'] ? 'hot' : '' }}"><b>{{ $summaries['today']['waiting_now'] }}</b> {{ __('waiting for a person') }}</a>
-            <a href="{{ route('tasks', ['due' => 'overdue']) }}" class="{{ $summaries['today']['overdue_tasks'] ? 'hot' : '' }}"><b>{{ $summaries['today']['overdue_tasks'] }}</b> {{ __('overdue tasks') }}</a>
-            <a href="{{ route('schedule') }}"><b>{{ $summaries['today']['tomorrow'] }}</b> {{ __('bookings tomorrow') }}</a>
-        </div>
     </section>
 
     <div class="tp-cols">
@@ -122,6 +108,20 @@
         </div>
 
         <aside class="tp-side">
+            @if ($overdueCount)
+                <section class="tp-panel od-panel">
+                    <div class="tp-head"><h3>{{ __('Overdue') }}</h3><span class="tp-badge red">{{ $overdueCount }}</span><a href="{{ route('tasks', ['due' => 'overdue']) }}" class="tp-link">{{ __('All overdue') }}</a></div>
+                    @foreach ($overdue as $t)
+                        @php $due = $t->due_at->copy()->setTimezone($tz); @endphp
+                        <div class="tp-row">
+                            <form method="post" action="{{ url('/admin/tasks/'.$t->id.'/toggle') }}">@csrf<button type="submit" class="tp-check" aria-label="{{ __('Mark done') }}" title="{{ __('Mark done') }}"></button></form>
+                            <div class="tp-id"><b>{{ $t->title }}</b><small class="tp-red">{{ __('Due :when', ['when' => $fmt($due, 'D j M, H:i', 'n月j日 D H:i')]) }} · {{ $t->due_at->diffForHumans(null, true) }} {{ __('late') }}</small></div>
+                        </div>
+                    @endforeach
+                    @if ($overdueCount > $overdue->count())<p class="tp-empty" style="padding:12px 20px"><a href="{{ route('tasks', ['due' => 'overdue']) }}">{{ __(':n more overdue', ['n' => $overdueCount - $overdue->count()]) }}</a></p>@endif
+                </section>
+            @endif
+
             <section class="tp-panel">
                 <div class="tp-head"><h3>{{ __('Tasks') }}</h3>@if ($tasks->count())<span class="tp-badge">{{ $tasks->count() }}</span>@endif<a href="{{ route('tasks') }}" class="tp-link">{{ __('All tasks') }}</a></div>
                 @forelse ($tasks as $t)
@@ -167,6 +167,35 @@
             @endif
         </aside>
     </div>
+
+    <section class="tp-panel ds" id="ds" style="margin-top:18px">
+        <div class="tp-head"><h3>{{ __('Daily summary') }}</h3>
+            <div class="seg" id="ds-tabs"><a href="#" data-d="yesterday" class="on">{{ __('Yesterday') }}</a><a href="#" data-d="today">{{ __('Today so far') }}</a></div>
+        </div>
+        @foreach ($summaries as $key => $d)
+            <div class="ds-body" data-d="{{ $key }}" @if ($key !== 'yesterday') hidden @endif>
+                <p class="ds-date">{{ $d['label'] }}</p>
+                <div class="ds-grid">
+                    <div><b>{{ $d['new_chats'] }}</b><span>{{ __('New chats') }}</span></div>
+                    <div><b>{{ $d['bookings_made'] }}</b><span>{{ __('Bookings made') }}</span></div>
+                    <div><b>{{ $d['visits'] }}</b><span>{{ __('Visits') }}</span></div>
+                    <div><b>{{ $d['new_customers'] }}</b><span>{{ __('New customers') }}</span></div>
+                    <div><b>{{ $d['currency'] }} {{ number_format($d['revenue'], 0) }}</b><span>{{ $d['orders_paid'] === 1 ? __('Paid (1 order)') : __('Paid (:n orders)', ['n' => $d['orders_paid']]) }}</span></div>
+                    <div><b>{{ $d['cancelled'] }}</b><span>{{ __('Cancelled') }}</span></div>
+                </div>
+                @if ($d['topics'])
+                    <p class="ds-topics"><span class="mute">{{ __('Customers asked about') }}</span> @foreach ($d['topics'] as $t)<span class="tag">{{ __($t['name']) }} <b>{{ $t['count'] }}</b></span>@endforeach</p>
+                @else
+                    <p class="ds-topics mute">{{ $key === 'today' ? __('No tagged topics yet today.') : __('No tagged topics that day.') }}</p>
+                @endif
+            </div>
+        @endforeach
+        <div class="ds-attn">
+            <a href="{{ route('inbox') }}" class="{{ $summaries['today']['waiting_now'] ? 'hot' : '' }}"><b>{{ $summaries['today']['waiting_now'] }}</b> {{ __('waiting for a person') }}</a>
+            <a href="{{ route('tasks', ['due' => 'overdue']) }}" class="{{ $summaries['today']['overdue_tasks'] ? 'hot' : '' }}"><b>{{ $summaries['today']['overdue_tasks'] }}</b> {{ __('overdue tasks') }}</a>
+            <a href="{{ route('schedule') }}"><b>{{ $summaries['today']['tomorrow'] }}</b> {{ __('bookings tomorrow') }}</a>
+        </div>
+    </section>
 @endsection
 @push('scripts')
 <script>

@@ -1011,3 +1011,10 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 2. A business whose trial ended / payment failed / plan cancelled has an envelope button in its row (and a "Send reminder" card on its Support tab). It emails the owner(s) and is written in the activity log. (Emails go to the log file unless you set up mail.)
 3. Business page → Support tab → "Download ZIP": spreadsheets of that business's customers, bookings, orders, chats, messages, tasks and saved replies. Logged as "Data downloaded".
 4. Business owners get "forbidden" on all three actions.
+
+## DT. Today page: needs attention and overdue
+
+1. Open Today. Under the greeting, "Needs your attention" lists what needs a person, most urgent first: chats waiting for a person, overdue tasks, today's visits not marked done/no-show, channels with a connection error, and (owner) an inactive plan, a trial ending within 3 days, or AI replies at 90%. Each line has a button that goes straight to the fix.
+2. With none of these it shows a green "All clear".
+3. Overdue tasks have their own red "Overdue" card (top of the right column) with how late each is and a tick button; "Tasks" below now only holds today's and undated tasks.
+4. The Daily summary moved to the bottom of the page.
