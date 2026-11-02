@@ -397,7 +397,7 @@
     var sel = picked();
     bulkBar.hidden = sel.length === 0; bulkN.textContent = sel.length;
     allBox.checked = vis.length > 0 && sel.length === vis.length; allBox.indeterminate = sel.length > 0 && sel.length < vis.length;
-    document.getElementById('biz-count').textContent = vis.length === rows.length ? '' : T.showing.replace('@@A@@', vis.length).replace('@@B@@', rows.length);
+    document.getElementById('biz-count').textContent = '';
   }
   allRows().forEach(function (r) { r.querySelector('.biz-sel').addEventListener('change', function () { refreshBulk(); }); });
   allBox.addEventListener('change', function () { allRows().forEach(function (r) { if (!r.hidden) { r.querySelector('.biz-sel').checked = allBox.checked; } }); refreshBulk(); });

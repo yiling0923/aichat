@@ -293,7 +293,7 @@
       r.hidden = !ok;
       if (ok) { shown++; } else { r.querySelector('.tm-sel').checked = false; }
     });
-    document.getElementById('tm-count').textContent = shown === rows.length ? '' : T.showing.replace('@@A@@', shown).replace('@@B@@', rows.length);
+    document.getElementById('tm-count').textContent = '';
     document.getElementById('tm-none').hidden = shown !== 0;
     syncBulk();
   }
