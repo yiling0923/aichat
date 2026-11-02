@@ -28,13 +28,7 @@ class CustomerController extends Controller
         $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
         $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%';
 
-        $customers = Customer::query()
-            ->with('tags')
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('name', 'like', $like)->orWhere('phone', 'like', $like)->orWhere('interest', 'like', $like)))
-            ->when(in_array($score, ['hot', 'warm', 'cold'], true), fn ($q) => $q->where('score', $score))
-            ->when(in_array($language, config('aichat.languages'), true), fn ($q) => $q->where('language', $language))
-            ->when($tag > 0, fn ($q) => $q->whereHas('tags', fn ($t) => $t->where('tags.id', $tag)))
+        $customers = $this->filtered($request)
             ->tap(function ($q) use ($sort, $dir) {
                 match ($sort) {
                     'name' => $q->orderBy('name', $dir),
@@ -54,6 +48,52 @@ class CustomerController extends Controller
             'tags' => Tag::query()->where('type', 'customer')->orderBy('name')->get(),
             'sort' => $sort, 'dir' => $dir, 'search' => $search, 'score' => $score, 'tag' => $tag, 'language' => $language,
         ]);
+    }
+
+    /** The customers matching the search and filters in the address (shared by the list and the download). */
+    private function filtered(Request $request)
+    {
+        $search = trim((string) $request->input('q', ''));
+        $score = (string) $request->input('score', '');
+        $tag = (int) $request->input('tag', 0);
+        $language = (string) $request->input('language', '');
+        $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%';
+
+        return Customer::query()
+            ->with('tags')
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('name', 'like', $like)->orWhere('phone', 'like', $like)->orWhere('interest', 'like', $like)))
+            ->when(in_array($score, ['hot', 'warm', 'cold'], true), fn ($q) => $q->where('score', $score))
+            ->when(in_array($language, config('aichat.languages'), true), fn ($q) => $q->where('language', $language))
+            ->when($tag > 0, fn ($q) => $q->whereHas('tags', fn ($t) => $t->where('tags.id', $tag)));
+    }
+
+    /** A spreadsheet of the ticked customers, or of everyone matching the current search and filters. */
+    public function download(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $ids = collect((array) $request->input('ids'))->map(fn ($i) => (int) $i)->filter()->unique()->values();
+        $query = $ids->isNotEmpty() ? Customer::query()->with('tags')->whereIn('id', $ids) : $this->filtered($request);
+        $business = $request->user()->business;
+        $tz = $business->timezone ?: 'UTC';
+        $safe = fn ($v) => is_string($v) && $v !== '' && in_array($v[0], ['=', '+', '-', '@', "\t", "\r"], true) ? "'".$v : $v;
+
+        return response()->streamDownload(function () use ($query, $tz, $safe): void {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['Name', 'Phone', 'Email', 'Language', 'Interested in', 'Tags', 'Lead level', 'Promotions', 'Added']);
+            $query->orderBy('id')->chunk(200, function ($rows) use ($out, $tz, $safe): void {
+                foreach ($rows as $c) {
+                    fputcsv($out, array_map($safe, [
+                        (string) $c->name, (string) $c->phone, (string) $c->email, (string) $c->language, (string) $c->interest,
+                        $c->tags->pluck('name')->implode(', '),
+                        ['hot' => 'Ready to book', 'warm' => 'Interested', 'cold' => 'Just browsing'][$c->score] ?? '',
+                        $c->opted_out_at ? 'Opted out' : ($c->consented_at ? 'Allowed' : 'Not asked'),
+                        $c->created_at?->copy()->setTimezone($tz)->format('Y-m-d H:i'),
+                    ]));
+                }
+            });
+            fclose($out);
+        }, 'customers-'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function show(Request $request, int $id): View

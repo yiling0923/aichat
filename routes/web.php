@@ -162,6 +162,7 @@ Route::middleware(['staff', 'perm:tags'])->prefix('admin')->group(function () {
 });
 
 Route::middleware(['staff', 'perm:customers_admin'])->prefix('admin')->group(function () {
+    Route::match(['get', 'post'], '/customers/download', [\App\Http\Controllers\CustomerController::class, 'download'])->middleware('throttle:20,1');
     Route::get('/customers/{id}/export', [\App\Http\Controllers\CustomerController::class, 'export'])->whereNumber('id');
     Route::post('/customers/{id}/erase', [\App\Http\Controllers\CustomerController::class, 'erase'])->whereNumber('id');
     Route::post('/customers/{id}/merge', [\App\Http\Controllers\CustomerController::class, 'merge'])->whereNumber('id');

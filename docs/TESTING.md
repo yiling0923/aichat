@@ -1039,3 +1039,9 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 
 1. Orders headings Date, Customer, Amount and Status sort the whole list (click again to reverse). Newest first by default.
 2. The arrow style is the same on Orders, Customers and the platform console: a small grey chip with up/down arrows; the sorted column's chip turns green with a single ↑ or ↓.
+
+## DY. Customers: Download data (list), removed from each customer page
+
+1. Customers list (owner / people with customer admin): "Download data" at the top downloads a spreadsheet of everyone matching the current search and filters. Tick some customers and press "Download ticked" to get only them.
+2. The file has name, phone, email, language, interested in, tags, lead level, promotions and date added. Cells that start with = + - @ are defused so a spreadsheet cannot run them.
+3. A single customer's page no longer has "Download their data" in its "..." menu (Join and Delete remain).

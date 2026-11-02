@@ -1,7 +1,7 @@
 @extends('admin.layout')
 @section('title', __('Customers'))
 @section('content')
-    <div class="page-head"><h1>{{ __('Customers') }}</h1>@if (auth()->user()->allows('customers_admin'))<button type="button" class="btn" id="open-import">{{ __('Import from a spreadsheet') }}</button>@endif</div>
+    <div class="page-head"><h1>{{ __('Customers') }}</h1>@if (auth()->user()->allows('customers_admin'))<span class="bar" style="gap:8px"><a class="btn" id="dl-all" href="{{ url('/admin/customers/download') }}?{{ http_build_query(array_filter(['q' => $search, 'score' => $score, 'language' => $language, 'tag' => $tag ?: null])) }}">{{ __('Download data') }}</a><button type="button" class="btn" id="open-import">{{ __('Import from a spreadsheet') }}</button></span>@endif</div>
     <p class="mute">{{ __('One record per person (matched by phone number). Open a customer to see their chats, bookings and notes. Lead level: Ready to book = booked or ready to buy, Interested = left their details, Just browsing = low interest.') }}</p>
     <form method="get" class="fbar">
         <input type="search" name="q" value="{{ $search }}" placeholder="{{ __('Search name, phone or interest') }}">
@@ -24,12 +24,15 @@
 
     <form method="post" action="{{ url('/admin/customers/bulk') }}">
         @csrf
-        @if ($tags->isNotEmpty())
+        @if ($tags->isNotEmpty() || auth()->user()->allows('customers_admin'))
             <div class="bar">
                 <span class="mute">{{ __('With the ticked customers:') }}</span>
+                @if (auth()->user()->allows('customers_admin'))<button class="btn small" type="submit" formaction="{{ url('/admin/customers/download') }}" name="download" value="1">{{ __('Download ticked') }}</button>@endif
+                @if ($tags->isNotEmpty())
                 <select name="tag_id" class="small">@foreach ($tags as $t)<option value="{{ $t->id }}">{{ __($t->name) }}</option>@endforeach</select>
                 <button class="btn small" name="action" value="add">{{ __('Add tag') }}</button>
                 <button class="btn small" name="action" value="remove">{{ __('Remove tag') }}</button>
+                @endif
             </div>
         @endif
         <table class="table">

@@ -66,12 +66,12 @@ class CustomerPageTest extends TestCase
             ->assertDontSee('Delete their data');   // staff cannot erase
     }
 
-    public function test_managers_see_the_data_menu_and_an_empty_customer_still_renders(): void
+    public function test_managers_see_the_delete_menu_and_an_empty_customer_still_renders(): void
     {
         $manager = User::factory()->create(['business_id' => $this->business->id, 'role' => 'manager']);
         $c = $this->in(fn () => Customer::create(['language' => 'en']));
 
-        $this->actingAs($manager)->get('/admin/customers/'.$c->id)->assertOk()->assertSee('No name yet')->assertSee('Download their data')->assertSee('Delete their data')
+        $this->actingAs($manager)->get('/admin/customers/'.$c->id)->assertOk()->assertSee('No name yet')->assertDontSee('Download their data')->assertSee('Delete their data')
             ->assertSee('none coming up')->assertSee('no visit yet')->assertSee('Nothing to follow up.')->assertSee('No notes yet.')->assertDontSee('Open chat')->assertDontSee('wa.me');
     }
 
@@ -158,5 +158,30 @@ class CustomerPageTest extends TestCase
 
         $this->actingAs($owner)->get('/admin/customers/import-template')->assertOk();
         $this->actingAs($this->staff)->post('/admin/customers/import', ['file' => $again])->assertForbidden();
+    }
+
+    public function test_the_customer_list_downloads_ticked_or_filtered_customers_as_a_spreadsheet(): void
+    {
+        $manager = User::factory()->create(['business_id' => $this->business->id, 'role' => 'manager']);
+        $a = $this->in(fn () => Customer::create(['name' => 'Amy Tan', 'phone' => '0111', 'score' => 'hot']));
+        $this->in(fn () => Customer::create(['name' => '=cmd|evil', 'phone' => '0222', 'score' => 'cold']));
+        $other = Business::factory()->create();
+        app(CurrentBusiness::class)->runAs($other, fn () => Customer::create(['name' => 'Stranger', 'phone' => '0999']));
+
+        $all = $this->actingAs($manager)->get('/admin/customers/download')->assertOk();
+        $csv = $all->streamedContent();
+        $this->assertStringContainsString('Amy Tan', $csv);
+        $this->assertStringContainsString("'=cmd|evil", $csv);          // spreadsheet formulas are defused
+        $this->assertStringNotContainsString('Stranger', $csv);          // only this business
+
+        $hot = $this->actingAs($manager)->get('/admin/customers/download?score=hot')->streamedContent();
+        $this->assertStringContainsString('Amy Tan', $hot);
+        $this->assertStringNotContainsString('evil', $hot);
+
+        $ticked = $this->actingAs($manager)->post('/admin/customers/download', ['ids' => [$a->id]])->streamedContent();
+        $this->assertStringContainsString('Amy Tan', $ticked);
+        $this->assertStringNotContainsString('evil', $ticked);
+
+        $this->actingAs($this->staff)->get('/admin/customers/download')->assertForbidden();
     }
 }

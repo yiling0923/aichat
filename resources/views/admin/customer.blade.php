@@ -36,7 +36,6 @@
                 <details class="menu">
                     <summary class="btn" aria-label="{{ __('More') }}">&#8943;</summary>
                     <div class="menu-body">
-                        <a href="{{ url('/admin/customers/'.$customer->id.'/export') }}">{{ __('Download their data') }}</a>
                         <a href="#merge" id="open-merge">{{ __('Join with another customer') }}</a>
                         <form method="post" action="{{ url('/admin/customers/'.$customer->id.'/erase') }}" onsubmit="return confirm({{ json_encode(__('Delete this customer and all their chats for good? This cannot be undone.'), JSON_UNESCAPED_UNICODE) }})">@csrf<button type="submit" class="menu-danger">{{ __('Delete their data') }}</button></form>
                     </div>
