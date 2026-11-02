@@ -19,7 +19,7 @@
     @include('_guest_lang')
     <form method="post" action="{{ route('logout') }}">@csrf<button class="btn small" type="submit">{{ __('Sign out') }}</button></form>
 </header>
-<main class="plat-main">
+<main class="plat-main plat-wide">
     <a class="crumb" href="{{ route('platform.index') }}">&larr; {{ __('All businesses') }}</a>
     @if (session('status'))<div class="note ok">{{ session('status') }}</div>@endif
     @foreach ($errors->all() as $error)<div class="note err">{{ $error }}</div>@endforeach
@@ -39,13 +39,14 @@
         </div>
     </div>
 
-    <div class="kpis main">
+    <div class="kpis main four">
         <div class="kpi"><span class="kpi-l">{{ __('Chats, last 30 days') }}</span><b>{{ $stats['chats'] }}</b><span class="kpi-s">{{ $stats['lastChat'] ? __('last message :when', ['when' => \Illuminate\Support\Carbon::parse($stats['lastChat'])->diffForHumans()]) : __('no messages yet') }}</span></div>
         <div class="kpi"><span class="kpi-l">{{ __('Customers') }}</span><b>{{ $stats['customers'] }}</b><span class="kpi-s">{{ __(':n new in 30 days', ['n' => $stats['newCustomers']]) }}</span></div>
         <div class="kpi"><span class="kpi-l">{{ __('Bookings, last 30 days') }}</span><b>{{ $stats['bookings'] }}</b><span class="kpi-s">{{ __(':n coming up', ['n' => $stats['upcoming']]) }}</span></div>
-        <div class="kpi"><span class="kpi-l">{{ __('Customer money, last 30 days') }}</span><b style="font-size:22px">{{ $money($stats['sales']) }}</b><span class="kpi-s">{{ __(':n paid orders', ['n' => $stats['orders']]) }}</span></div>
+        <div class="kpi kpi-money"><span class="kpi-l">{{ __('Customer money, last 30 days') }}</span><b>{{ $money($stats['sales']) }}</b><span class="kpi-s">{{ __(':n paid orders', ['n' => $stats['orders']]) }}</span></div>
     </div>
 
+    <div class="plat-grid">
     <div class="rp-two">
         <div class="card">
             <h3>{{ __('Plan') }} <span class="tag {{ $tone($state) }}">{{ __(ucfirst(str_replace('_', ' ', $state))) }}</span></h3>
@@ -137,6 +138,7 @@
                 <p class="mute">{{ __('Nothing yet.') }}</p>
             @endforelse
         </div>
+    </div>
     </div>
 </main>
 

@@ -25,7 +25,7 @@
     @include('_guest_lang')
     <form method="post" action="{{ route('logout') }}">@csrf<button class="btn small" type="submit">{{ __('Sign out') }}</button></form>
 </header>
-<main class="plat-main">
+<main class="plat-main plat-wide">
     @if (session('status'))<div class="note ok" id="flash">{{ session('status') }}</div>@endif
 
     <div class="kpis main">
@@ -33,12 +33,9 @@
         <div class="kpi"><span class="kpi-l">{{ __('On trial') }}</span><b>{{ $totals['trials'] }}</b><span class="kpi-s">{{ __(':n need attention', ['n' => $counts['attention'] ?? 0]) }}</span></div>
         <div class="kpi"><span class="kpi-l">{{ __('Paying') }}</span><b>{{ $totals['paying'] }}</b><span class="kpi-s">{{ __(':amount a month', ['amount' => $money($totals['mrr'])]) }}</span></div>
         <div class="kpi"><span class="kpi-l">{{ __('Taken, last 30 days') }}</span><b>{{ $money($totals['revenue30']) }}</b><span class="kpi-s">{{ __(':n AI calls this month', ['n' => number_format($totals['ai'])]) }}</span></div>
-    </div>
-
-    <div class="kpis main">
         <div class="kpi"><span class="kpi-l">{{ __('Chats, last :n days', ['n' => $days]) }}</span><b>{{ number_format($totals['chats']) }}</b><span class="kpi-s">{{ __('all businesses') }}</span></div>
         <div class="kpi"><span class="kpi-l">{{ __('Bookings, last :n days', ['n' => $days]) }}</span><b>{{ number_format($totals['bookings']) }}</b><span class="kpi-s">{{ __('all businesses') }}</span></div>
-        <div class="kpi" style="grid-column: span 2"><span class="kpi-l">{{ __('Customers paid their businesses, last :n days', ['n' => $days]) }}</span><b style="font-size:22px">{{ $totals['sales'] }}</b><span class="kpi-s">{{ __('by currency, paid orders only') }}</span></div>
+        <div class="kpi kpi-money"><span class="kpi-l">{{ __('Customers paid their businesses, last :n days', ['n' => $days]) }}</span><b>{{ $totals['sales'] }}</b><span class="kpi-s">{{ __('by currency, paid orders only') }}</span></div>
     </div>
 
     <div class="page-head">

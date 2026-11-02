@@ -956,3 +956,5 @@ Sign in as the platform owner (platform@example.com in the sample) and you land 
 7. **+ Add a business** makes a business and its owner on a free trial; the owner can sign in straight away.
 8. **Activity** tab (and each business page) lists plan changes, limits, passwords set, support views (start and end), invitations, pauses and resumes, with who did it. This needs `php artisan migrate`.
 Still private by design: you see counts and money totals, never a business's customers or chats unless you open a support view.
+
+(DN, layout) The platform console now uses the whole screen width: all the number cards in one row on a wide screen, a roomier table that does not wrap business names, and the business page in three columns (two on a tablet, one on a phone). Nothing sideways-scrolls on a phone.
