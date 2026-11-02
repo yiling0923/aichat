@@ -56,7 +56,7 @@
             <tr>
                 <td>{{ \App\Support\Lang::fmt($local, 'd M Y', 'Y年n月j日') }}<br><small class="mute">{{ $o->reference }}</small></td>
                 <td>@if ($o->customer)<a href="{{ route('customers.show', $o->customer_id) }}">{{ $o->customer->name ?: $o->customer->phone }}</a>@else <span class="mute">{{ __('No customer') }}</span> @endif</td>
-                <td>{{ $o->items ?: '-' }}@if ($o->notes)<br><small class="mute">{{ \Illuminate\Support\Str::limit($o->notes, 70) }}</small>@endif</td>
+                <td>@if (filled($o->items)){{ $o->items }}@else<span class="mute">-</span>@endif @if ($o->notes)<br><small class="mute">{{ \Illuminate\Support\Str::limit($o->notes, 70) }}</small>@endif</td>
                 <td style="text-align:right;white-space:nowrap"><b>{{ number_format($o->amount, 2) }}</b></td>
                 <td><span class="tag {{ $tone[$o->status] ?? '' }}">{{ $label[$o->status] ?? $o->status }}</span></td>
                 <td style="text-align:right;white-space:nowrap">

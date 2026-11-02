@@ -40,10 +40,10 @@
                 <tr>
                     <td><input class="pick" type="checkbox" name="ids[]" value="{{ $c->id }}"></td>
                     <td><a href="{{ route('customers.show', $c->id) }}">{{ $c->name ?: __('(no name)') }}</a></td>
-                    <td>{{ $c->phone ?: '-' }}</td>
-                    <td>{{ $c->interest ?: '-' }}</td>
+                    <td>@if (filled($c->phone)){{ $c->phone }}@else<span class="mute">-</span>@endif</td>
+                    <td>@if (filled($c->interest)){{ $c->interest }}@else<span class="mute">-</span>@endif</td>
                     <td>@forelse ($c->tags as $t)<span class="chip" style="background:{{ $t->color }}">{{ __($t->name) }}</span>@empty<span class="mute">-</span>@endforelse</td>
-                    <td class="nw">{{ $c->language === 'zh' ? '中文' : ($c->language === 'en' ? 'EN' : strtoupper($c->language ?: '-')) }}</td>
+                    <td class="nw">@if (blank($c->language))<span class="mute">-</span>@else{{ $c->language === 'zh' ? '中文' : ($c->language === 'en' ? 'EN' : strtoupper($c->language)) }}@endif</td>
                     <td><span title="{{ __(['hot' => 'Booked or ready to buy', 'warm' => 'Interested, left their details', 'cold' => 'Low interest'][$c->score] ?? 'Not set') }}" class="tag {{ $c->score === 'hot' ? 'hot' : ($c->score === 'warm' ? 'warn' : '') }}">{{ \App\Support\Lang::lead($c->score) }}</span></td>
                     <td>@if ($c->opted_out_at)<span class="tag warn">{{ __('Opted out') }}</span>@elseif ($c->consented_at)<span class="tag ok">{{ __('Allowed') }}</span>@else<span class="mute">{{ __('Not asked') }}</span>@endif</td>
                     <td class="nw">{{ \App\Support\Lang::fmt($c->created_at, 'd M Y', 'Y年n月j日') }}</td>
