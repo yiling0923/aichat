@@ -63,7 +63,7 @@ class DailySummaryTest extends TestCase
 
     public function test_the_today_page_shows_the_summary(): void
     {
-        $this->actingAs($this->owner)->get('/admin/today')->assertOk()->assertSee('Daily summary')->assertSee('Yesterday')->assertSee('Today so far')->assertSee('waiting for a person');
+        $this->actingAs($this->owner)->get('/admin/today')->assertOk()->assertSee('Daily summary')->assertSee('Yesterday')->assertSee('Today so far');
     }
 
     public function test_the_morning_email_goes_only_when_turned_on_and_once_a_day(): void

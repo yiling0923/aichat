@@ -105,6 +105,14 @@
                     <p class="tp-empty">{!! __('No bookings today. Customers can book any time from your chat link, and you can move bookings in the :link.', ['link' => '<a href="'.route('schedule').'">'.e(__('schedule')).'</a>']) !!}</p>
                 @endforelse
             </section>
+            @if ($recent->count())
+                <section class="tp-panel">
+                    <div class="tp-head"><h3>{{ __('Recent activity') }}</h3></div>
+                    @foreach ($recent as $n)
+                        <a class="tp-row tp-act" href="{{ $n->url ?: route('inbox') }}"><span class="tp-ic">{{ $icons[$n->type] ?? '•' }}</span><span class="tp-id"><b>{{ $n->title }}</b><small>{{ \Illuminate\Support\Str::limit(str_replace(' [sample]', '', (string) $n->body), 46) }}</small></span><time>{{ $n->created_at->diffForHumans(null, true, true) }}</time></a>
+                    @endforeach
+                </section>
+            @endif
         </div>
 
         <aside class="tp-side">
@@ -148,15 +156,6 @@
                 </div>
             </section>
 
-            @if ($recent->count())
-                <section class="tp-panel">
-                    <div class="tp-head"><h3>{{ __('Recent activity') }}</h3></div>
-                    @foreach ($recent as $n)
-                        <a class="tp-row tp-act" href="{{ $n->url ?: route('inbox') }}"><span class="tp-ic">{{ $icons[$n->type] ?? '•' }}</span><span class="tp-id"><b>{{ $n->title }}</b><small>{{ \Illuminate\Support\Str::limit(str_replace(' [sample]', '', (string) $n->body), 46) }}</small></span><time>{{ $n->created_at->diffForHumans(null, true, true) }}</time></a>
-                    @endforeach
-                </section>
-            @endif
-
             @if ($aiUsage)
                 @php $pct = min(100, round($aiUsage['used'] / max(1, $aiUsage['limit']) * 100)); @endphp
                 <section class="tp-panel">
@@ -190,11 +189,6 @@
                 @endif
             </div>
         @endforeach
-        <div class="ds-attn">
-            <a href="{{ route('inbox') }}" class="{{ $summaries['today']['waiting_now'] ? 'hot' : '' }}"><b>{{ $summaries['today']['waiting_now'] }}</b> {{ __('waiting for a person') }}</a>
-            <a href="{{ route('tasks', ['due' => 'overdue']) }}" class="{{ $summaries['today']['overdue_tasks'] ? 'hot' : '' }}"><b>{{ $summaries['today']['overdue_tasks'] }}</b> {{ __('overdue tasks') }}</a>
-            <a href="{{ route('schedule') }}"><b>{{ $summaries['today']['tomorrow'] }}</b> {{ __('bookings tomorrow') }}</a>
-        </div>
     </section>
 @endsection
 @push('scripts')
