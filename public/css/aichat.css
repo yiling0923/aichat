@@ -1920,3 +1920,7 @@ details.au-card[open] > summary::after { content: none; }
     canvas { max-width: 100% !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Sidebar: clearer sections */
+.side .sec.first { margin-top: 12px; }
+.side .help-link { margin-top: 14px; }

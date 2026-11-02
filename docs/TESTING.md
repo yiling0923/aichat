@@ -857,3 +857,7 @@ Not yet checked in a browser. Check each:
 3. Menu builder: a Message or Question step has "Send a picture or file with this step". Upload a JPG/PNG/PDF, save and publish; the bot sends the file just before that step's text.
 4. Schedule > Day: one column per practitioner for the chosen day; the week headers link to that day.
 5. Reports: "Print / save as PDF" prints the tab you are on without the menu and buttons; the Export CSV list now also has the Sales and Marketing files.
+
+## DC. Side menu in clear sections
+
+The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers, Tasks, Orders), Grow (Marketing, Reports), Chatbot (Menu builder, AI assistant, Saved replies, Channels), Business setup (Setup guide, Booking setup, Settings) and Help at the bottom. Staff who are not managers only see Daily work, Grow (Reports) and Help. On a phone the menu stays a single scrolling row.

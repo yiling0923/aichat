@@ -1791,5 +1791,8 @@
     "Nothing attached. JPG, PNG, PDF, MP4 or Office file, up to 16 MB.": "未附加文件。支持 JPG、PNG、PDF、MP4 或 Office 文件,最大 16 MB。",
     "Remove file": "移除文件",
     "Uploading...": "上传中...",
-    "Could not upload this file.": "无法上传此文件。"
+    "Could not upload this file.": "无法上传此文件。",
+    "Daily work": "日常工作",
+    "Chatbot": "聊天机器人",
+    "Business setup": "业务设置"
 }
