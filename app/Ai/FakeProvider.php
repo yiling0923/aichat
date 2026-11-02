@@ -30,13 +30,6 @@ class FakeProvider implements AiProvider
             return $this->wrap($json, $system, $last);
         }
 
-        if (isset($schema['properties']['translation'])) {
-            // The pretend AI marks its work so tests and demos can see it (placeholders are kept).
-            $json = ['translation' => '[translated] '.$last];
-
-            return $this->wrap($json, $system, $last);
-        }
-
         if (isset($schema['properties']['summary'])) {
             $json = ['summary' => 'Customer chatted with the business. (Pretend summary from the fake AI.) Last message: '.mb_substr($last, 0, 120)];
 

@@ -24,6 +24,23 @@ class TranslateTest extends TestCase
         $this->owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
     }
 
+    /** A stand-in for a real AI: it "translates" by adding a marker, keeping the placeholders. */
+    private function realAi(): void
+    {
+        app()->instance(AiProvider::class, new class implements AiProvider
+        {
+            public function name(): string
+            {
+                return 'claude';
+            }
+
+            public function complete(string $system, array $messages, array $schema, int $maxTokens): array
+            {
+                return ['text' => json_encode(['translation' => '[zh] '.end($messages)['content']], JSON_UNESCAPED_UNICODE), 'input_tokens' => 5, 'output_tokens' => 5, 'model' => null];
+            }
+        });
+    }
+
     private function translate(array $body)
     {
         return $this->actingAs($this->owner)->postJson('/admin/api/translate', $body);
@@ -37,9 +54,17 @@ class TranslateTest extends TestCase
         $this->assertSame(0, AiUsage::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_it_translates_keeps_placeholders_and_counts_one_ai_call(): void
+    public function test_the_practice_ai_never_writes_fake_text(): void
     {
         config(['aichat.ai.provider' => 'fake']);
+
+        $this->translate(['text' => 'new job here', 'from' => 'en', 'to' => 'zh'])->assertStatus(422)->assertJsonPath('message', fn ($m) => str_contains($m, 'practice AI') && ! isset($m['translation']));
+        $this->assertSame(0, AiUsage::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_it_translates_keeps_placeholders_and_counts_one_ai_call(): void
+    {
+        $this->realAi();
 
         $r = $this->translate(['text' => "Hi {name},\nwelcome to {business}!", 'from' => 'en', 'to' => 'zh'])->assertOk();
         $this->assertStringContainsString('{name}', $r->json('translation'));
@@ -53,7 +78,7 @@ class TranslateTest extends TestCase
         {
             public function name(): string
             {
-                return 'fake';
+                return 'claude';
             }
 
             public function complete(string $system, array $messages, array $schema, int $maxTokens): array
@@ -67,7 +92,7 @@ class TranslateTest extends TestCase
 
     public function test_bad_input_the_monthly_limit_and_permissions(): void
     {
-        config(['aichat.ai.provider' => 'fake']);
+        $this->realAi();
 
         $this->translate(['text' => '', 'from' => 'en', 'to' => 'zh'])->assertStatus(422);
         $this->translate(['text' => 'Hello', 'from' => 'en', 'to' => 'en'])->assertStatus(422);

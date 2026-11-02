@@ -928,3 +928,5 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 3. Translate needs the AI. With the AI switched off for the whole system, pressing it says so and tells you to type both languages. With the AI on it fills the box, keeps placeholders such as {name} and {business}, and says "Translated. Please read it before you save." It asks before replacing text that is already in the box.
 4. Each translation counts as one AI call in the monthly limit (AI assistant > Usage and history, purpose "translate"). If the AI changes a {placeholder}, the box is left alone and you are told.
 5. Who can use it: the owner, and team members allowed Menu builder, AI assistant or Saved replies (edit).
+
+(DK, updated) The practice AI ("Practice AI" label) only pretends to answer, so the Translate button refuses to use it: it writes nothing and says "The practice AI only pretends...". Real translation needs a real AI key.
