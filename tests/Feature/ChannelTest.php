@@ -832,4 +832,16 @@ class ChannelTest extends TestCase
         $this->actingAs($owner)->post('/admin/channels/'.$this->wa->id, ['name' => 'Clinic WA', 'external_id' => 'PNID1', 'active' => 1, 'reminder_template' => 'booking_reminder'])->assertRedirect();
         $this->assertSame('booking_reminder', $this->wa->fresh()->settings['reminder_template']);
     }
+
+    public function test_messenger_check_asks_who_the_token_is_and_warns_when_the_page_id_differs(): void
+    {
+        $owner = User::factory()->create(['business_id' => $this->business->id, 'role' => 'owner']);
+        $fb = $this->in(fn () => Channel::create(['type' => 'messenger', 'name' => 'FB', 'external_id' => 'PAGE1', 'access_token' => 'tok-fb']));
+
+        $this->meta(['graph.facebook.com/v21.0/me?*' => Http::response(['id' => 'PAGE1', 'name' => 'My Test Shop'])]);
+        $this->actingAs($owner)->post("/admin/channels/{$fb->id}/check")->assertSessionHas('status', fn ($s) => str_contains($s, 'My Test Shop'));
+
+        $this->meta(['graph.facebook.com/v21.0/me?*' => Http::response(['id' => 'PAGE9', 'name' => 'My Test Shop'])]);
+        $this->actingAs($owner)->post("/admin/channels/{$fb->id}/check")->assertSessionHasErrors('channel');
+    }
 }

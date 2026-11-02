@@ -109,8 +109,16 @@ class ChannelController extends Controller
         $channel = Channel::query()->findOrFail($id);
 
         try {
-            $fields = $channel->type === 'whatsapp' ? 'display_phone_number,verified_name' : 'name';
-            $info = $graph->orFail($graph->get($channel->external_id, $channel->access_token, ['fields' => $fields]))->json();
+            if ($channel->type === 'whatsapp') {
+                $info = $graph->orFail($graph->get($channel->external_id, $channel->access_token, ['fields' => 'display_phone_number,verified_name']))->json();
+            } else {
+                // A Page token answers "who am I" without any extra permission (reading the Page by its ID needs pages_read_engagement).
+                $info = $graph->orFail($graph->get('me', $channel->access_token, ['fields' => 'id,name']))->json();
+
+                if (! empty($info['id']) && (string) $info['id'] !== (string) $channel->external_id && $channel->type === 'messenger') {
+                    return back()->withErrors(['channel' => __('This token belongs to the Page ":name" (ID :id), but this channel uses the ID :ext. Messages for the other ID are ignored. Put :id in the Page ID box, or use the token of the right Page.', ['name' => $info['name'] ?? '', 'id' => $info['id'], 'ext' => $channel->external_id])]);
+                }
+            }
             $channel->forceFill(['last_error' => null])->save();
             $who = $info['display_phone_number'] ?? $info['name'] ?? $channel->external_id;
 
@@ -152,7 +160,9 @@ class ChannelController extends Controller
 
             return back()->with('status', __('Subscribed. New customer messages will now reach this app.'));
         } catch (Throwable $e) {
-            return back()->withErrors(['channel' => __('Meta says: :why', ['why' => $e->getMessage()])]);
+            $hint = str_contains($e->getMessage(), 'pages_manage_metadata') || str_contains($e->getMessage(), 'pages_read_engagement') ? ' '.__('This token cannot subscribe the Page itself. Do it in Meta instead: Messenger API settings, next to your Page press "Add subscriptions" and tick messages.') : '';
+
+            return back()->withErrors(['channel' => __('Meta says: :why', ['why' => $e->getMessage()]).$hint]);
         }
     }
 

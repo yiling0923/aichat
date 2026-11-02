@@ -867,3 +867,9 @@ The left menu now has five groups: Daily work (Today, Inbox, Schedule, Customers
 1. Channels > open your Messenger card > Save settings. It now saves (before, it showed a 500 error because only WhatsApp has a reminder template).
 2. The settings pop-up now has an editable ID box (Phone number ID for WhatsApp, Facebook Page ID for Messenger, Instagram account ID). If Meta sends messages for a different ID than the one you typed, the Channels page says so; paste the ID from that message here and save. You do not need to remove and add the channel again.
 3. An ID that already belongs to another business, or one with spaces or symbols, is refused.
+
+## DE. Messenger "Check connection"
+
+1. Channels > Messenger card > Check connection now asks Meta "who is this token" (no extra permission needed) and shows "Connected to <Page name>". Before, it asked for the Page name by ID and could fail with "(#100) ... pages_read_engagement" even though chatting works.
+2. If the token belongs to a different Page than the ID in the card, it says so and names both IDs.
+3. If "Subscribe to messages" is refused for a missing permission, the message tells you to press "Add subscriptions" in Meta instead.
