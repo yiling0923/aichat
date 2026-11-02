@@ -980,3 +980,15 @@ Still private by design: you see counts and money totals, never a business's cus
 2. **Other: type your own...** shows a box. Type up to 6 letters or signs (for example BND or Fr) and Save. A typed currency stays in the list afterwards. Anything with symbols such as < > or quotes, with a line break, over 6 characters, or empty is refused with a message.
 3. The currency you choose is used on Orders, Today, Reports, the customer pages, the AI's answers about prices, and in the platform console next to that business's customer money.
 4. The platform's own billing currency (what your plans are priced in, shown as "USD 29 a month" in the platform console) now comes from `BILLING_CURRENCY` in `.env` (for example `MYR`). Prices are in config/plans.php, in cents of that currency. Run `php artisan config:clear` after changing it.
+
+## DQ. Business page in the platform console, with tabs
+
+Open any business from the platform console (the Open icon or its name).
+1. **Header:** a coloured avatar with the business initial, the name, an Active / Paused / Expired pill, the plan, when the trial or paid period ends, and its address, join date and time zone. A paused business turns red and shows its reason in the outlined box. Two icon buttons: Customer chat, and Pause or Resume.
+2. **Tabs** (the tab you used stays open after you save): **Overview**, **Plan and limits**, **People and channels** (with a count), **Support**, **Payments** (with a count) and **Activity** (with a count).
+3. **Overview:** four coloured cards (chats and bookings with trend lines, customers, customer money), **Usage** bars for AI replies, team members, practitioners and channels (green, then amber from 75 percent, red at the limit; unlimited shows a soft bar), **At a glance** (plan, status, ends, owner, people, channels, what it paid you) and the last five things done.
+4. **Plan and limits:** the plan and date form, and the custom limits form (same as before).
+5. **People and channels:** the team with role pills and a Switched off pill, and the channels with a coloured icon, last message and status. Tokens are never shown.
+6. **Support:** two clear choices, View (read-only) and Act as the owner, and the password box for someone locked out.
+7. **Payments:** the total paid to you and each payment. **Activity:** a timeline with an icon for each kind of action and who did it.
+8. On a phone the tabs scroll sideways and nothing is wider than the screen.

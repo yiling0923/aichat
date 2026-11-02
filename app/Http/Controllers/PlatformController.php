@@ -148,6 +148,14 @@ class PlatformController extends Controller
         $kinds = collect(Plans::KINDS)->mapWithKeys(fn ($k) => [$k => ['used' => $plans->used($business, $k), 'limit' => $plans->limit($business, $k), 'plan' => (($plans->definition($business)['limits'] ?? [])[$k] ?? null), 'custom' => (((array) $business->settings)['limit_overrides'] ?? [])[$k] ?? null]]);
         $paid30 = $scoped(Order::class)->where('status', 'paid')->where('ordered_at', '>=', $since);
 
+        // One number per day for the trend lines.
+        $daily = function (string $model, ?callable $tweak = null) use ($since, $id): array {
+            $perDay = $model::query()->withoutGlobalScopes()->where('business_id', $id)->where('created_at', '>=', $since)->when($tweak, fn ($q) => $tweak($q))
+                ->selectRaw('date(created_at) as d, count(*) as n')->groupBy('d')->pluck('n', 'd');
+
+            return array_map(fn ($i) => (int) ($perDay[now()->subDays($i)->format('Y-m-d')] ?? 0), range(29, 0));
+        };
+
         return view('platform.show', [
             'b' => $business,
             'state' => $plans->state($business),
@@ -171,6 +179,10 @@ class PlatformController extends Controller
             'payments' => Payment::query()->where('business_id', $id)->orderByDesc('id')->limit(12)->get(),
             'audits' => PlatformAudit::query()->with('user')->where('business_id', $id)->orderByDesc('id')->limit(30)->get(),
             'hasOwner' => User::query()->where('business_id', $id)->where('role', 'owner')->where('active', true)->exists(),
+            'series' => ['chats' => $daily(Conversation::class, fn ($q) => $q->where('channel', '!=', 'preview')), 'bookings' => $daily(Booking::class, fn ($q) => $q->where('status', '!=', 'cancelled'))],
+            'paidTotal' => (int) Payment::query()->where('business_id', $id)->where('status', 'paid')->sum('amount_cents'),
+            'paymentCount' => Payment::query()->where('business_id', $id)->where('status', 'paid')->count(),
+            'paymentCurrency' => (string) config('plans.currency'),
         ]);
     }
 

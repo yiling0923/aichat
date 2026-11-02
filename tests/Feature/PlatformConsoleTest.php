@@ -62,8 +62,16 @@ class PlatformConsoleTest extends TestCase
         $this->actingAs($this->platform)->post('/platform/businesses/'.$this->shop->id.'/resume')->assertRedirect();
 
         $page = $this->actingAs($this->platform)->get('/platform/businesses/'.$this->shop->id)->assertOk()
-            ->assertSee('Rose Clinic')->assertSee('owner@rose.test')->assertSee('Usage and limits')->assertSee('View (read-only)')->assertSee('Unpaid')->assertSee('Paused')->assertSee('Resumed');
-        $this->assertSame(2, PlatformAudit::query()->where('business_id', $this->shop->id)->count());
+            ->assertSee('Rose Clinic')->assertSee('owner@rose.test')->assertSee('Plan and limits')->assertSee('View (read-only)')->assertSee('Unpaid')->assertSee('Paused')->assertSee('Resumed');
+        foreach (['overview', 'plan', 'people', 'support', 'payments', 'activity'] as $tab) {
+            $page->assertSee('data-tab="'.$tab.'"', false)->assertSee('data-bz="'.$tab.'"', false);
+        }
+        $page->assertSee('class="umeter', false)->assertDontSee('bz-hero is-paused', false);          // resumed, so the header is not in its paused look
+
+        $this->actingAs($this->platform)->post('/platform/businesses/'.$this->shop->id.'/pause', ['reason' => 'Check']);
+        $this->actingAs($this->platform)->get('/platform/businesses/'.$this->shop->id)->assertOk()->assertSee('bz-hero is-paused', false)->assertSee('reason-box', false);
+        $this->actingAs($this->platform)->post('/platform/businesses/'.$this->shop->id.'/resume');
+        $this->assertSame(4, PlatformAudit::query()->where('business_id', $this->shop->id)->count());          // pause and resume, twice
     }
 
     public function test_the_plan_trial_and_paid_until_date_can_be_changed_and_are_logged(): void

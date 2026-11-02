@@ -2012,5 +2012,22 @@
     "Israeli shekel": "以色列谢克尔",
     "South African rand": "南非兰特",
     "Nigerian naira": "尼日利亚奈拉",
-    "Kenyan shilling": "肯尼亚先令"
+    "Kenyan shilling": "肯尼亚先令",
+    "Sections": "分区",
+    "Plan and limits": "方案与限制",
+    "People and channels": "成员与渠道",
+    "Support": "支持",
+    "Usage": "用量",
+    "How much of each limit this business has used.": "这个业务已使用了每项限制的多少。",
+    "Change limits": "更改限制",
+    "At a glance": "概览",
+    ":a connected of :b": "共 :b 个,已连接 :a 个",
+    "See all": "查看全部",
+    "No end date.": "没有结束日期。",
+    "Limits": "限制",
+    "See what the owner sees. Nothing can be changed. An orange banner shows on every page.": "看店主看到的内容。不能修改任何东西。每个页面都会显示橙色横幅。",
+    "You are signed in as the owner and can make changes for them. It is written in the activity log.": "您会以店主身份登录,可以替他们修改。这会记录在活动日志中。",
+    "Pick the person and type a new password for them. The password is never written to the log.": "选择成员并为他输入新密码。密码绝不会写入日志。",
+    ":amount in :n payments": ":n 笔付款,共 :amount",
+    "Nothing yet. Plan changes, pauses and support views will show here.": "暂无内容。方案更改、暂停和支持查看会显示在这里。"
 }
