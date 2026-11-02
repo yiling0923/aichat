@@ -936,3 +936,10 @@ Note: in the sample data only website chats are linked to customers, so WhatsApp
 1. Help (English and 中文) now covers: the grouped side menu, unread blue chats and the channel filter in the Inbox, adding a button on Main for a new menu step, pictures or files on a step, the English/Chinese boxes with Translate, the Day view of the Schedule, what each automation does and who it skips, the Reports tabs (Sales, Marketing, channel filter, Export CSV, Print / save as PDF), long waits in days and hours, Teach it (answers work even with the AI off, keywords, questions the bot could not answer, practice AI), and Team roles with per-person access, the Team table, the Active switch, bulk changes and the password button.
 2. "I want to..." lists only what you may use (it follows each person's access) and has two new cards: Teach the bot an answer, and Choose what each person can use.
 3. New questions in "Questions and fixes": a new menu step customers cannot see, the bot not replying on WhatsApp or Messenger, the practice AI and Translate, and "Nobody answered for ... days".
+
+## DM. Phone: hamburger menu
+
+1. On a phone (or a narrow browser window) every staff page has a dark top bar with a hamburger button, your business name and a red dot when chats need a person.
+2. Tap the hamburger: the side menu slides in over the page. Tap the dark area, a menu item, or press Esc to close it. Your name and Sign out are at the bottom of the menu.
+3. The Inbox list now fills the screen under the top bar (it used to stop after two chats and leave a blank area).
+4. On a computer nothing changes: the side menu stays on the left and there is no hamburger.

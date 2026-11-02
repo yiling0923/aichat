@@ -2013,3 +2013,32 @@ details.au-card[open] > summary::after { content: none; }
 .tr-hint[hidden] { display: none; }
 .tr-msg.bad { color: var(--red); } .tr-msg.ok { color: var(--green); }
 .langs .tr-row { margin-left: 40px; }
+
+/* Phone: a top bar with a hamburger button, and the side menu slides in as a drawer */
+.mbar, .nav-backdrop { display: none; }
+@media (max-width: 900px) {
+  .mbar { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 12px; background: var(--side-bg); color: #fff; position: sticky; top: 0; z-index: 40; }
+  .mbar-name { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .burger { position: relative; flex: none; width: 40px; height: 40px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, .12); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .burger svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .burger-dot { position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; border: 2px solid var(--side-bg); }
+  .side { position: fixed; top: 0; bottom: 0; left: 0; z-index: 60; width: min(290px, 84vw); height: 100%; flex-direction: column; align-items: stretch; overflow-x: hidden; overflow-y: auto; padding: 14px 12px; gap: 0; transform: translateX(-104%); visibility: hidden; transition: transform .22s ease, visibility 0s .22s; }
+  body.nav-open .side { transform: none; visibility: visible; box-shadow: 0 0 40px rgba(0, 0, 0, .35); transition: transform .22s ease, visibility 0s; }
+  .ws { display: flex; }
+  .side .sec { display: block; }
+  .side a { white-space: normal; }
+  .side a.on { box-shadow: inset 3px 0 0 var(--accent-bright); }
+  .side .me { margin: auto 0 0; padding: 12px 6px 4px; font-size: 12.5px; }
+  .side .me .me-text { display: flex; }
+  .side .me .me-text span { display: block; }
+  .side .me .me-av { width: 34px; height: 34px; }
+  .nav-backdrop { position: fixed; inset: 0; z-index: 55; background: rgba(10, 26, 26, .5); }
+  body.nav-open .nav-backdrop { display: block; }
+  body.nav-open { overflow: hidden; }
+}
+
+/* Phone Inbox: the chat list uses the whole screen below the top bar (it was capped at a third of the height) */
+@media (max-width: 900px) {
+  .inbox .list { max-height: none; height: 100%; overflow-y: auto; border-bottom: 0; }
+  .inbox.chat-open .thread { height: 100%; min-height: 0; }
+}

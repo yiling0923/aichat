@@ -10,7 +10,13 @@
 @if ($accent && preg_match('/^#[0-9a-fA-F]{6}$/', $accent))
     <style>:root { --accent: {{ $accent }}; }</style>
 @endif
-<aside class="side">
+<div class="mbar">
+    <button type="button" class="burger" id="nav-toggle" aria-label="{{ __('Menu') }}" aria-expanded="false" aria-controls="side-nav"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>@if ($waiting)<i class="burger-dot"></i>@endif</button>
+    <span class="logo" style="width:30px;height:30px">{{ mb_substr($business->name, 0, 1) }}</span>
+    <b class="mbar-name">{{ $business->name }}</b>
+</div>
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<aside class="side" id="side-nav">
     <div class="ws">
         <span class="logo" style="width:32px;height:32px">{{ mb_substr($business->name, 0, 1) }}</span>
         <div><b>{{ $business->name }}</b><small>{{ __('Staff area') }}</small></div>

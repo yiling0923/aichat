@@ -1876,5 +1876,6 @@
     "The AI is switched off for the whole system, so it cannot translate yet. Type both languages for now. See AI assistant > \"How to turn it on\".": "AI 在整个系统中处于关闭状态,所以暂时无法翻译。现在请自己填写两种语言。请见 AI 助手 >“如何开启”。",
     "The AI could not translate this. Try again, or type it yourself.": "AI 无法翻译这段内容。请重试,或自己填写。",
     "The translation changed a {placeholder} such as {name}. Try again, or type it yourself.": "翻译改动了 {name} 这类占位符。请重试,或自己填写。",
-    "The practice AI only pretends, so it cannot translate and nothing was written. Type the Chinese yourself, or connect a real AI key (AI assistant > \"How to turn it on\").": "练习用 AI 只是模拟,无法翻译,所以没有写入任何内容。请自己填写中文,或连接真正的 AI 密钥(AI 助手 >“如何开启”)。"
+    "The practice AI only pretends, so it cannot translate and nothing was written. Type the Chinese yourself, or connect a real AI key (AI assistant > \"How to turn it on\").": "练习用 AI 只是模拟,无法翻译,所以没有写入任何内容。请自己填写中文,或连接真正的 AI 密钥(AI 助手 >“如何开启”)。",
+    "Menu": "菜单"
 }

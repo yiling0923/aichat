@@ -121,6 +121,7 @@
                 </ol>
                 <p class="hp-tip"><b>Tip</b> Press <kbd>Ctrl</kbd> + <kbd>K</kbd> on any page to jump to a customer or a chat.</p>
                 <p class="mute">The side menu is the map, in groups. <b>Daily work</b>: Today, Inbox, Schedule, Customers, Tasks and Orders. <b>Grow</b>: Marketing and Reports. <b>Chatbot</b>: Menu builder, AI assistant, Saved replies and Channels. <b>Business setup</b>: Setup guide, Booking setup and Settings. You only see the parts the owner allowed for you.</p>
+                <p class="hp-tip"><b>On a phone</b> tap the <b>☰</b> button at the top left to open the menu, and tap the dark area (or a menu item) to close it.</p>
             </section>
 
             <section class="card hp-sec" id="day">
