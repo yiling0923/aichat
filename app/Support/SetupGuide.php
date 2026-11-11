@@ -83,4 +83,27 @@ class SetupGuide
     {
         return array_column($this->steps($business, $user), 'key');
     }
+
+    /** The essential step after this one that is not done yet, or null when none is left. @return array<string, mixed>|null */
+    public function following(Business $business, User $user, string $key): ?array
+    {
+        $order = collect($this->steps($business, $user))->reject(fn ($s) => $s['optional'])->values();
+        $at = $order->search(fn ($s) => $s['key'] === $key);
+
+        return $order->slice(($at === false ? -1 : $at) + 1)->first(fn ($s) => ! $s['done']);
+    }
+
+    /** Make a step the current one in the step-by-step mode, remembering whether it was already done. */
+    public function activate(\Illuminate\Http\Request $request, Business $business, User $user, string $key): void
+    {
+        $step = collect($this->steps($business, $user))->firstWhere('key', $key);
+        $request->session()->put('guide_active', $key);
+        $request->session()->put('guide_base', (bool) ($step['done'] ?? false));
+    }
+
+    /** Where the guide sends the person for a step (the customer chat has no staff menu, so it is shown on the guide page). */
+    public static function target(array $step): string
+    {
+        return $step['key'] === 'chat' ? route('guide') : $step['url'];
+    }
 }

@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
-        $middleware->web(append: [\App\Http\Middleware\GuestLocale::class]);
+        $middleware->web(append: [\App\Http\Middleware\GuestLocale::class, \App\Http\Middleware\GuideAdvance::class]);
 
         // ngrok (and later a real server) sits in front of the app.
         $middleware->trustProxies(at: '*');

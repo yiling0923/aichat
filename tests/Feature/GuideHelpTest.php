@@ -132,4 +132,38 @@ class GuideHelpTest extends TestCase
         // Unknown steps and non-owners get nothing.
         $this->get('/admin/guide/go/nonsense')->assertNotFound();
     }
+
+    public function test_saving_a_step_takes_the_owner_straight_to_the_next_one(): void
+    {
+        $business = \App\Models\Business::factory()->create(['slug' => 'auto-co', 'timezone' => 'UTC', 'settings' => []]);
+        $owner = \App\Models\User::factory()->create(['business_id' => $business->id, 'role' => 'owner']);
+        $this->actingAs($owner);
+
+        // Step 1 (business details): saving without an address does not finish it, so nothing moves on.
+        $this->get('/admin/guide/go/business')->assertRedirect(route('settings'));
+        $this->post('/admin/settings/profile', ['name' => 'Auto Co', 'timezone' => 'UTC', 'address' => ''])->assertRedirect();
+        $this->assertStringNotContainsString('booking-setup', (string) session()->previousUrl());
+        $this->assertSame('business', session('guide_active'));
+
+        // Saving the address finishes it and opens the next step by itself.
+        $this->post('/admin/settings/profile', ['name' => 'Auto Co', 'timezone' => 'UTC', 'address' => '1 Main Street'])->assertRedirect(route('booking.setup'));
+        $this->assertSame('services', session('guide_active'));
+
+        // A page the guide is not on, or someone who is not the owner, is never redirected.
+        $this->post('/admin/guide/exit');
+        $this->post('/admin/settings/profile', ['name' => 'Auto Co', 'timezone' => 'UTC', 'address' => '2 Main Street'])->assertRedirect()->assertSessionHas('status');
+        $this->assertNull(session('guide_active'));
+    }
+
+    public function test_publishing_the_menu_finishes_the_menu_step_and_tells_the_page_where_to_go(): void
+    {
+        $business = \App\Models\Business::factory()->create(['slug' => 'menu-co', 'settings' => ['address' => 'x', 'hours' => ['mon' => ['09:00', '17:00']]]]);
+        $owner = \App\Models\User::factory()->create(['business_id' => $business->id, 'role' => 'owner']);
+        app(\App\Support\CurrentBusiness::class)->runAs($business, fn () => \App\Models\Service::create(['name' => ['en' => 'Facial'], 'duration_min' => 30, 'price' => 10]));
+        $this->actingAs($owner)->get('/admin/guide/go/menu')->assertRedirect();
+
+        $res = $this->postJson('/admin/api/menu/publish')->assertOk();
+        $this->assertNotNull($res->headers->get('X-Guide-Next'));
+        $this->assertTrue((bool) ($business->fresh()->settings['guide_done']['menu'] ?? false));
+    }
 }

@@ -25,7 +25,7 @@
       method: method || 'GET',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
       body: body ? JSON.stringify(body) : undefined
-    }).then(function (r) { return r.json().then(function (j) { j._status = r.status; return j; }); });
+    }).then(function (r) { return r.json().then(function (j) { j._status = r.status; j._next = r.headers.get('X-Guide-Next'); return j; }); });
   }
 
   function el(tag, attrs, children) {
@@ -284,7 +284,7 @@
   document.getElementById('btn-publish').addEventListener('click', function () {
     save(true).then(function () { return api('/publish', 'POST'); }).then(function (d) {
       load(d);
-      if (d._status === 422) { window.scrollTo(0, 0); toast(__t('Not published: fix the red messages first.'), true); } else { restartPreview(); toast(__t('Published. Customers see the new menu now.')); }
+      if (d._status === 422) { window.scrollTo(0, 0); toast(__t('Not published: fix the red messages first.'), true); } else { restartPreview(); toast(__t('Published. Customers see the new menu now.')); if (d._next) { setTimeout(function () { window.location.href = d._next; }, 1400); } }
     });
   });
   document.getElementById('btn-reset').addEventListener('click', function () {

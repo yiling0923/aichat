@@ -1057,3 +1057,10 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 2. "Done, next step" ticks the step (if the app can't see it itself) and opens the next essential step that isn't done yet, directly. The last one says "Done, finish" and returns to the guide with a message.
 3. The chat step shows on the guide page, with an "Open my chat" button that opens the customer chat in a new tab.
 4. "Leave the guide" hides the bar. Only the owner sees the bar.
+
+## EB. Setup guide: moves on by itself after you save
+
+1. In the guided mode, on the "Check your business details" step, fill in the address and press save: the app opens the next step (services) by itself, with a "Step done. Next: ..." message.
+2. Same for "Set your opening hours" (save the hours) and "Look at your chat menu" (press Publish: the page shows "Published" and goes to the next step after a moment).
+3. Adding services and "Try it as a customer" still use the "Done, next step" button, because you may want to add several services or look around the chat first.
+4. Saving something that does not finish the step (for example details without an address) stays on the page.

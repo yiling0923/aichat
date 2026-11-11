@@ -2135,5 +2135,6 @@
     "Start the step-by-step guide": "开始分步指南",
     "Continue the guide": "继续指南",
     "All the essential steps are done. You are ready for customers.": "所有必要步骤已完成，可以接待客户了。",
-    "Back": "返回"
+    "Back": "返回",
+    "Step done. Next: :title.": "这一步完成了。下一步：:title。"
 }

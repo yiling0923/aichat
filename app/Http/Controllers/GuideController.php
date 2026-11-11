@@ -48,7 +48,7 @@ class GuideController extends Controller
         $user = $request->user();
         $step = collect($guide->steps($user->business, $user))->firstWhere('key', $key);
         abort_if($step === null, 404);
-        $request->session()->put('guide_active', $key);
+        $guide->activate($request, $user->business, $user, $key);
 
         // The customer chat page has no staff menu, so that step is shown on the guide page with a button that opens the chat.
         return $key === 'chat' ? redirect()->route('guide') : redirect($step['url']);
@@ -72,24 +72,22 @@ class GuideController extends Controller
             $steps = collect($guide->steps($business->fresh(), $user));
         }
 
-        $order = $steps->reject(fn ($s) => $s['optional'])->values();
-        $at = $order->search(fn ($s) => $s['key'] === $key);
-        $following = $order->slice(($at === false ? -1 : $at) + 1)->first(fn ($s) => ! $s['done']);
+        $following = $guide->following($business->fresh(), $user, $key);
 
         if ($following === null) {
-            $request->session()->forget('guide_active');
+            $request->session()->forget(['guide_active', 'guide_base']);
 
             return redirect()->route('guide')->with('status', __('All the essential steps are done. You are ready for customers.'));
         }
 
-        $request->session()->put('guide_active', $following['key']);
+        $guide->activate($request, $business->fresh(), $user, $following['key']);
 
-        return $following['key'] === 'chat' ? redirect()->route('guide') : redirect($following['url']);
+        return redirect(SetupGuide::target($following));
     }
 
     public function exit(Request $request): RedirectResponse
     {
-        $request->session()->forget('guide_active');
+        $request->session()->forget(['guide_active', 'guide_base']);
 
         return redirect()->route('guide');
     }
