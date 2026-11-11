@@ -2379,3 +2379,13 @@ th.sorted a, th.sorted .sortbtn { color: var(--accent-d); }
 .cust-bulk .cb-sep { width: 1px; height: 22px; background: var(--accent-m); margin: 0 4px; }
 .cust-bulk select { width: auto; height: 30px; font-size: 11px; }
 .cust-bulk .cb-clear { margin-left: auto; width: 30px; height: 30px; font-size: 16px; }
+
+/* Setup guide: the step-by-step bar shown on each step's page */
+.gd-bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 10px 20px; background: linear-gradient(90deg, var(--accent-l), #fff); border-bottom: 1px solid var(--accent-m); box-shadow: 0 2px 8px rgba(16, 40, 40, .06); }
+.gd-bar-txt { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; flex: 1; }
+.gd-bar-n { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-d); background: var(--accent-m); border-radius: 999px; padding: 2px 10px; }
+.gd-bar-txt b { font-size: 15px; }
+.gd-bar-why { color: var(--mute); font-size: 13px; flex-basis: 100%; }
+.gd-bar-act { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gd-bar-act form { display: inline; }
+@media (min-width: 1100px) { .gd-bar-why { flex-basis: auto; } }

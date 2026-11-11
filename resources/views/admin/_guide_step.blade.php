@@ -9,7 +9,7 @@
     </div>
     <div class="gd-act">
         @unless ($s['done'] && $s['auto'])
-            <a class="btn small {{ $s['done'] ? '' : 'primary' }}" href="{{ $s['url'] }}" @if ($s['key'] === 'chat') target="_blank" rel="noopener" @endif>{{ $s['done'] ? __('Open') : __($s['cta']) }}</a>
+            <a class="btn small {{ $s['done'] ? '' : 'primary' }}" href="{{ route('guide.go', $s['key']) }}">{{ $s['done'] ? __('Open') : __($s['cta']) }}</a>
         @endunless
         @if ($s['done'] && $s['auto'])
             <span class="gd-auto">{{ __('Done automatically') }}</span>

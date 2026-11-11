@@ -14,6 +14,7 @@
 <body @if (session('support')) class="has-support" @endif>
 @include('admin._support')
 @include('admin._announce')
+@include('admin._guide_bar')
 <div class="shell">
     @include('admin._side', ['active' => $active])
     <main class="page">

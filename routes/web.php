@@ -101,6 +101,9 @@ Route::middleware(['staff', 'perm:customers'])->prefix('admin')->group(function 
 
 Route::middleware(['staff', 'owner'])->prefix('admin')->group(function () {
     Route::get('/guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide');
+    Route::get('/guide/go/{key}', [\App\Http\Controllers\GuideController::class, 'go'])->where('key', '[a-z]+')->name('guide.go');
+    Route::post('/guide/next', [\App\Http\Controllers\GuideController::class, 'next'])->name('guide.next');
+    Route::post('/guide/exit', [\App\Http\Controllers\GuideController::class, 'exit'])->name('guide.exit');
     Route::post('/guide/{key}', [\App\Http\Controllers\GuideController::class, 'mark'])->where('key', '[a-z]+');
 });
 

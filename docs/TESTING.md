@@ -1050,3 +1050,10 @@ Needs `php artisan migrate` (new `platform_settings` table). `BILLING_CURRENCY` 
 
 1. Customers list: the bar only appears once you tick someone ("2 selected", Download, tag picker, Add tag, Remove tag, and a cross to clear). The top checkbox selects all and shows a dash when only some are ticked.
 2. A customer's Activity list no longer calls a cancelled or no-show booking "Upcoming", even when its date is in the future.
+
+## EA. Setup guide: step by step
+
+1. Open Setup guide and press "Start the step-by-step guide" (or any step's button). The step's own page opens with a bar at the top: "Step 2 of 6", what to do, and the buttons Back, "Done, next step" and "Leave the guide".
+2. "Done, next step" ticks the step (if the app can't see it itself) and opens the next essential step that isn't done yet, directly. The last one says "Done, finish" and returns to the guide with a message.
+3. The chat step shows on the guide page, with an "Open my chat" button that opens the customer chat in a new tab.
+4. "Leave the guide" hides the bar. Only the owner sees the bar.

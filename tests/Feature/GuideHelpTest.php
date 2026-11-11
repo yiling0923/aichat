@@ -108,4 +108,28 @@ class GuideHelpTest extends TestCase
         $this->owner->forceFill(['locale' => 'en'])->save();
         $this->actingAs($this->owner)->get('/admin/help')->assertOk()->assertSee('How can we help?');
     }
+
+    public function test_the_guide_leads_from_one_step_to_the_next(): void
+    {
+        $owner = $this->actingAs($this->owner ?? \App\Models\User::factory()->create(['business_id' => \App\Models\Business::factory()->create(['slug' => 'wiz-co'])->id, 'role' => 'owner']));
+        $user = auth()->user();
+
+        // Starting at the first step opens its page and shows the bar.
+        $this->get('/admin/guide/go/business')->assertRedirect(route('settings'));
+        $this->get('/admin/settings')->assertOk()->assertSee('Step 1 of', false)->assertSee('Done, next step');
+
+        // Done: the next essential step opens by itself.
+        $this->post('/admin/guide/next')->assertRedirect(route('booking.setup'));
+        $this->assertTrue((bool) (($user->business->fresh()->settings['guide_done'] ?? [])['business'] ?? false));
+        $this->get('/admin/booking-setup')->assertOk()->assertSee('Step 2 of', false);
+
+        // The customer chat step is shown on the guide page, and leaving the guide hides the bar.
+        $this->get('/admin/guide/go/chat')->assertRedirect(route('guide'));
+        $this->get('/admin/guide')->assertOk()->assertSee('Open my chat');
+        $this->post('/admin/guide/exit')->assertRedirect(route('guide'));
+        $this->get('/admin/settings')->assertOk()->assertDontSee('Done, next step');
+
+        // Unknown steps and non-owners get nothing.
+        $this->get('/admin/guide/go/nonsense')->assertNotFound();
+    }
 }

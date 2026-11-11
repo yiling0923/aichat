@@ -23,7 +23,7 @@
                 <p class="mute">{{ $progress['total'] - $progress['done'] === 1 ? __('1 step left, about :m minutes.', ['m' => $progress['minutes']]) : __(':n steps left, about :m minutes.', ['n' => $progress['total'] - $progress['done'], 'm' => $progress['minutes']]) }}@if ($next) {!! __('Next: :title.', ['title' => '<b>'.e(__($next['title'])).'</b>']) !!}@endif</p>
             @endif
         </div>
-        @if ($next)<a class="btn primary" href="{{ $next['url'] }}" @if ($next['key'] === 'chat') target="_blank" rel="noopener" @endif>{{ __($next['cta']) }}</a>@endif
+        @if ($next)<a class="btn primary" href="{{ route('guide.go', $next['key']) }}">{{ $progress['done'] === 0 ? __('Start the step-by-step guide') : __('Continue the guide') }} &rarr;</a>@endif
     </section>
 
     <h2 class="set-group">{{ __('Essential') }}</h2>

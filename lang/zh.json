@@ -2127,5 +2127,13 @@
     "this customer": "这位客户",
     "Download data": "下载资料",
     "Download ticked": "下载已勾选",
-    "Download": "下载"
+    "Download": "下载",
+    "Step :a of :b": "第 :a 步，共 :b 步",
+    "Done, next step": "完成，下一步",
+    "Done, finish": "完成，结束",
+    "Leave the guide": "退出指南",
+    "Start the step-by-step guide": "开始分步指南",
+    "Continue the guide": "继续指南",
+    "All the essential steps are done. You are ready for customers.": "所有必要步骤已完成，可以接待客户了。",
+    "Back": "返回"
 }
